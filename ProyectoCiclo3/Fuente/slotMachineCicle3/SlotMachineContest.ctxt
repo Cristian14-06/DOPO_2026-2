@@ -1,0 +1,11 @@
+#BlueJ class context
+#Sun Sep 20 17:48:08 COT 2026
+comment0.target=SlotMachineContest
+comment0.text=\r\n Contest wrapper for the jackpot-solving algorithm shared through\r\n FindJackpot. Exposes solve(n), which computes and returns the sequence\r\n of actions needed to win on a hidden machine, and simulate(n), which\r\n runs the same algorithm on a visible machine so the process can be watched.\r\n\r\n @author Juan Espitia\r\n @author Cristian Salamanca\r\n
+comment1.params=n
+comment1.target=int[][] solve(int)
+comment1.text=\r\n Creates a new, invisible machine with n wheels and returns the\r\n sequence of actions needed to reach the jackpot.\r\n\r\n @param n the number of wheels and symbols of the machine\r\n @return the sequence of actions performed to reach the jackpot\r\n
+comment2.params=n
+comment2.target=void simulate(int)
+comment2.text=\r\n Creates a new, visible machine with n wheels and runs the jackpot\r\n algorithm on it so the process can be watched.\r\n\r\n @param n the number of wheels and symbols of the machine\r\n
+numComments=3

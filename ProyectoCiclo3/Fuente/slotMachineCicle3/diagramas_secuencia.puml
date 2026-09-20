@@ -1,0 +1,1675 @@
+' ==============================================================================
+' DIAGRAMAS DE SECUENCIA PARA TODOS LOS MÉTODOS DE LA CLASE SlotMachine
+' Formato: PlantUML
+' Inicio: actor Usuario
+' Llamadas sincrónicas: flecha continua (->)
+' Retornos: flecha punteada (-->)
+' Creaciones: create Participante + flecha continua con <<create>>
+' Líneas de vida: Clases del sistema (no instancias separadas)
+' Destino final de dibujo: Canvas
+' ==============================================================================
+
+@startuml Seq_01_SlotMachine_Constructor_Default
+title 1. Constructor SlotMachine()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Rectangle
+
+Usuario -> SlotMachine: <<create>> new SlotMachine()
+activate SlotMachine
+
+create BodyMachine
+SlotMachine -> BodyMachine: <<create>> new BodyMachine()
+activate BodyMachine
+
+create Rectangle
+BodyMachine -> Rectangle: <<create>> new Rectangle()
+activate Rectangle
+Rectangle --> BodyMachine: body
+deactivate Rectangle
+
+BodyMachine --> SlotMachine: principal_body
+deactivate BodyMachine
+
+SlotMachine --> Usuario: machine
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_02_SlotMachine_Constructor_N
+title 2. Constructor SlotMachine(int n)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Rectangle
+
+Usuario -> SlotMachine: <<create>> new SlotMachine(n)
+activate SlotMachine
+
+opt n >= 1 && n <= 5
+    create BodyMachine
+    SlotMachine -> BodyMachine: <<create>> new BodyMachine()
+    activate BodyMachine
+
+    create Rectangle
+    BodyMachine -> Rectangle: <<create>> new Rectangle()
+    activate Rectangle
+    Rectangle --> BodyMachine: body
+    deactivate Rectangle
+
+    BodyMachine --> SlotMachine: principal_body
+    deactivate BodyMachine
+
+    loop i = 0 to n - 1
+        SlotMachine -> SlotMachine: addWheel(i + 1)
+        activate SlotMachine
+        SlotMachine --> SlotMachine: void
+        deactivate SlotMachine
+
+        SlotMachine -> SlotMachine: addSymbol(i + 1, colors[i])
+        activate SlotMachine
+        SlotMachine --> SlotMachine: void
+        deactivate SlotMachine
+    end
+
+    SlotMachine -> SlotMachine: spin()
+    activate SlotMachine
+    SlotMachine --> SlotMachine: void
+    deactivate SlotMachine
+end
+
+SlotMachine --> Usuario: machine
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_03_addWheel
+title 3. addWheel(int pos)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Circle
+participant Triangle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: addWheel(pos)
+activate SlotMachine
+
+opt wheels.size() < 5
+    create Wheel
+    SlotMachine -> Wheel: <<create>> new Wheel()
+    activate Wheel
+
+    create Circle
+    Wheel -> Circle: <<create>> new Circle()
+    activate Circle
+    Circle --> Wheel: wheel
+    deactivate Circle
+
+    Wheel -> Circle: wheel.changeSize(45)
+    activate Circle
+    Circle -> Canvas: canvas.erase(this)
+    Canvas --> Circle: void
+    Circle -> Canvas: canvas.draw(this, color, shape)
+    Canvas --> Circle: void
+    Circle --> Wheel: void
+    deactivate Circle
+
+    Wheel -> Circle: wheel.changeColor("gray")
+    activate Circle
+    Circle -> Canvas: canvas.draw(this, color, shape)
+    Canvas --> Circle: void
+    Circle --> Wheel: void
+    deactivate Circle
+
+    Wheel -> Circle: <<create>> new Circle()
+    activate Circle
+    Circle --> Wheel: symbolCircle
+    deactivate Circle
+
+    create Triangle
+    Wheel -> Triangle: <<create>> new Triangle()
+    activate Triangle
+    Triangle --> Wheel: symbolTriangle
+    deactivate Triangle
+
+    create Rectangle
+    Wheel -> Rectangle: <<create>> new Rectangle()
+    activate Rectangle
+    Rectangle --> Wheel: symbolRectangle
+    deactivate Rectangle
+
+    Wheel --> SlotMachine: wheel
+    deactivate Wheel
+
+    loop i = 0 to wheels.size() - 1
+        SlotMachine -> Wheel: wheels.get(i).setPosition(x, y)
+        activate Wheel
+        Wheel -> Circle: wheel.moveHorizontal(diffX)
+        activate Circle
+        Circle -> Canvas: canvas.erase(this)
+        Canvas --> Circle: void
+        Circle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Circle: void
+        Circle --> Wheel: void
+        deactivate Circle
+
+        Wheel -> Circle: wheel.moveVertical(diffY)
+        activate Circle
+        Circle -> Canvas: canvas.erase(this)
+        Canvas --> Circle: void
+        Circle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Circle: void
+        Circle --> Wheel: void
+        deactivate Circle
+
+        Wheel -> Circle: symbolCircle.moveHorizontal(diffX)
+        activate Circle
+        Circle --> Wheel: void
+        deactivate Circle
+        Wheel -> Circle: symbolCircle.moveVertical(diffY)
+        activate Circle
+        Circle --> Wheel: void
+        deactivate Circle
+
+        Wheel -> Triangle: symbolTriangle.moveHorizontal(diffX)
+        activate Triangle
+        Triangle --> Wheel: void
+        deactivate Triangle
+        Wheel -> Triangle: symbolTriangle.moveVertical(diffY)
+        activate Triangle
+        Triangle --> Wheel: void
+        deactivate Triangle
+
+        Wheel -> Rectangle: symbolRectangle.moveHorizontal(diffX)
+        activate Rectangle
+        Rectangle --> Wheel: void
+        deactivate Rectangle
+        Wheel -> Rectangle: symbolRectangle.moveVertical(diffY)
+        activate Rectangle
+        Rectangle --> Wheel: void
+        deactivate Rectangle
+        
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        opt visible
+            Wheel -> Wheel: showSymbol(shownSymbol)
+            activate Wheel
+            Wheel -> Wheel: hideSymbol()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+        end
+        Wheel --> Wheel: void
+        deactivate Wheel
+        Wheel --> SlotMachine: void
+        deactivate Wheel
+    end
+
+    loop i = 0 to gallery.size() - 1
+        SlotMachine -> Wheel: wheel.addSymbol(i + 1, gallery.get(i))
+        activate Wheel
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        Wheel --> Wheel: void
+        deactivate Wheel
+        Wheel --> SlotMachine: true
+        deactivate Wheel
+    end
+
+    SlotMachine -> SlotMachine: isJackpot()
+    activate SlotMachine
+    SlotMachine --> SlotMachine: jackpotStatus
+    deactivate SlotMachine
+
+    opt body.get(0).isVisible()
+        SlotMachine -> BodyMachine: body.get(0).makeVisible()
+        activate BodyMachine
+        BodyMachine -> Rectangle: body.makeVisible()
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> BodyMachine: void
+        deactivate Rectangle
+        BodyMachine --> SlotMachine: void
+        deactivate BodyMachine
+
+        loop i = 0 to wheels.size() - 1
+            SlotMachine -> Wheel: wheels.get(i).makeVisible()
+            activate Wheel
+            Wheel -> Circle: wheel.makeVisible()
+            activate Circle
+            Circle -> Canvas: canvas.setVisible(true)
+            Canvas --> Circle: void
+            Circle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Circle: void
+            Circle --> Wheel: void
+            deactivate Circle
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> SlotMachine: void
+            deactivate Wheel
+        end
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_04_delWheel
+title 4. delWheel(int pos)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Circle
+participant Triangle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: delWheel(pos)
+activate SlotMachine
+
+opt !wheels.isEmpty()
+    SlotMachine -> Wheel: wheels.get(pos - 1).makeInvisible()
+    activate Wheel
+    Wheel -> Circle: wheel.makeInvisible()
+    activate Circle
+    Circle -> Canvas: canvas.erase(this)
+    Canvas --> Circle: void
+    Circle --> Wheel: void
+    deactivate Circle
+
+    Wheel -> Wheel: hideSymbol()
+    activate Wheel
+    Wheel -> Circle: symbolCircle.makeInvisible()
+    activate Circle
+    Circle -> Canvas: canvas.erase(this)
+    Canvas --> Circle: void
+    Circle --> Wheel: void
+    deactivate Circle
+
+    Wheel -> Triangle: symbolTriangle.makeInvisible()
+    activate Triangle
+    Triangle -> Canvas: canvas.erase(this)
+    Canvas --> Triangle: void
+    Triangle --> Wheel: void
+    deactivate Triangle
+
+    Wheel -> Rectangle: symbolRectangle.makeInvisible()
+    activate Rectangle
+    Rectangle -> Canvas: canvas.erase(this)
+    Canvas --> Rectangle: void
+    Rectangle --> Wheel: void
+    deactivate Rectangle
+    Wheel --> Wheel: void
+    deactivate Wheel
+
+    Wheel --> SlotMachine: void
+    deactivate Wheel
+
+    loop i = 0 to wheels.size() - 1
+        SlotMachine -> Wheel: wheels.get(i).setPosition(x, y)
+        activate Wheel
+        Wheel -> Circle: wheel.moveHorizontal(diffX)
+        activate Circle
+        Circle -> Canvas: canvas.erase(this)
+        Canvas --> Circle: void
+        Circle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Circle: void
+        Circle --> Wheel: void
+        deactivate Circle
+
+        Wheel -> Circle: wheel.moveVertical(diffY)
+        activate Circle
+        Circle -> Canvas: canvas.erase(this)
+        Canvas --> Circle: void
+        Circle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Circle: void
+        Circle --> Wheel: void
+        deactivate Circle
+
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        Wheel --> Wheel: void
+        deactivate Wheel
+        Wheel --> SlotMachine: void
+        deactivate Wheel
+    end
+
+    SlotMachine -> SlotMachine: isJackpot()
+    activate SlotMachine
+    SlotMachine --> SlotMachine: jackpotStatus
+    deactivate SlotMachine
+
+    opt body.get(0).isVisible()
+        SlotMachine -> BodyMachine: body.get(0).makeVisible()
+        activate BodyMachine
+        BodyMachine -> Rectangle: body.makeVisible()
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> BodyMachine: void
+        deactivate Rectangle
+        BodyMachine --> SlotMachine: void
+        deactivate BodyMachine
+
+        loop i = 0 to wheels.size() - 1
+            SlotMachine -> Wheel: wheels.get(i).makeVisible()
+            activate Wheel
+            Wheel -> Circle: wheel.makeVisible()
+            activate Circle
+            Circle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Circle: void
+            Circle --> Wheel: void
+            deactivate Circle
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> SlotMachine: void
+            deactivate Wheel
+        end
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_05_addSymbol
+title 5. addSymbol(int pos, String color)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Symbol
+participant Circle
+participant Triangle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: addSymbol(pos, color)
+activate SlotMachine
+
+opt gallery.size() < 7
+    loop i = 0 to gallery.size() - 1
+        SlotMachine -> Symbol: gallery.get(i).getColor()
+        activate Symbol
+        Symbol --> SlotMachine: color
+        deactivate Symbol
+    end
+
+    create Symbol
+    SlotMachine -> Symbol: <<create>> new Symbol(type, color)
+    activate Symbol
+    Symbol --> SlotMachine: newSymbol
+    deactivate Symbol
+
+    loop i = 0 to wheels.size() - 1
+        SlotMachine -> Wheel: wheels.get(i).addSymbol(index + 1, newSymbol)
+        activate Wheel
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        opt visible
+            Wheel -> Wheel: showSymbol(symbol)
+            activate Wheel
+            Wheel -> Wheel: hideSymbol()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            alt symbol.getType() == CIRCLE
+                Wheel -> Circle: symbolCircle.changeColor(color)
+                activate Circle
+                Circle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Circle: void
+                Circle --> Wheel: void
+                deactivate Circle
+                Wheel -> Circle: symbolCircle.makeVisible()
+                activate Circle
+                Circle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Circle: void
+                Circle --> Wheel: void
+                deactivate Circle
+            else symbol.getType() == TRIANGLE
+                Wheel -> Triangle: symbolTriangle.changeColor(color)
+                activate Triangle
+                Triangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Triangle: void
+                Triangle --> Wheel: void
+                deactivate Triangle
+                Wheel -> Triangle: symbolTriangle.makeVisible()
+                activate Triangle
+                Triangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Triangle: void
+                Triangle --> Wheel: void
+                deactivate Triangle
+            else symbol.getType() == RECTANGLE
+                Wheel -> Rectangle: symbolRectangle.changeColor(color)
+                activate Rectangle
+                Rectangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Rectangle: void
+                Rectangle --> Wheel: void
+                deactivate Rectangle
+                Wheel -> Rectangle: symbolRectangle.makeVisible()
+                activate Rectangle
+                Rectangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Rectangle: void
+                Rectangle --> Wheel: void
+                deactivate Rectangle
+            end
+            Wheel --> Wheel: void
+            deactivate Wheel
+        end
+        Wheel --> Wheel: void
+        deactivate Wheel
+        Wheel --> SlotMachine: true
+        deactivate Wheel
+    end
+
+    SlotMachine -> SlotMachine: isJackpot()
+    activate SlotMachine
+    SlotMachine --> SlotMachine: jackpotStatus
+    deactivate SlotMachine
+
+    opt body.get(0).isVisible()
+        SlotMachine -> BodyMachine: body.get(0).makeVisible()
+        activate BodyMachine
+        BodyMachine -> Rectangle: body.makeVisible()
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> BodyMachine: void
+        deactivate Rectangle
+        BodyMachine --> SlotMachine: void
+        deactivate BodyMachine
+
+        loop i = 0 to wheels.size() - 1
+            SlotMachine -> Wheel: wheels.get(i).makeVisible()
+            activate Wheel
+            Wheel -> Circle: wheel.makeVisible()
+            activate Circle
+            Circle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Circle: void
+            Circle --> Wheel: void
+            deactivate Circle
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> SlotMachine: void
+            deactivate Wheel
+        end
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_06_delSymbol
+title 6. delSymbol(String color)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Symbol
+participant Circle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: delSymbol(color)
+activate SlotMachine
+
+loop i = 0 to gallery.size() - 1
+    SlotMachine -> Symbol: gallery.get(i).getColor()
+    activate Symbol
+    Symbol --> SlotMachine: colorStr
+    deactivate Symbol
+    
+    opt colorStr.equals(color)
+        loop j = 0 to wheels.size() - 1
+            SlotMachine -> Wheel: wheels.get(j).delSymbol(symbol)
+            activate Wheel
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            opt visible
+                Wheel -> Wheel: showSymbol(symbol)
+                activate Wheel
+                Wheel --> Wheel: void
+                deactivate Wheel
+            end
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> SlotMachine: true
+            deactivate Wheel
+        end
+
+        SlotMachine -> SlotMachine: isJackpot()
+        activate SlotMachine
+        SlotMachine --> SlotMachine: jackpotStatus
+        deactivate SlotMachine
+
+        SlotMachine -> SlotMachine: makeVisible()
+        activate SlotMachine
+        SlotMachine -> BodyMachine: body.get(0).makeVisible()
+        activate BodyMachine
+        BodyMachine -> Rectangle: body.makeVisible()
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> BodyMachine: void
+        deactivate Rectangle
+        BodyMachine --> SlotMachine: void
+        deactivate BodyMachine
+
+        loop j = 0 to wheels.size() - 1
+            SlotMachine -> Wheel: wheels.get(j).makeVisible()
+            activate Wheel
+            Wheel -> Circle: wheel.makeVisible()
+            activate Circle
+            Circle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Circle: void
+            Circle --> Wheel: void
+            deactivate Circle
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> SlotMachine: void
+            deactivate Wheel
+        end
+        SlotMachine --> SlotMachine: void
+        deactivate SlotMachine
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_07_placeSymbol
+title 7. placeSymbol(int wheel, String symbol)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Symbol
+participant Circle
+participant Triangle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: placeSymbol(wheel, symbol)
+activate SlotMachine
+
+opt !wheels.isEmpty()
+    loop i = 0 to gallery.size() - 1
+        SlotMachine -> Symbol: gallery.get(i).getColor()
+        activate Symbol
+        Symbol --> SlotMachine: colorStr
+        deactivate Symbol
+    end
+
+    opt symbolTemp != null
+        SlotMachine -> Wheel: wheels.get(wheel - 1).placeSymbol(symbolTemp)
+        activate Wheel
+        loop i = 0 to symbols.size() - 1
+            opt symbols.get(i) == symbolTemp
+                Wheel -> Wheel: refresh()
+                activate Wheel
+                opt visible
+                    Wheel -> Wheel: showSymbol(shownSymbol)
+                    activate Wheel
+                    Wheel -> Wheel: hideSymbol()
+                    activate Wheel
+                    Wheel --> Wheel: void
+                    deactivate Wheel
+                    alt TypeSymbol.CIRCLE
+                        Wheel -> Circle: symbolCircle.changeColor(color)
+                        activate Circle
+                        Circle -> Canvas: canvas.draw(this, color, shape)
+                        Canvas --> Circle: void
+                        Circle --> Wheel: void
+                        deactivate Circle
+                        Wheel -> Circle: symbolCircle.makeVisible()
+                        activate Circle
+                        Circle -> Canvas: canvas.draw(this, color, shape)
+                        Canvas --> Circle: void
+                        Circle --> Wheel: void
+                        deactivate Circle
+                    else TypeSymbol.TRIANGLE
+                        Wheel -> Triangle: symbolTriangle.changeColor(color)
+                        activate Triangle
+                        Triangle -> Canvas: canvas.draw(this, color, shape)
+                        Canvas --> Triangle: void
+                        Triangle --> Wheel: void
+                        deactivate Triangle
+                        Wheel -> Triangle: symbolTriangle.makeVisible()
+                        activate Triangle
+                        Triangle -> Canvas: canvas.draw(this, color, shape)
+                        Canvas --> Triangle: void
+                        Triangle --> Wheel: void
+                        deactivate Triangle
+                    else TypeSymbol.RECTANGLE
+                        Wheel -> Rectangle: symbolRectangle.changeColor(color)
+                        activate Rectangle
+                        Rectangle -> Canvas: canvas.draw(this, color, shape)
+                        Canvas --> Rectangle: void
+                        Rectangle --> Wheel: void
+                        deactivate Rectangle
+                        Wheel -> Rectangle: symbolRectangle.makeVisible()
+                        activate Rectangle
+                        Rectangle -> Canvas: canvas.draw(this, color, shape)
+                        Canvas --> Rectangle: void
+                        Rectangle --> Wheel: void
+                        deactivate Rectangle
+                    end
+                    Wheel --> Wheel: void
+                    deactivate Wheel
+                end
+                Wheel --> Wheel: void
+                deactivate Wheel
+            end
+        end
+        Wheel --> SlotMachine: void
+        deactivate Wheel
+
+        SlotMachine -> SlotMachine: isJackpot()
+        activate SlotMachine
+        SlotMachine --> SlotMachine: jackpotStatus
+        deactivate SlotMachine
+
+        opt body.get(0).isVisible()
+            SlotMachine -> BodyMachine: body.get(0).makeVisible()
+            activate BodyMachine
+            BodyMachine -> Rectangle: body.makeVisible()
+            activate Rectangle
+            Rectangle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Rectangle: void
+            Rectangle --> BodyMachine: void
+            deactivate Rectangle
+            BodyMachine --> SlotMachine: void
+            deactivate BodyMachine
+
+            loop i = 0 to wheels.size() - 1
+                SlotMachine -> Wheel: wheels.get(i).makeVisible()
+                activate Wheel
+                Wheel -> Circle: wheel.makeVisible()
+                activate Circle
+                Circle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Circle: void
+                Circle --> Wheel: void
+                deactivate Circle
+                Wheel -> Wheel: refresh()
+                activate Wheel
+                Wheel --> Wheel: void
+                deactivate Wheel
+                Wheel --> SlotMachine: void
+                deactivate Wheel
+            end
+        end
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_08_spin_wheel
+title 8. spin(int wheel)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Circle
+participant Triangle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: spin(wheel)
+activate SlotMachine
+
+opt !wheels.isEmpty()
+    SlotMachine -> Wheel: wheels.get(wheel - 1).getLock()
+    activate Wheel
+    Wheel --> SlotMachine: lockStatus
+    deactivate Wheel
+
+    opt !lockStatus
+        SlotMachine -> Wheel: wheels.get(wheel - 1).spin()
+        activate Wheel
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        opt visible
+            Wheel -> Wheel: showSymbol(shownSymbol)
+            activate Wheel
+            Wheel -> Wheel: hideSymbol()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            alt CIRCLE
+                Wheel -> Circle: symbolCircle.makeVisible()
+                activate Circle
+                Circle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Circle: void
+                Circle --> Wheel: void
+                deactivate Circle
+            else TRIANGLE
+                Wheel -> Triangle: symbolTriangle.makeVisible()
+                activate Triangle
+                Triangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Triangle: void
+                Triangle --> Wheel: void
+                deactivate Triangle
+            else RECTANGLE
+                Wheel -> Rectangle: symbolRectangle.makeVisible()
+                activate Rectangle
+                Rectangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Rectangle: void
+                Rectangle --> Wheel: void
+                deactivate Rectangle
+            end
+            Wheel --> Wheel: void
+            deactivate Wheel
+        end
+        Wheel --> Wheel: void
+        deactivate Wheel
+        Wheel --> SlotMachine: void
+        deactivate Wheel
+
+        SlotMachine -> SlotMachine: isJackpot()
+        activate SlotMachine
+        SlotMachine --> SlotMachine: jackpotStatus
+        deactivate SlotMachine
+
+        opt body.get(0).isVisible()
+            SlotMachine -> BodyMachine: body.get(0).makeVisible()
+            activate BodyMachine
+            BodyMachine -> Rectangle: body.makeVisible()
+            activate Rectangle
+            Rectangle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Rectangle: void
+            Rectangle --> BodyMachine: void
+            deactivate Rectangle
+            BodyMachine --> SlotMachine: void
+            deactivate BodyMachine
+
+            loop i = 0 to wheels.size() - 1
+                SlotMachine -> Wheel: wheels.get(i).makeVisible()
+                activate Wheel
+                Wheel -> Circle: wheel.makeVisible()
+                activate Circle
+                Circle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Circle: void
+                Circle --> Wheel: void
+                deactivate Circle
+                Wheel -> Wheel: refresh()
+                activate Wheel
+                Wheel --> Wheel: void
+                deactivate Wheel
+                Wheel --> SlotMachine: void
+                deactivate Wheel
+            end
+        end
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_09_spin_all
+title 9. spin()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Circle
+participant Triangle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: spin()
+activate SlotMachine
+
+loop i = 0 to wheels.size() - 1
+    SlotMachine -> Wheel: wheels.get(i).getLock()
+    activate Wheel
+    Wheel --> SlotMachine: lockStatus
+    deactivate Wheel
+
+    opt !lockStatus
+        SlotMachine -> Wheel: wheels.get(i).spin()
+        activate Wheel
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        opt visible
+            Wheel -> Wheel: showSymbol(shownSymbol)
+            activate Wheel
+            Wheel -> Wheel: hideSymbol()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            alt CIRCLE
+                Wheel -> Circle: symbolCircle.makeVisible()
+                activate Circle
+                Circle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Circle: void
+                Circle --> Wheel: void
+                deactivate Circle
+            else TRIANGLE
+                Wheel -> Triangle: symbolTriangle.makeVisible()
+                activate Triangle
+                Triangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Triangle: void
+                Triangle --> Wheel: void
+                deactivate Triangle
+            else RECTANGLE
+                Wheel -> Rectangle: symbolRectangle.makeVisible()
+                activate Rectangle
+                Rectangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Rectangle: void
+                Rectangle --> Wheel: void
+                deactivate Rectangle
+            end
+            Wheel --> Wheel: void
+            deactivate Wheel
+        end
+        Wheel --> Wheel: void
+        deactivate Wheel
+        Wheel --> SlotMachine: void
+        deactivate Wheel
+    end
+end
+
+SlotMachine -> SlotMachine: isJackpot()
+activate SlotMachine
+SlotMachine --> SlotMachine: jackpotStatus
+deactivate SlotMachine
+
+opt body.get(0).isVisible()
+    SlotMachine -> BodyMachine: body.get(0).makeVisible()
+    activate BodyMachine
+    BodyMachine -> Rectangle: body.makeVisible()
+    activate Rectangle
+    Rectangle -> Canvas: canvas.draw(this, color, shape)
+    Canvas --> Rectangle: void
+    Rectangle --> BodyMachine: void
+    deactivate Rectangle
+    BodyMachine --> SlotMachine: void
+    deactivate BodyMachine
+
+    loop i = 0 to wheels.size() - 1
+        SlotMachine -> Wheel: wheels.get(i).makeVisible()
+        activate Wheel
+        Wheel -> Circle: wheel.makeVisible()
+        activate Circle
+        Circle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Circle: void
+        Circle --> Wheel: void
+        deactivate Circle
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        Wheel --> Wheel: void
+        deactivate Wheel
+        Wheel --> SlotMachine: void
+        deactivate Wheel
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_10_spin_wheel_steps
+title 10. spin(int wheel, int steps)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Circle
+participant Triangle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: spin(wheel, steps)
+activate SlotMachine
+
+opt !wheels.isEmpty() && wheel >= 1 && wheel <= wheels.size()
+    SlotMachine -> Wheel: wheels.get(wheel - 1).spin(steps)
+    activate Wheel
+    opt !lock && !symbols.isEmpty()
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        opt visible
+            Wheel -> Wheel: showSymbol(shownSymbol)
+            activate Wheel
+            Wheel -> Wheel: hideSymbol()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            alt CIRCLE
+                Wheel -> Circle: symbolCircle.makeVisible()
+                activate Circle
+                Circle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Circle: void
+                Circle --> Wheel: void
+                deactivate Circle
+            else TRIANGLE
+                Wheel -> Triangle: symbolTriangle.makeVisible()
+                activate Triangle
+                Triangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Triangle: void
+                Triangle --> Wheel: void
+                deactivate Triangle
+            else RECTANGLE
+                Wheel -> Rectangle: symbolRectangle.makeVisible()
+                activate Rectangle
+                Rectangle -> Canvas: canvas.draw(this, color, shape)
+                Canvas --> Rectangle: void
+                Rectangle --> Wheel: void
+                deactivate Rectangle
+            end
+            Wheel --> Wheel: void
+            deactivate Wheel
+        end
+        Wheel --> Wheel: void
+        deactivate Wheel
+    end
+    Wheel --> SlotMachine: void
+    deactivate Wheel
+
+    opt body.get(0).isVisible()
+        SlotMachine -> BodyMachine: body.get(0).makeVisible()
+        activate BodyMachine
+        BodyMachine -> Rectangle: body.makeVisible()
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> BodyMachine: void
+        deactivate Rectangle
+        BodyMachine --> SlotMachine: void
+        deactivate BodyMachine
+
+        loop i = 0 to wheels.size() - 1
+            SlotMachine -> Wheel: wheels.get(i).makeVisible()
+            activate Wheel
+            Wheel -> Circle: wheel.makeVisible()
+            activate Circle
+            Circle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Circle: void
+            Circle --> Wheel: void
+            deactivate Circle
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> SlotMachine: void
+            deactivate Wheel
+        end
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_11_spin_setSymbols
+title 11. spin(String[] setSymbols)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Symbol
+participant Circle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: spin(setSymbols)
+activate SlotMachine
+
+opt setSymbols.length <= wheels.size()
+    loop i = 0 to setSymbols.length - 1
+        SlotMachine -> Wheel: wheels.get(i).spin(setSymbols[i])
+        activate Wheel
+        opt !lock && !symbols.isEmpty()
+            loop until symbols.get(currentSymbol).getColor() == color
+                Wheel -> Symbol: symbols.get(currentSymbol).getColor()
+                activate Symbol
+                Symbol --> Wheel: colorStr
+                deactivate Symbol
+            end
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            opt visible
+                Wheel -> Wheel: showSymbol(shownSymbol)
+                activate Wheel
+                Wheel --> Wheel: void
+                deactivate Wheel
+            end
+            Wheel --> Wheel: void
+            deactivate Wheel
+        end
+        Wheel --> SlotMachine: void
+        deactivate Wheel
+    end
+
+    loop i = setSymbols.length to wheels.size() - 1
+        SlotMachine -> Wheel: wheels.get(i).spin()
+        activate Wheel
+        Wheel -> Wheel: refresh()
+        activate Wheel
+        Wheel --> Wheel: void
+        deactivate Wheel
+        Wheel --> SlotMachine: void
+        deactivate Wheel
+    end
+
+    opt body.get(0).isVisible()
+        SlotMachine -> BodyMachine: body.get(0).makeVisible()
+        activate BodyMachine
+        BodyMachine -> Rectangle: body.makeVisible()
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> BodyMachine: void
+        deactivate Rectangle
+        BodyMachine --> SlotMachine: void
+        deactivate BodyMachine
+
+        loop i = 0 to wheels.size() - 1
+            SlotMachine -> Wheel: wheels.get(i).makeVisible()
+            activate Wheel
+            Wheel -> Circle: wheel.makeVisible()
+            activate Circle
+            Circle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Circle: void
+            Circle --> Wheel: void
+            deactivate Circle
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> SlotMachine: void
+            deactivate Wheel
+        end
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_12_swap
+title 12. swap(int wheel1, int wheel2)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Circle
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: swap(wheel1, wheel2)
+activate SlotMachine
+
+opt valid positions
+    SlotMachine -> Wheel: wheels.get(wheel1 - 1).getCurrentSymbol()
+    activate Wheel
+    Wheel --> SlotMachine: symbol1
+    deactivate Wheel
+
+    SlotMachine -> Wheel: wheels.get(wheel2 - 1).getCurrentSymbol()
+    activate Wheel
+    Wheel --> SlotMachine: symbol2
+    deactivate Wheel
+
+    SlotMachine -> Wheel: wheels.get(wheel1 - 1).setCurrentSymbol(symbol2)
+    activate Wheel
+    Wheel -> Wheel: refresh()
+    activate Wheel
+    opt visible
+        Wheel -> Wheel: showSymbol(shownSymbol)
+        activate Wheel
+        Wheel --> Wheel: void
+        deactivate Wheel
+    end
+    Wheel --> Wheel: void
+    deactivate Wheel
+    Wheel --> SlotMachine: void
+    deactivate Wheel
+
+    SlotMachine -> Wheel: wheels.get(wheel2 - 1).setCurrentSymbol(symbol1)
+    activate Wheel
+    Wheel -> Wheel: refresh()
+    activate Wheel
+    opt visible
+        Wheel -> Wheel: showSymbol(shownSymbol)
+        activate Wheel
+        Wheel --> Wheel: void
+        deactivate Wheel
+    end
+    Wheel --> Wheel: void
+    deactivate Wheel
+    Wheel --> SlotMachine: void
+    deactivate Wheel
+
+    opt body.get(0).isVisible()
+        SlotMachine -> BodyMachine: body.get(0).makeVisible()
+        activate BodyMachine
+        BodyMachine -> Rectangle: body.makeVisible()
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> BodyMachine: void
+        deactivate Rectangle
+        BodyMachine --> SlotMachine: void
+        deactivate BodyMachine
+
+        loop i = 0 to wheels.size() - 1
+            SlotMachine -> Wheel: wheels.get(i).makeVisible()
+            activate Wheel
+            Wheel -> Circle: wheel.makeVisible()
+            activate Circle
+            Circle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Circle: void
+            Circle --> Wheel: void
+            deactivate Circle
+            Wheel -> Wheel: refresh()
+            activate Wheel
+            Wheel --> Wheel: void
+            deactivate Wheel
+            Wheel --> SlotMachine: void
+            deactivate Wheel
+        end
+    end
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_13_lock
+title 13. lock(int wheel)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant Wheel
+
+Usuario -> SlotMachine: lock(wheel)
+activate SlotMachine
+
+opt !wheels.isEmpty() && wheel >= 1 && wheel <= wheels.size()
+    SlotMachine -> Wheel: wheels.get(wheel - 1).setLock(true)
+    activate Wheel
+    Wheel --> SlotMachine: void
+    deactivate Wheel
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_14_unlock
+title 14. unlock(int wheel)
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant Wheel
+
+Usuario -> SlotMachine: unlock(wheel)
+activate SlotMachine
+
+opt !wheels.isEmpty() && wheel >= 1 && wheel <= wheels.size()
+    SlotMachine -> Wheel: wheels.get(wheel - 1).setLock(false)
+    activate Wheel
+    Wheel --> SlotMachine: void
+    deactivate Wheel
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_15_symbols
+title 15. symbols()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant Symbol
+
+Usuario -> SlotMachine: symbols()
+activate SlotMachine
+
+loop i = 0 to gallery.size() - 1
+    SlotMachine -> Symbol: gallery.get(i).getColor()
+    activate Symbol
+    Symbol --> SlotMachine: color
+    deactivate Symbol
+end
+
+SlotMachine --> Usuario: String[] (colors)
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_16_distinctSymbols
+title 16. distinctSymbols()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant Wheel
+participant Symbol
+
+Usuario -> SlotMachine: distinctSymbols()
+activate SlotMachine
+
+alt wheels.isEmpty()
+    SlotMachine --> Usuario: gallery.size()
+else !wheels.isEmpty()
+    loop i = 0 to wheels.size() - 1
+        SlotMachine -> Wheel: wheels.get(i).getShownSymbol()
+        activate Wheel
+        Wheel --> SlotMachine: symbol
+        deactivate Wheel
+
+        opt symbol != null
+            SlotMachine -> Symbol: symbol.getColor()
+            activate Symbol
+            Symbol --> SlotMachine: color
+            deactivate Symbol
+        end
+    end
+    SlotMachine --> Usuario: distinctCount (int)
+end
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_17_configuration
+title 17. configuration()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant Wheel
+participant Symbol
+
+Usuario -> SlotMachine: configuration()
+activate SlotMachine
+
+loop i = 0 to wheels.size() - 1
+    SlotMachine -> Wheel: wheels.get(i).getShownSymbol()
+    activate Wheel
+    Wheel --> SlotMachine: symbol
+    deactivate Wheel
+
+    alt symbol != null
+        SlotMachine -> Symbol: symbol.getColor()
+        activate Symbol
+        Symbol --> SlotMachine: color
+        deactivate Symbol
+    else symbol == null
+        ' result[i] = null
+    end
+end
+
+SlotMachine --> Usuario: String[] (configuration)
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_18_isJackpot
+title 18. isJackpot()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Symbol
+participant Rectangle
+participant Canvas
+
+Usuario -> SlotMachine: isJackpot()
+activate SlotMachine
+
+alt wheels.size() == 0
+    SlotMachine -> BodyMachine: body.get(0).normalColor()
+    activate BodyMachine
+    BodyMachine -> Rectangle: body.changeColor("blue")
+    activate Rectangle
+    Rectangle -> Canvas: canvas.draw(this, color, shape)
+    Canvas --> Rectangle: void
+    Rectangle --> BodyMachine: void
+    deactivate Rectangle
+    BodyMachine --> SlotMachine: void
+    deactivate BodyMachine
+    SlotMachine --> Usuario: false
+else
+    SlotMachine -> Wheel: wheels.get(0).getShownSymbol()
+    activate Wheel
+    Wheel --> SlotMachine: firstSymbol
+    deactivate Wheel
+
+    opt firstSymbol == null
+        SlotMachine -> BodyMachine: body.get(0).normalColor()
+        activate BodyMachine
+        BodyMachine -> Rectangle: body.changeColor("blue")
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> BodyMachine: void
+        deactivate Rectangle
+        BodyMachine --> SlotMachine: void
+        deactivate BodyMachine
+        SlotMachine --> Usuario: false
+    end
+
+    loop i = 1 to wheels.size() - 1
+        SlotMachine -> Wheel: wheels.get(i).getShownSymbol()
+        activate Wheel
+        Wheel --> SlotMachine: currentSymbol
+        deactivate Wheel
+
+        SlotMachine -> Symbol: currentSymbol.getColor()
+        activate Symbol
+        Symbol --> SlotMachine: currentColor
+        deactivate Symbol
+
+        SlotMachine -> Symbol: firstSymbol.getColor()
+        activate Symbol
+        Symbol --> SlotMachine: firstColor
+        deactivate Symbol
+
+        opt !currentColor.equals(firstColor)
+            SlotMachine -> BodyMachine: body.get(0).normalColor()
+            activate BodyMachine
+            BodyMachine -> Rectangle: body.changeColor("blue")
+            activate Rectangle
+            Rectangle -> Canvas: canvas.draw(this, color, shape)
+            Canvas --> Rectangle: void
+            Rectangle --> BodyMachine: void
+            deactivate Rectangle
+            BodyMachine --> SlotMachine: void
+            deactivate BodyMachine
+            SlotMachine --> Usuario: false
+        end
+    end
+
+    SlotMachine -> BodyMachine: body.get(0).changeColor()
+    activate BodyMachine
+    BodyMachine -> Rectangle: body.changeColor("yellow")
+    activate Rectangle
+    Rectangle -> Canvas: canvas.draw(this, color, shape)
+    Canvas --> Rectangle: void
+    Rectangle --> BodyMachine: void
+    deactivate Rectangle
+    BodyMachine --> SlotMachine: void
+    deactivate BodyMachine
+    SlotMachine --> Usuario: true
+end
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_19_makeVisible
+title 19. makeVisible()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Rectangle
+participant Circle
+participant Triangle
+participant Canvas
+
+Usuario -> SlotMachine: makeVisible()
+activate SlotMachine
+
+SlotMachine -> BodyMachine: body.get(0).makeVisible()
+activate BodyMachine
+BodyMachine -> Rectangle: body.makeVisible()
+activate Rectangle
+Rectangle -> Canvas: canvas.draw(this, color, shape)
+Canvas --> Rectangle: void
+Rectangle --> BodyMachine: void
+deactivate Rectangle
+BodyMachine --> SlotMachine: void
+deactivate BodyMachine
+
+loop i = 0 to wheels.size() - 1
+    SlotMachine -> Wheel: wheels.get(i).makeVisible()
+    activate Wheel
+    Wheel -> Circle: wheel.makeVisible()
+    activate Circle
+    Circle -> Canvas: canvas.setVisible(true)
+    Canvas --> Circle: void
+    Circle -> Canvas: canvas.draw(this, color, shape)
+    Canvas --> Circle: void
+    Circle --> Wheel: void
+    deactivate Circle
+    
+    Wheel -> Wheel: refresh()
+    activate Wheel
+    Wheel -> Wheel: showSymbol(shownSymbol)
+    activate Wheel
+    Wheel -> Wheel: hideSymbol()
+    activate Wheel
+    Wheel -> Circle: symbolCircle.makeInvisible()
+    activate Circle
+    Circle -> Canvas: canvas.erase(this)
+    Canvas --> Circle: void
+    Circle --> Wheel: void
+    deactivate Circle
+    Wheel -> Triangle: symbolTriangle.makeInvisible()
+    activate Triangle
+    Triangle -> Canvas: canvas.erase(this)
+    Canvas --> Triangle: void
+    Triangle --> Wheel: void
+    deactivate Triangle
+    Wheel -> Rectangle: symbolRectangle.makeInvisible()
+    activate Rectangle
+    Rectangle -> Canvas: canvas.erase(this)
+    Canvas --> Rectangle: void
+    Rectangle --> Wheel: void
+    deactivate Rectangle
+    Wheel --> Wheel: void
+    deactivate Wheel
+
+    alt shownSymbol.getType() == CIRCLE
+        Wheel -> Circle: symbolCircle.changeColor(color)
+        activate Circle
+        Circle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Circle: void
+        Circle --> Wheel: void
+        deactivate Circle
+        Wheel -> Circle: symbolCircle.makeVisible()
+        activate Circle
+        Circle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Circle: void
+        Circle --> Wheel: void
+        deactivate Circle
+    else shownSymbol.getType() == TRIANGLE
+        Wheel -> Triangle: symbolTriangle.changeColor(color)
+        activate Triangle
+        Triangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Triangle: void
+        Triangle --> Wheel: void
+        deactivate Triangle
+        Wheel -> Triangle: symbolTriangle.makeVisible()
+        activate Triangle
+        Triangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Triangle: void
+        Triangle --> Wheel: void
+        deactivate Triangle
+    else shownSymbol.getType() == RECTANGLE
+        Wheel -> Rectangle: symbolRectangle.changeColor(color)
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> Wheel: void
+        deactivate Rectangle
+        Wheel -> Rectangle: symbolRectangle.makeVisible()
+        activate Rectangle
+        Rectangle -> Canvas: canvas.draw(this, color, shape)
+        Canvas --> Rectangle: void
+        Rectangle --> Wheel: void
+        deactivate Rectangle
+    end
+    Wheel --> Wheel: void
+    deactivate Wheel
+    Wheel --> Wheel: void
+    deactivate Wheel
+    Wheel --> SlotMachine: void
+    deactivate Wheel
+end
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_20_makeInvisible
+title 20. makeInvisible()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+participant BodyMachine
+participant Wheel
+participant Rectangle
+participant Circle
+participant Triangle
+participant Canvas
+
+Usuario -> SlotMachine: makeInvisible()
+activate SlotMachine
+
+SlotMachine -> BodyMachine: body.get(0).makeInvisible()
+activate BodyMachine
+BodyMachine -> Rectangle: body.makeInvisible()
+activate Rectangle
+Rectangle -> Canvas: canvas.erase(this)
+Canvas --> Rectangle: void
+Rectangle --> BodyMachine: void
+deactivate Rectangle
+BodyMachine --> SlotMachine: void
+deactivate BodyMachine
+
+loop i = 0 to wheels.size() - 1
+    SlotMachine -> Wheel: wheels.get(i).makeInvisible()
+    activate Wheel
+    Wheel -> Circle: wheel.makeInvisible()
+    activate Circle
+    Circle -> Canvas: canvas.erase(this)
+    Canvas --> Circle: void
+    Circle --> Wheel: void
+    deactivate Circle
+
+    Wheel -> Wheel: hideSymbol()
+    activate Wheel
+    Wheel -> Circle: symbolCircle.makeInvisible()
+    activate Circle
+    Circle -> Canvas: canvas.erase(this)
+    Canvas --> Circle: void
+    Circle --> Wheel: void
+    deactivate Circle
+    Wheel -> Triangle: symbolTriangle.makeInvisible()
+    activate Triangle
+    Triangle -> Canvas: canvas.erase(this)
+    Canvas --> Triangle: void
+    Triangle --> Wheel: void
+    deactivate Triangle
+    Wheel -> Rectangle: symbolRectangle.makeInvisible()
+    activate Rectangle
+    Rectangle -> Canvas: canvas.erase(this)
+    Canvas --> Rectangle: void
+    Rectangle --> Wheel: void
+    deactivate Rectangle
+    Wheel --> Wheel: void
+    deactivate Wheel
+    Wheel --> SlotMachine: void
+    deactivate Wheel
+end
+
+SlotMachine -> Canvas: Canvas.getCanvas().setVisible(false)
+activate Canvas
+Canvas --> SlotMachine: void
+deactivate Canvas
+
+SlotMachine --> Usuario: void
+deactivate SlotMachine
+@enduml
+
+@startuml Seq_21_exit
+title 21. exit()
+skinparam shadowing false
+autonumber
+
+actor Usuario
+participant SlotMachine
+
+Usuario -> SlotMachine: exit()
+activate SlotMachine
+
+SlotMachine -> SlotMachine: makeInvisible()
+activate SlotMachine
+SlotMachine --> SlotMachine: void
+deactivate SlotMachine
+
+SlotMachine --> Usuario: void (System.exit(0))
+deactivate SlotMachine
+@enduml

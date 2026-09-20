@@ -1,0 +1,16 @@
+#BlueJ class context
+#Sun Sep 20 17:48:08 COT 2026
+comment0.target=BodyMachine
+comment0.text=\r\n Represents the main body of the slot machine.\r\n The body provides the visual frame that contains the wheels\r\n and changes its color when a jackpot occurs.\r\n\r\n @author Juan Espitia\r\n @author Cristian Salamanca\r\n @version 1.0\r\n
+comment1.target=BodyMachine()
+comment1.text=\r\n Creates a new slot machine body with its default size,\r\n position, and blue color.\r\n
+comment2.target=boolean isVisible()
+comment3.target=void makeVisible()
+comment3.text=\r\n Makes the slot machine body visible.\r\n
+comment4.target=void makeInvisible()
+comment4.text=\r\n Makes the slot machine body invisible.\r\n
+comment5.target=void changeColor()
+comment5.text=\r\n Changes the body color to yellow to indicate a jackpot.\r\n
+comment6.target=void normalColor()
+comment6.text=\r\n Restores the body to its normal blue color.\r\n
+numComments=7

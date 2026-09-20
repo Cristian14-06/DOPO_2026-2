@@ -1,0 +1,226 @@
+@startuml DiagramaDeClases_SlotMachine
+skinparam classAttributeIconSize 0
+skinparam monochrome false
+skinparam shadowing false
+skinparam handwritten false
+
+enum TypeSymbol {
+  TRIANGLE
+  CIRCLE
+  RECTANGLE
+}
+
+class Symbol {
+  - tipo : TypeSymbol
+  - color : String
+  + Symbol(tipo : TypeSymbol, color : String)
+  + getType() : TypeSymbol
+  + getColor() : String
+  + toString() : String
+}
+
+class Circle {
+  + {static} PI : double = 3.1416
+  - diameter : int
+  - xPosition : int
+  - yPosition : int
+  - color : String
+  - isVisible : boolean
+  + Circle()
+  + makeVisible() : void
+  + makeInvisible() : void
+  - draw() : void
+  - erase() : void
+  + moveRight() : void
+  + moveLeft() : void
+  + moveUp() : void
+  + moveDown() : void
+  + moveHorizontal(distance : int) : void
+  + moveVertical(distance : int) : void
+  + slowMoveHorizontal(distance : int) : void
+  + slowMoveVertical(distance : int) : void
+  + changeSize(newDiameter : int) : void
+  + changeColor(newColor : String) : void
+}
+
+class Rectangle {
+  + {static} EDGES : int = 4
+  - height : int
+  - width : int
+  - xPosition : int
+  - yPosition : int
+  - color : String
+  - isVisible : boolean
+  + Rectangle()
+  + makeVisible() : void
+  + makeInvisible() : void
+  - draw() : void
+  - erase() : void
+  + moveRight() : void
+  + moveLeft() : void
+  + moveUp() : void
+  + moveDown() : void
+  + moveHorizontal(distance : int) : void
+  + moveVertical(distance : int) : void
+  + slowMoveHorizontal(distance : int) : void
+  + slowMoveVertical(distance : int) : void
+  + changeSize(newHeight : int, newWidth : int) : void
+  + changeColor(newColor : String) : void
+}
+
+class Triangle {
+  + {static} EDGES : int = 3
+  - height : int
+  - width : int
+  - xPosition : int
+  - yPosition : int
+  - color : String
+  - isVisible : boolean
+  + Triangle()
+  + makeVisible() : void
+  + makeInvisible() : void
+  - draw() : void
+  - erase() : void
+  + moveRight() : void
+  + moveLeft() : void
+  + moveUp() : void
+  + moveDown() : void
+  + moveHorizontal(distance : int) : void
+  + moveVertical(distance : int) : void
+  + slowMoveHorizontal(distance : int) : void
+  + slowMoveVertical(distance : int) : void
+  + changeSize(newHeight : int, newWidth : int) : void
+  + changeColor(newColor : String) : void
+}
+
+class Canvas {
+  - {static} canvasSingleton : Canvas
+  - frame : JFrame
+  - canvas : CanvasPane
+  - graphic : Graphics2D
+  - backgroundColour : Color
+  - canvasImage : Image
+  - objects : List<Object>
+  - shapes : HashMap<Object, ShapeDescription>
+  - Canvas(title : String, width : int, height : int, bgColour : Color)
+  + {static} getCanvas() : Canvas
+  + setVisible(visible : boolean) : void
+  + draw(referenceObject : Object, color : String, shape : Shape) : void
+  + erase(referenceObject : Object) : void
+  + setForegroundColor(colorString : String) : void
+  + wait(milliseconds : int) : void
+  - redraw() : void
+}
+
+class BodyMachine {
+  - body : Rectangle
+  - visible : boolean
+  + BodyMachine()
+  + isVisible() : boolean
+  + makeVisible() : void
+  + makeInvisible() : void
+  + changeColor() : void
+  + normalColor() : void
+}
+
+class Wheel {
+  - symbols : ArrayList<Symbol>
+  - currentSymbol : int
+  - diameter : int
+  - xPosition : int
+  - yPosition : int
+  - visible : boolean
+  - wheel : Circle
+  - symbolCircle : Circle
+  - symbolTriangle : Triangle
+  - symbolRectangle : Rectangle
+  - circleX : int
+  - circleY : int
+  - triangleX : int
+  - triangleY : int
+  - rectangleX : int
+  - rectangleY : int
+  - lock : boolean
+  + Wheel()
+  + addSymbol(pos : int, figure : Symbol) : boolean
+  + setLock(status : boolean) : void
+  + getLock() : boolean
+  + delSymbol(index : int) : boolean
+  + delSymbol(figure : Symbol) : boolean
+  + getNumberSymbols() : int
+  + getSymbol(index : int) : Symbol
+  + getCurrentSymbol() : int
+  + setCurrentSymbol(value : int) : void
+  + isFull() : boolean
+  + getShownSymbol() : Symbol
+  + spin() : void
+  + spin(steps : int) : void
+  + spin(color : String) : void
+  + setPosition(x : int, y : int) : void
+  + makeVisible() : void
+  + makeInvisible() : void
+  - refresh() : void
+  - showSymbol(symbol : Symbol) : void
+  - hideSymbol() : void
+  + placeSymbol(symbol : Symbol) : void
+}
+
+class SlotMachine {
+  - wheels : ArrayList<Wheel>
+  - gallery : ArrayList<Symbol>
+  - body : ArrayList<BodyMachine>
+  + SlotMachine()
+  + SlotMachine(n : int)
+  + addWheel(pos : int) : void
+  + delWheel(pos : int) : void
+  + addSymbol(pos : int, color : String) : void
+  + delSymbol(color : String) : void
+  + placeSymbol(wheel : int, symbol : String) : void
+  + spin(wheel : int) : void
+  + spin() : void
+  + spin(wheel : int, steps : int) : void
+  + spin(setSymbols : String[]) : void
+  + swap(wheel1 : int, wheel2 : int) : void
+  + lock(wheel : int) : void
+  + unlock(wheel : int) : void
+  + symbols() : String[]
+  + distinctSymbols() : int
+  + configuration() : String[]
+  + isJackpot() : boolean
+  + makeVisible() : void
+  + makeInvisible() : void
+  + exit() : void
+}
+
+interface FindJackpot {
+  + solve_base(m : SlotMachine, n : int) : int[][]
+}
+
+class SlotMachineContest {
+  + solve(n : int) : int[][]
+  + simulate(n : int) : void
+}
+
+' Relaciones
+Symbol --> "1" TypeSymbol : tipo
+
+BodyMachine *--> "1" Rectangle : body
+Wheel *--> "1" Circle : wheel
+Wheel *--> "1" Circle : symbolCircle
+Wheel *--> "1" Triangle : symbolTriangle
+Wheel *--> "1" Rectangle : symbolRectangle
+Wheel o--> "*" Symbol : symbols
+
+SlotMachine *--> "*" BodyMachine : body
+SlotMachine *--> "*" Wheel : wheels
+SlotMachine o--> "*" Symbol : gallery
+
+Circle ..> Canvas : draws on
+Rectangle ..> Canvas : draws on
+Triangle ..> Canvas : draws on
+
+SlotMachineContest ..|> FindJackpot
+SlotMachineContest ..> SlotMachine : uses
+FindJackpot ..> SlotMachine : interacts with
+
+@enduml

@@ -1,0 +1,30 @@
+#BlueJ class context
+#Sun Sep 20 17:48:08 COT 2026
+comment0.target=SlotMachineContestCC2Test
+comment0.text=\r\n Unit tests for SlotMachineContest.\r\n\r\n @author Juan Espitia\r\n @author Cristian Salamanca\r\n
+comment1.target=void setUp()
+comment1.text=\r\n Creates a new SlotMachineContest instance before each test.\r\n
+comment10.target=SlotMachine crearConfiguracionSimetrica()
+comment10.text=\r\n Builds a 4-wheel machine with the symmetric configuration\r\n red, blue, blue, red, used as a stuck test case.\r\n
+comment11.target=void cadaAccionTieneRuedaValida()
+comment11.text=\r\n Verifies that every action returned by solve_base has the correct\r\n format and a valid wheel index.\r\n
+comment12.target=void simulateNoLanzaExcepcionesNiSeCuelga()
+comment12.text=\r\n Verifies that simulate does not throw exceptions or hang.\r\n
+comment2.target=void solveGanaConDosRuedas()
+comment2.text=\r\n Verifies that solve_base wins with two wheels.\r\n
+comment3.target=void solveGanaConTresRuedas()
+comment3.text=\r\n Verifies that solve_base wins with three wheels.\r\n
+comment4.target=void solveGanaConCuatroRuedas()
+comment4.text=\r\n Verifies that solve_base wins with four wheels.\r\n
+comment5.target=void solveGanaConCincoRuedas()
+comment5.text=\r\n Verifies that solve_base wins with five wheels.\r\n
+comment6.params=n
+comment6.target=void verificarSolveGana(int)
+comment6.text=\r\n Runs solve_base several times on machines with n wheels and\r\n verifies that it always reaches jackpot within the action budget.\r\n
+comment7.target=void solveNoHaceNadaSiYaEsJackpot()
+comment7.text=\r\n Verifies that solve_base performs no actions when the machine already shows a jackpot.\r\n
+comment8.target=void solveResuelveConfiguracionSimetricaAtascada()
+comment8.text=\r\n Verifies that solve_base resolves the symmetric stuck case (A,C,C,A).\r\n
+comment9.target=void accionesRetornadasSonReplicablesEnOtraMaquinaIdentica()
+comment9.text=\r\n Verifies that the actions returned by solve_base can be replayed\r\n on a second machine with the same initial configuration.\r\n
+numComments=13

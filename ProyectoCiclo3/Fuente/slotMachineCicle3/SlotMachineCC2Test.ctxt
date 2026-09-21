@@ -1,0 +1,9 @@
+#BlueJ class context
+#Sun Sep 20 17:48:08 COT 2026
+comment0.target=SlotMachineCC2Test
+comment1.target=void addSymbolEsBaShouldAddSymbol()
+comment2.target=void addSymbolEsBaShouldNotAddRepeatedSymbol()
+comment3.target=void delSymbolEsBaShouldRemoveSymbol()
+comment4.target=void swapEsBaShouldSwapingWheels()
+comment5.target=void spinConfigurationEsBaShouldBeTheSame()
+numComments=6

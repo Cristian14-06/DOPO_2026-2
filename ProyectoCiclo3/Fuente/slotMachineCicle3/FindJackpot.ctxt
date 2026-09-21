@@ -1,0 +1,11 @@
+#BlueJ class context
+#Sun Sep 20 17:48:08 COT 2026
+comment0.target=FindJackpot
+comment0.text=\r\n Interface that provides a shared algorithm to reach the jackpot on a\r\n SlotMachine, using only spin(wheel, steps) and distinctSymbols() as\r\n feedback. The algorithm maintains a set of candidate relative states\r\n consistent with the observed distinct-symbol counts and narrows it\r\n down, spin by spin, until a single winning configuration is found.\r\n\r\n @author Juan Espitia\r\n @author Cristian Salamanca\r\n
+comment1.params=m n
+comment1.target=int[][] solve_base(SlotMachine, int)
+comment1.text=\r\n Attempts to bring all wheels of the given machine to the same\r\n symbol, using only spin(wheel, steps) and distinctSymbols().\r\n Returns the list of actions actually performed on the machine,\r\n each represented as {wheel, steps}.\r\n\r\n @param m the machine to operate on\r\n @param n the number of wheels and symbols of the machine\r\n @return the sequence of actions performed to reach the jackpot\r\n
+comment2.params=arr
+comment2.target=int countDistinct(int[])
+comment2.text=\r\n Counts the number of distinct values in the given array.\r\n\r\n @param arr the array of relative wheel positions\r\n @return the number of distinct values found in arr\r\n
+numComments=3

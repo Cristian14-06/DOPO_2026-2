@@ -1,5 +1,0 @@
-#BlueJ class context
-#Sun Sep 20 17:48:08 COT 2026
-comment0.target=TypeSymbol
-comment0.text=\r\n Represents the different types of symbols that can appear\r\n in the slot machine.\r\n\r\n Each type corresponds to a different visual representation\r\n used by the wheels of the slot machine.\r\n\r\n @author Juan Espitia\r\n @author Cristian Salamanca\r\n @version 1.0\r\n
-numComments=1

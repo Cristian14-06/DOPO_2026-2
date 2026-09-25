@@ -17,9 +17,13 @@ public class EcoSafari{
     /**
      * Pupulates the EcoSafari with some entities
      */
-    public void someEntities(){   
-        Elephant dumbo = new Elephant(this, 5, 5);
-        Elephant babar = new Elephant(this, 10, 10);
+    public void someEntities(){ 
+
+        
+        Camaleon juan = new Camaleon(this, 2, 0);
+        Camaleon cristian = new Camaleon(this, 4, 0);
+
+ 
     }
     
     /**
@@ -86,22 +90,25 @@ public class EcoSafari{
     //First, all entities execute their tic() action
     //Then, all entities execute their tac() actions
     public void ticTac(){
-        for(int i = 0; i < cells.length; i++){
-            for(int j = 0; j < cells[i].length; j++){
-                if(cells[i][j] != null){
-                    cells[i][j].tic();
+        
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
+                Entity e = cells[r][c];
+                if (e != null) {
+                    e.tic();
                 }
             }
         }
         
-        for(int i = 0; i < cells.length; i++){
-            for(int j = 0; j < cells[i].length; j++){
-                if(cells[i][j] != null){
-                    cells[i][j].tac();
+        for (int r = 0; r < SIZE; r++) {
+            for (int c = 0; c < SIZE; c++) {
+                Entity e = cells[r][c];
+                if (e != null) {
+                    e.tac();
                 }
             }
         }
-        
+
         
     }
 

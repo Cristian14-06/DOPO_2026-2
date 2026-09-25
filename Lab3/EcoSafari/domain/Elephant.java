@@ -17,11 +17,6 @@ public class Elephant extends Organism implements Entity{
         return habitat;
     }
     
-    @Override
-    public final String type(){
-        return "Elephant";
-    }
-    
     public final Color getColor(){
         return(getEnergy()>=80? Color.DARK_GRAY: Color.LIGHT_GRAY);
     }
@@ -42,13 +37,5 @@ public class Elephant extends Organism implements Entity{
     
     public void tac(){
         hasActed=false;
-    }
-    
-    public boolean getHasActed(){
-        return hasActed;
-    }
-    
-    public void setHasActed(boolean value){
-        hasActed = value;
-    }
+    }    
 }

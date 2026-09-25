@@ -15,9 +15,7 @@ public interface Entity{
       return SQUARE;
    }
    
-   public default String type(){
-       return "Entity";
-   }
+   public abstract String type();
   
    public abstract Color getColor();
   

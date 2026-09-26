@@ -22,6 +22,14 @@ public abstract class Animal extends Organism implements Entity{
         return habitat;
     }
     
+    protected boolean getActed(){
+        return hasActed;
+    }
+    
+    protected void setActed(boolean state){
+        hasActed = state;
+    }
+    
     public abstract Color getColor();
     
     public abstract void tic();

@@ -22,9 +22,9 @@ public class Shrub extends Organism implements Entity{
         return(getEnergy()>60? Color.GREEN: Color.YELLOW);
     }
     
-    @Override
-    public final boolean isShrub(){
-        return true;
+    
+    public final String type(){
+        return "Shrub";
     }
 
     
@@ -66,40 +66,7 @@ public class Shrub extends Organism implements Entity{
             hasActed = true;
         }
     
-        int[] posicion_actual = habitat.find(this);
-    
-        if(posicion_actual != null){
-            fila = posicion_actual[0];
-            columna = posicion_actual[1];
-    
-            if(habitat.isInside(fila - 1, columna)){
-                Entity vecino1 = habitat.get(fila - 1, columna);
-                if(vecino1 != null && vecino1.isElephant()){
-                    disappear();
-                }
-            }
-    
-            if(habitat.isInside(fila + 1, columna)){
-                Entity vecino2 = habitat.get(fila + 1, columna);
-                if(vecino2 != null && vecino2.isElephant()){
-                    disappear();
-                }
-            }
-    
-            if(habitat.isInside(fila, columna - 1)){
-                Entity vecino3 = habitat.get(fila, columna - 1);
-                if(vecino3 != null && vecino3.isElephant()){
-                    disappear();
-                }
-            }
-    
-            if(habitat.isInside(fila, columna + 1)){
-                Entity vecino4 = habitat.get(fila, columna + 1);
-                if(vecino4 != null && vecino4.isElephant()){
-                    disappear();
-                }
-            }
-        }
+
     }
     
     public void tac(){

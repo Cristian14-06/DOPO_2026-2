@@ -9,32 +9,32 @@ import java.awt.Color;
  * @version (a version number or a date)
  */
 public class Lion extends Animal{
-    private EcoSafari habitat;
-    private boolean hasActed;
+
     
     public Lion(EcoSafari habitat, int row, int column){
-        this.habitat = habitat;
-        habitat.set((Entity)this, row, column);
-        hasActed = false;
+        super(habitat, row, column);
     }
     
-    public EcoSafari getHabitat(){
-        return habitat;
-    }
+    
+
     
     public final Color getColor(){
         return Color.ORANGE;
+    }
+    
+    public final String type(){
+        return "Lion";
     }
     
     public void tic(){
         moveAnimal(1);
         eat("Zebra", (float)0.25);
     
-        hasActed = true;
+        setActed(true);
 
     }
     
     public void tac(){
-        hasActed = false;
+        setActed(false);
     }
 }

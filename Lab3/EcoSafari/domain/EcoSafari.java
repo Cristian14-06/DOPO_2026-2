@@ -20,8 +20,8 @@ public class EcoSafari{
     public void someEntities(){ 
 
         
-        Camaleon juan = new Camaleon(this, 2, 0);
-        Camaleon cristian = new Camaleon(this, 4, 0);
+        Chameleon juan = new Chameleon(this, 2, 0);
+        Chameleon cristian = new Chameleon(this, 4, 0);
 
  
     }

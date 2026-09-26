@@ -3,39 +3,44 @@ import java.awt.Color;
 
 
 //Include the documentation
-public class Elephant extends Organism implements Entity{
-    private final EcoSafari habitat;
-    private boolean hasActed;
+public class Elephant extends Animal{
+
     
     public Elephant(EcoSafari habitat,int row, int column){
-        this.habitat=habitat;
-        habitat.set((Entity)this, row, column);  
-        hasActed=false;
+        super(habitat, row, column);
     }
 
-    public EcoSafari getHabitat(){
-        return habitat;
-    }
+
     
     public final Color getColor(){
         return(getEnergy()>=80? Color.DARK_GRAY: Color.LIGHT_GRAY);
+    }
+    
+    public final String type(){
+        return "Elephant";
     }
 
     public final int shape(){
         return Entity.ROUND;
     }
 
-    public void tic(){
-        if ((! hasActed) && (move(1, 1))) {
+    @Override
+    protected void moveAnimal(int steps){
+        if(!getActed() && move(steps, steps)){
             changeEnergy(-10);
-            if (getEnergy()==0){
+            if(getEnergy() == 0){
                 disappear();
             }
         }
-        hasActed=true;
+    }
+    
+    public void tic(){
+        moveAnimal(1);
+        eat("Shrub",  (float)0.10);
+        setActed(true);
     }
     
     public void tac(){
-        hasActed=false;
+        setActed(false);
     }    
 }

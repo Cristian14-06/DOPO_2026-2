@@ -5,10 +5,20 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
+/**
+ * Unit tests for Storm class.
+ *
+ * @author Juan David Espitia, Cristian Salamanca
+ * @version 1.0
+ */
 public class StormTest {
 
+    /* Habitat fixture for tests */
     private EcoSafari safari;
 
+    /**
+     * Initializes a clean habitat before each test.
+     */
     @Before
     public void setUp() {
         safari = new EcoSafari();
@@ -19,8 +29,11 @@ public class StormTest {
         }
     }
 
+    /**
+     * Verifies northeast movement with toroidal wrap-around at grid edges.
+     */
     @Test
-    public void deberiaMoverseDiagonalNoresteConWrapAround() {
+    public void shouldMoveDiagonalNortheastWithWrapAround() {
         Storm thor = new Storm(safari, 0, 0);
 
         safari.ticTac();
@@ -31,17 +44,20 @@ public class StormTest {
         assertEquals(1, pos[1]);
     }
 
+    /**
+     * Verifies that the storm destroys any entity occupying its center cell.
+     */
     @Test
-    public void deberiaDestruirElefanteEnSuCentro() {
+    public void shouldDestroyElephantAtItsCenter() {
         Storm thor = new Storm(safari, 5, 5);
-        Elephant elefante = new Elephant(safari, 3, 5);
+        Elephant elephant = new Elephant(safari, 3, 5);
 
         safari.ticTac();
 
-        assertNull(safari.find(elefante));
-        int[] posTormenta = safari.find(thor);
-        assertNotNull(posTormenta);
-        assertEquals(4, posTormenta[0]);
-        assertEquals(6, posTormenta[1]);
+        assertNull(safari.find(elephant));
+        int[] posStorm = safari.find(thor);
+        assertNotNull(posStorm);
+        assertEquals(4, posStorm[0]);
+        assertEquals(6, posStorm[1]);
     }
 }

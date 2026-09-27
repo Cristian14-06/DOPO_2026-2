@@ -14,22 +14,11 @@ import java.awt.*;
  */
 public class EcoSafariGUI extends JFrame {
 
-    /** Pixel side length for each cell in the grid */
     public static final int SIDE = 20;
-
-    /** Total grid dimension size */
     public final int SIZE;
-
-    /* Button triggering the simulation tic-tac step */
     private JButton ticTacButton;
-
-    /* Panel container for controls */
     private JPanel controlPanel;
-
-    /* Canvas panel displaying the EcoSafari grid */
     private PhotoEcoSafari photo;
-
-    /* The EcoSafari domain model instance */
     private EcoSafari theEcoSafari;
 
     /*
@@ -97,7 +86,6 @@ public class EcoSafariGUI extends JFrame {
      */
     class PhotoEcoSafari extends JPanel {
 
-        /* Reference to the parent GUI frame */
         private EcoSafariGUI gui;
 
         /**

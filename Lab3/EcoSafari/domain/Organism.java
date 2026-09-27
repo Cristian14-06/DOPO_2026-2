@@ -8,7 +8,6 @@ package domain;
  */
 public abstract class Organism {
 
-    /* Energy level of the organism, maintained between 0 and 100 */
     private int energy;
 
     /**

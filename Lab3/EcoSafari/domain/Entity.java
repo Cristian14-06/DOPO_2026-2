@@ -10,10 +10,7 @@ import java.awt.Color;
  */
 public interface Entity {
 
-    /** Square shape representation constant */
     public static final int SQUARE = 2;
-
-    /** Round shape representation constant */
     public static final int ROUND = 1;
 
     /**

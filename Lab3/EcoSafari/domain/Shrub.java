@@ -13,10 +13,7 @@ import java.awt.Color;
  */
 public class Shrub extends Organism implements Entity {
 
-    /* Habitat where the shrub is located */
     private final EcoSafari habitat;
-
-    /* Flag indicating if the shrub has acted in the current cycle */
     private boolean hasActed;
 
     /**

@@ -14,7 +14,6 @@ import static org.junit.Assert.*;
  */
 public class ChameleonTest {
 
-    /* Habitat fixture for tests */
     private EcoSafari safari;
 
     /**

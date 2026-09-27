@@ -12,10 +12,7 @@ import java.util.ArrayList;
  */
 public class EcoSafari {
 
-    /* Fixed grid size for the EcoSafari */
     private static final int SIZE = 25;
-
-    /* Grid storing entities placed in the safari */
     private Entity[][] cells;
 
     /**
@@ -53,6 +50,11 @@ public class EcoSafari {
         new Grass(this, 21, 5);
         new Zebra(this, 20, 2);
         new Lion(this, 22, 2);
+
+        new Grass(this, 22, 1);
+        new Grass(this, 22, 3);
+        new Zebra(this, 24, 1);
+        new Zebra(this, 24, 3);
     }
 
     /**

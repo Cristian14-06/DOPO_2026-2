@@ -11,10 +11,7 @@ import java.awt.Color;
  */
 public class Grass extends Organism implements Entity {
 
-    /* Habitat where the grass grows */
     private EcoSafari habitat;
-
-    /* Flag indicating if the grass has acted in the current cycle */
     private boolean hasActed;
 
     /**

@@ -11,7 +11,6 @@ import java.awt.Color;
  */
 public class Lion extends Animal {
 
-    /* Ground tile occupied by the lion */
     private Ground ground;
 
     /**

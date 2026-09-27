@@ -13,7 +13,6 @@ import static org.junit.Assert.*;
  */
 public class PrairieTest {
 
-    /* Habitat fixture for tests */
     private EcoSafari safari;
 
     /**
@@ -38,7 +37,7 @@ public class PrairieTest {
         new Ground(safari, 9, 10);
         Lion lion = new Lion(safari, 10, 10);
 
-        safari.ticTac();
+        lion.tic();
 
         assertEquals(lion, safari.get(9, 10));
         assertNotNull(safari.get(10, 10));
@@ -55,7 +54,7 @@ public class PrairieTest {
         new Ground(safari, 13, 10);
         Zebra zebra = new Zebra(safari, 15, 10);
 
-        safari.ticTac();
+        zebra.tic();
 
         assertEquals(zebra, safari.get(13, 10));
         assertNotNull(safari.get(15, 10));
@@ -88,7 +87,7 @@ public class PrairieTest {
         Lion lion = new Lion(safari, 10, 10);
         lion.changeEnergy(-90);
 
-        safari.ticTac();
+        lion.tic();
 
         assertNull("Dead lion should not be found in habitat", safari.find(lion));
         Entity cellAfterDeath = safari.get(9, 10);

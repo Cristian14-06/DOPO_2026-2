@@ -13,7 +13,6 @@ import static org.junit.Assert.*;
  */
 public class SavannaElephantTest {
 
-    /* Habitat fixture for tests */
     private EcoSafari safari;
 
     /**

@@ -12,10 +12,7 @@ import java.awt.Color;
  */
 public class Ground implements Entity {
 
-    /* Habitat where the ground tile exists */
     private EcoSafari habitat;
-
-    /* Flag indicating if the ground has acted in the current cycle */
     private boolean hasActed;
 
     /**
@@ -79,7 +76,7 @@ public class Ground implements Entity {
      * @return true if reproduction occurred, false otherwise
      */
     private boolean newAnimal() {
-        int[][] neighbors = new int[][]{{1, 1}, {1, 0}, {0, 1}};
+        int[][] neighbors = new int[][]{{1, 1}, {1, 0}, {0, 1}, {1, -1}};
         int[] actualPosition = habitat.find((Entity) this);
         if (actualPosition == null) {
             return false;

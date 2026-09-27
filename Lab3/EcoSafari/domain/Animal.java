@@ -11,10 +11,7 @@ import java.util.ArrayList;
  */
 public abstract class Animal extends Organism implements Entity {
 
-    /* Habitat where the animal lives */
     private EcoSafari habitat;
-
-    /* Flag indicating if the animal has already acted in the current cycle */
     private boolean hasActed;
 
     /**

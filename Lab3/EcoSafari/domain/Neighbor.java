@@ -9,13 +9,8 @@ package domain;
  */
 public class Neighbor {
 
-    /* Entity located at the neighboring cell */
     private Entity entity;
-
-    /* Row index of the neighbor */
     private int row;
-
-    /* Column index of the neighbor */
     private int column;
 
     /**

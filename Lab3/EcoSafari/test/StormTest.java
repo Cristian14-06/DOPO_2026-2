@@ -13,7 +13,6 @@ import static org.junit.Assert.*;
  */
 public class StormTest {
 
-    /* Habitat fixture for tests */
     private EcoSafari safari;
 
     /**
@@ -59,5 +58,24 @@ public class StormTest {
         assertNotNull(posStorm);
         assertEquals(4, posStorm[0]);
         assertEquals(6, posStorm[1]);
+    }
+
+    /**
+     * Verifies that when a storm passes over a prairie cell, it restores Ground upon leaving.
+     */
+    @Test
+    public void shouldRestoreGroundWhenLeavingPrairieTerrain() {
+        new Ground(safari, 9, 11);
+        new Ground(safari, 8, 12);
+        Storm storm = new Storm(safari, 10, 10);
+
+        safari.ticTac();
+        assertEquals(storm, safari.get(9, 11));
+
+        safari.ticTac();
+        assertEquals(storm, safari.get(8, 12));
+        Entity vacatedCell = safari.get(9, 11);
+        assertNotNull("Prairie cell vacated by storm must not be null", vacatedCell);
+        assertEquals("Ground", vacatedCell.type());
     }
 }

@@ -14,11 +14,6 @@ import java.util.*;
  * @version: 1.6 (shapes)
  */
 public class Canvas{
-    // Note: The implementation of this class (specifically the handling of
-    // shape identity and colors) is slightly more complex than necessary. This
-    // is done on purpose to keep the interface and instance fields of the
-    // shape objects in this project clean and simple for educational purposes.
-
     private static Canvas canvasSingleton;
 
     /**
@@ -32,8 +27,6 @@ public class Canvas{
         canvasSingleton.setVisible(true);
         return canvasSingleton;
     }
-
-    //  ----- instance part -----
 
     private JFrame frame;
     private CanvasPane canvas;
@@ -71,8 +64,6 @@ public class Canvas{
      */
     public void setVisible(boolean visible){
         if(graphic == null) {
-            // first time: instantiate the offscreen image and fill it with
-            // the background colour
             Dimension size = canvas.getSize();
             canvasImage = canvas.createImage(size.width, size.height);
             graphic = (Graphics2D)canvasImage.getGraphics();
@@ -89,20 +80,25 @@ public class Canvas{
      * @param  color            the color of the shape
      * @param  shape            the shape object to be drawn on the canvas
      */
-     // Note: this is a slightly backwards way of maintaining the shape
-     // objects. It is carefully designed to keep the visible shape interfaces
-     // in this project clean and simple for educational purposes.
     public void draw(Object referenceObject, String color, Shape shape){
-        objects.remove(referenceObject);   // just in case it was already there
-        objects.add(referenceObject);      // add at the end
+        objects.remove(referenceObject);
+        objects.add(referenceObject);
         shapes.put(referenceObject, new ShapeDescription(shape, color, true));
         redraw();
     }
     
     public void draw2(Object referenceObject, String color, Shape shape){
-        objects.remove(referenceObject);   // just in case it was already there
-        objects.add(referenceObject);      // add at the end
-        shapes.put(referenceObject, new ShapeDescription(shape, color, false));
+        ShapeDescription existing = shapes.get(referenceObject);
+        if (existing != null) {
+            existing.setOutlineColor(color);
+            existing.setShape(shape);
+        } else {
+            objects.remove(referenceObject);
+            objects.add(referenceObject);
+            ShapeDescription desc = new ShapeDescription(shape, color, false);
+            desc.setOutlineColor(color);
+            shapes.put(referenceObject, desc);
+        }
         redraw();
     }
  
@@ -111,7 +107,7 @@ public class Canvas{
      * @param  referenceObject  the shape object to be erased 
      */
     public void erase(Object referenceObject){
-        objects.remove(referenceObject);   // just in case it was already there
+        objects.remove(referenceObject);
         shapes.remove(referenceObject);
         redraw();
     }
@@ -171,7 +167,6 @@ public class Canvas{
         try{
             Thread.sleep(milliseconds);
         } catch (Exception e){
-            // ignoring exception at the moment
         }
     }
 
@@ -216,6 +211,7 @@ public class Canvas{
         private Shape shape;
         private String colorString;
         private boolean filled;
+        private String outlineColor;
 
         public ShapeDescription(Shape shape, String color){
             this(shape, color, true);
@@ -225,14 +221,32 @@ public class Canvas{
             this.shape = shape;
             this.colorString = color;
             this.filled = filled;
+            this.outlineColor = null;
+        }
+
+        public void setOutlineColor(String outlineColor){
+            this.outlineColor = outlineColor;
+        }
+
+        public void setShape(Shape shape){
+            this.shape = shape;
         }
 
         public void draw(Graphics2D graphic){
-            setForegroundColor(colorString);
             if(filled){
+                setForegroundColor(colorString);
                 graphic.fill(shape);
             }
-            graphic.draw(shape);
+            if(outlineColor != null){
+                setForegroundColor(outlineColor);
+                graphic.draw(shape);
+            } else if(!filled){
+                setForegroundColor(colorString);
+                graphic.draw(shape);
+            } else {
+                setForegroundColor(colorString);
+                graphic.draw(shape);
+            }
         }
     }
 

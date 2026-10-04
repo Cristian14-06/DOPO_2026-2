@@ -26,9 +26,6 @@ public class Wheel {
         currentSymbol = 0;
 
         diameter = 45;
-        // The base shapes start at (20, 15); use that as the wheel's
-        // initial logical origin so setPosition(x, y) means the wheel's
-        // actual top-left corner on the canvas.
         xPosition = 20;
         yPosition = 15;
         visible = false;
@@ -215,8 +212,8 @@ public class Wheel {
     }
     
     private void decrement(){
-        for(Symbol symbol : symbols){
-            symbol.decrement();
+        if (!symbols.isEmpty()) {
+            symbols.get(getCurrentSymbol()).decrement();
         }
     }
     
@@ -280,6 +277,7 @@ public class Wheel {
             if (candidate.getType().equalsIgnoreCase(symbol.getType())
                     && candidate.getColor().equalsIgnoreCase(symbol.getColor())) {
                 currentSymbol = i;
+                shy();
                 refresh();
                 return;
             }

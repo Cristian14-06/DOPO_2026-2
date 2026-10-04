@@ -10,7 +10,6 @@ import java.util.HashMap;
  */
 public class SlotMachine {
     
-    
     private ArrayList<Wheel> wheels;
     private ArrayList<Symbol> gallery;
     private ArrayList<BodyMachine> body;
@@ -28,7 +27,12 @@ public class SlotMachine {
         body.add(principal_body);
     }
     
-    public SlotMachine(int n){
+    /**
+     * Creates a new slot machine with n wheels and n symbols, initialized randomly.
+     *
+     * @param n the number of wheels and symbols (between 1 and 5)
+     */
+     public SlotMachine(int n){
         wheels = new ArrayList<>();
         gallery = new ArrayList<>();
         body = new ArrayList<>();
@@ -40,11 +44,11 @@ public class SlotMachine {
             return;
         }
 
-        String[] colors= {"red", "blue", "yellow", "magenta", "green"};
+        String[] colors = {"red", "blue", "yellow", "green", "magenta", "orange", "cyan"};
 
         for(int i = 0; i < n; i++){
             addWheel(i+1);
-            addSymbol(i+1, colors[i]);
+            addSymbol(i+1, colors[i % colors.length]);
         }
         spin();
     }
@@ -60,6 +64,12 @@ public class SlotMachine {
         addWheel("normal", pos);
     }
     
+    /**
+     * Adds a new wheel of a specific type at the specified position.
+     *
+     * @param type the type of wheel ("normal", "lefty", "rebel", "inverted")
+     * @param pos the position where the new wheel is inserted
+     */
     public void addWheel(String type, int pos) {
         int max_wheel = 5;
         
@@ -78,11 +88,7 @@ public class SlotMachine {
         
         Wheel wheel = new Wheel();
         if (type.equalsIgnoreCase("lefty")) {
-            Lefty lefty = new Lefty();
-            if (pos > 1 && (pos - 2) < wheels.size()) {
-                lefty.setLeft(wheels.get(pos - 2));
-            }
-            wheel = lefty;
+            wheel = new Lefty();
         } else if (type.equalsIgnoreCase("rebel")) {
             wheel = new Rebel();
         } else if (type.equalsIgnoreCase("inverted")) {
@@ -90,12 +96,14 @@ public class SlotMachine {
         }
         wheels.add(pos - 1, wheel);
 
-        if (pos < wheels.size() && wheels.get(pos).type().equals("lefty")) {
-            ((Lefty) wheels.get(pos)).setLeft(wheel);
+        for (int i = 0; i < wheels.size(); i++) {
+            if (wheels.get(i).type().equalsIgnoreCase("lefty")) {
+                ((Lefty) wheels.get(i)).setLeft(i > 0 ? wheels.get(i - 1) : null);
+            }
         }
         
-        int body_x = -20;
-        int body_width = 270;
+        int body_x = 20;
+        int body_width = 250;
         int diameter = 45;
         int spacing = 5;
 
@@ -105,7 +113,7 @@ public class SlotMachine {
 
         for (int i = 0; i < wheels.size(); i++) {
             int x = body_x + margin + i * (diameter + spacing);
-            int y = 65 + (130 - diameter) / 2;
+            int y = 80 + (130 - diameter) / 2;
             wheels.get(i).setPosition(x, y);
         }
 
@@ -150,10 +158,16 @@ public class SlotMachine {
 
         wheels.get(pos - 1).makeInvisible();
         wheels.remove(pos - 1);
+
+        for (int i = 0; i < wheels.size(); i++) {
+            if (wheels.get(i).type().equalsIgnoreCase("lefty")) {
+                ((Lefty) wheels.get(i)).setLeft(i > 0 ? wheels.get(i - 1) : null);
+            }
+        }
         
                 
-        int body_x = -20;
-        int body_width = 270;
+        int body_x = 20;
+        int body_width = 250;
         int diameter = 45;
         int spacing = 5;
 
@@ -163,7 +177,7 @@ public class SlotMachine {
 
         for (int i = 0; i < wheels.size(); i++) {
             int x = body_x + margin + i * (diameter + spacing);
-            int y = 65 + (130 - diameter) / 2;
+            int y = 80 + (130 - diameter) / 2;
             wheels.get(i).setPosition(x, y);
         }
 
@@ -188,6 +202,15 @@ public class SlotMachine {
         addSymbol("normal", pos, color);
     }
     
+    /**
+     * Adds a new symbol of a specific type to the machine at the specified position.
+     * Each symbol must have a unique color.
+     * A maximum of seven different symbols is allowed.
+     *
+     * @param type the type of symbol ("normal", "ephemeral", "shy")
+     * @param pos the position where the symbol is inserted
+     * @param color the color assigned to the symbol
+     */
     public void addSymbol(String type, int pos, String color) {
         int max_symbol = 7;
 
@@ -464,9 +487,15 @@ public class SlotMachine {
         
         wheels.get(wheel1-1).setCurrentSymbol(symbol2);
         wheels.get(wheel2-1).setCurrentSymbol(symbol1);
+
+        for (int i = 0; i < wheels.size(); i++) {
+            if (wheels.get(i).type().equalsIgnoreCase("lefty")) {
+                ((Lefty) wheels.get(i)).setLeft(i > 0 ? wheels.get(i - 1) : null);
+            }
+        }
         
-        int body_x = -20;
-        int body_width = 270;
+        int body_x = 20;
+        int body_width = 250;
         int diameter = 45;
         int spacing = 5;
 
@@ -476,7 +505,7 @@ public class SlotMachine {
 
         for (int i = 0; i < wheels.size(); i++) {
             int x = body_x + margin + i * (diameter + spacing);
-            int y = 65 + (130 - diameter) / 2;
+            int y = 80 + (130 - diameter) / 2;
             wheels.get(i).setPosition(x, y);
         }
         

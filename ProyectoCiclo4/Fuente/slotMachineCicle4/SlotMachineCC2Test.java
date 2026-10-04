@@ -1,61 +1,54 @@
-import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
-public class SlotMachineCC2Test{
+/**
+ * Shared unit tests for Ciclo 2.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ * @version 2.0
+ */
+public class SlotMachineCC2Test {
 
-     
-   
-    // PRUEBAS DE ADICIÓN Y CONTEO DE SÍMBOLOS
-  
+    /** Tests for adding and counting symbols */
+
     @Test
     public void addSymbolEsBaShouldAddSymbol() {
         SlotMachine machine = new SlotMachine();
-    
         assertEquals(0, machine.distinctSymbols());
-        
         machine.addSymbol(1, "red");
-        
         assertEquals(1, machine.distinctSymbols());
     }
 
-    // PRUEBAS DE ELIMINACIÓN DE SÍMBOLOS
-  
+    /** Tests for symbol removal and duplicate handling */
+
     @Test
     public void addSymbolEsBaShouldNotAddRepeatedSymbol() {
         SlotMachine machine = new SlotMachine();
-
         machine.addSymbol(1, "red");
         machine.addSymbol(2, "red");
-
         assertEquals(1, machine.distinctSymbols());
     }
-    
+
     @Test
     public void delSymbolEsBaShouldRemoveSymbol() {
         SlotMachine machine = new SlotMachine();
-
         machine.addSymbol(1, "red");
         machine.addSymbol(2, "blue");
-
         assertEquals(2, machine.distinctSymbols());
-
         machine.delSymbol("red");
-
         assertEquals(1, machine.distinctSymbols());
     }
-   
-    // PRUEBAS DE INTERCAMBIO DE RUEDAS (SWAP)
-    
-    @Test
-    public void swapEsBaShouldSwapingWheels(){
-        SlotMachine machine = new SlotMachine();
 
+    /** Tests for wheel swapping */
+
+    @Test
+    public void swapEsBaShouldSwapingWheels() {
+        SlotMachine machine = new SlotMachine();
         machine.addWheel(1);
         machine.addWheel(2);
-
         machine.addSymbol(1, "red");
         machine.addSymbol(2, "blue");
-
         machine.placeSymbol(1, "red");
         machine.placeSymbol(2, "blue");
 
@@ -69,20 +62,18 @@ public class SlotMachineCC2Test{
         assertArrayEquals(
             new String[]{"blue", "red"},
             machine.configuration()
-        );      
+        );
     }
- 
-    // PRUEBAS DE GIRO DE CONFIGURACIÓN (SPIN)
-    
+
+    /** Tests for spinning to a configuration */
+
     @Test
     public void spinConfigurationEsBaShouldBeTheSame() {
         SlotMachine machine = new SlotMachine();
-
         machine.addWheel(1);
         machine.addWheel(2);
         machine.addWheel(3);
 
-        
         machine.addSymbol(1, "red");
         machine.addSymbol(2, "green");
         machine.addSymbol(3, "blue");
@@ -92,6 +83,6 @@ public class SlotMachineCC2Test{
         assertArrayEquals(
             new String[]{"green", "red", "blue"},
             machine.configuration()
-        );        
+        );
     }
-   }
+}

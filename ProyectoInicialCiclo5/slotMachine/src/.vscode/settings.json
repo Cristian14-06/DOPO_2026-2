@@ -1,0 +1,16 @@
+{
+    "java.jdt.ls.java.home": "C:\\Program Files\\BlueJ\\jdk",
+    "java.configuration.runtimes": [
+        {
+            "name": "JavaSE-21",
+            "path": "C:\\Program Files\\BlueJ\\jdk",
+            "default": true
+        }
+    ],
+    "java.project.sourcePaths": ["."],
+    "java.project.outputPath": "../bin",
+    "java.project.referencedLibraries": [
+        "lib/**/*.jar",
+        "../lib/**/*.jar"
+    ]
+}

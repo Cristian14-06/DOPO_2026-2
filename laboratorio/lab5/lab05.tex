@@ -1,0 +1,675 @@
+\documentclass[12pt,letterpaper]{article}
+
+% ---------------------------------------------------------------
+% Paquetes
+% ---------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-tabla]{babel}
+\usepackage{newtxtext,newtxmath}      % Times New Roman
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{setspace}
+\usepackage[hidelinks]{hyperref}
+
+\graphicspath{{imagenes/}}
+\setstretch{1.15}
+\setlength{\parskip}{0.5em}
+\setlength{\parindent}{0pt}
+
+% ---------------------------------------------------------------
+% Código
+% ---------------------------------------------------------------
+\lstset{
+  language=Java,
+  basicstyle=\ttfamily\footnotesize,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape\color{gray},
+  frame=single,
+  breaklines=true,
+  columns=fullflexible,
+  showstringspaces=false,
+  inputencoding=utf8,
+  extendedchars=true,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1 {¿}{{?`}}1
+}
+
+% ---------------------------------------------------------------
+% Imágenes: si el archivo aún no está en imagenes/, se muestra un
+% recuadro de "imagen pendiente" y el documento compila igual.
+% Uso: \imagen{nombre_archivo.png}{Descripción}
+% ---------------------------------------------------------------
+\newcommand{\imagen}[3][0.75]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{imagenes/#2}{%
+      \includegraphics[width=#1\textwidth]{#2}%
+    }{%
+      \fbox{\parbox[c][4cm][c]{0.7\textwidth}{\centering\color{red}
+        \textbf{Imagen pendiente}\\[0.3em]\texttt{imagenes/\detokenize{#2}}}}%
+    }
+    \caption{#3}
+  \end{figure}
+}
+
+% Texto por completar (en rojo, fácil de encontrar)
+\newcommand{\pendiente}[1]{\textcolor{red}{\textbf{[Pendiente:} #1\textbf{]}}}
+
+% Enunciado del punto
+\newcommand{\enunciado}[1]{\textit{#1}\par}
+
+\begin{document}
+
+% ---------------------------------------------------------------
+% Portada
+% ---------------------------------------------------------------
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\Large\textbf{Escuela Colombiana de Ingeniería Julio Garavito}}\\[0.5cm]
+  {\large Desarrollo Orientado por Objetos (DOPO) 501 --- 2026-2}\\[3cm]
+  {\Huge\textbf{Laboratorio 5}}\\[0.5cm]
+  {\Large Interfaz gráfica: HungrySnake}\\[3cm]
+  {\large\textbf{Hecho por:}}\\[0.3cm]
+  {\large Juan David Espitia\\ Cristian Camilo Salamanca}\\[1.5cm]
+  {\large\textbf{Profesora:}}\\[0.3cm]
+  {\large María Irma Díaz Rozo}\\
+  \vfill
+  {\large Bogotá D.C., 2026}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ===============================================================
+\section{Parte I. Maqueta}
+% ===============================================================
+
+\subsection{Directorios}
+
+El objetivo de este punto es preparar los directorios para el juego HungrySnake.
+
+\begin{enumerate}
+  \item \enunciado{Preparen un directorio llamado HungrySnake con los directorios src, bin y lib; y los subdirectorios para presentación, dominio y pruebas de unidad. Capturen una pantalla con la estructura.}
+
+  Se creó el directorio \texttt{HungrySnake} con las carpetas \texttt{src}, \texttt{bin} y \texttt{lib}. Dentro de \texttt{src} están los subdirectorios \texttt{domain} (capa de dominio), \texttt{presentation} (capa de presentación) y \texttt{test} (pruebas de unidad).
+
+  \imagen[0.6]{parte1_directorios.png}{Estructura de directorios del proyecto}
+
+  Todo el trabajo se compila y ejecuta desde consola, ubicados en la carpeta \texttt{HungrySnake}:
+
+\begin{lstlisting}[language=bash]
+javac -d bin src/domain/*.java src/presentation/*.java
+java -cp bin presentation.HungrySnakeGUI
+\end{lstlisting}
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\subsection{Ciclo 0: Ventana vacía -- Salir}
+
+El objetivo es implementar la ventana principal de HungrySnake con un final adecuado desde el icono de cerrar. Utilizar el esquema de prepareView-prepareController.
+
+\begin{enumerate}
+  \item \enunciado{Construyan el primer esquema de la ventana de HungrySnake únicamente con el título ``HungrySnake''. Para esto creen la clase HungrySnakeGUI como un JFrame con su creador (que sólo coloca el título) y el método main que crea un objeto HungrySnakeGUI y lo hace visible. Ejecútenlo. Capturen la pantalla.}
+
+  Se creó la clase \texttt{HungrySnakeGUI} como subclase de \texttt{JFrame}. Su constructor asigna el título y el método \texttt{main} crea la ventana y la hace visible con \texttt{setVisible(true)}.
+
+  \imagen[0.8]{ciclo0_codigo_consola.png}{Código inicial y ejecución desde consola}
+  \imagen[0.6]{ciclo0_ventana_vacia.png}{Ventana vacía con el título HungrySnake}
+
+  \item \enunciado{Modifiquen el tamaño de la ventana para que ocupe un cuarto de la pantalla y ubíquenla en el centro. Para eso inicien la codificación del método prepareView. Capturen esa pantalla.}
+
+  En \texttt{prepareView} se obtiene el tamaño de la pantalla y se asigna a la ventana la mitad del ancho y la mitad del alto, es decir, un cuarto del área total. Luego se centra con \texttt{setLocationRelativeTo(null)}.
+
+\begin{lstlisting}
+Dimension pantalla = Toolkit.getDefaultToolkit().getScreenSize();
+setSize(pantalla.width / 2, pantalla.height / 2);
+setLocationRelativeTo(null);
+\end{lstlisting}
+
+  \imagen[0.75]{ciclo0_ventana_centrada.png}{Ventana de un cuarto de pantalla, centrada}
+
+  \item \enunciado{Traten de cerrar la ventana. ¿Termina la ejecución? ¿Qué deben hacer en consola para terminar la ejecución?}
+
+  La ventana se cierra; sin embargo, la ejecución no termina. Por defecto un \texttt{JFrame} usa \texttt{HIDE\_ON\_CLOSE}, que solo oculta la ventana mientras la máquina virtual sigue en ejecución. La única forma de terminarla es oprimir \texttt{Ctrl + C} en la consola.
+
+  \item \enunciado{Estudien en JFrame el método setDefaultCloseOperation. ¿Para qué sirve? ¿Cómo lo usarían si queremos confirmar el cierre de la aplicación? ¿Cómo lo usarían si queremos simplemente cerrar la aplicación?}
+
+  \begin{enumerate}[label=\alph*.]
+    \item Sirve para definir qué ocurre cuando el usuario intenta cerrar un \texttt{JFrame}, más específicamente cuando presiona la X de la ventana. Recibe una de las siguientes constantes:
+    \begin{itemize}
+      \item \texttt{DO\_NOTHING\_ON\_CLOSE}: no hace nada.
+      \item \texttt{HIDE\_ON\_CLOSE}: oculta la ventana, pero no termina la aplicación (valor por defecto).
+      \item \texttt{DISPOSE\_ON\_CLOSE}: cierra la ventana y libera sus recursos.
+      \item \texttt{EXIT\_ON\_CLOSE}: termina la aplicación.
+    \end{itemize}
+    \item Para confirmar el cierre, se configura con \texttt{DO\_NOTHING\_ON\_CLOSE} y se agrega un \texttt{WindowListener} que muestre una confirmación antes de cerrar.
+    \item Para simplemente cerrar la aplicación, se configura con \texttt{EXIT\_ON\_CLOSE}.
+  \end{enumerate}
+
+  \item \enunciado{Preparen el ``oyente'' correspondiente al icono cerrar que le pida al usuario que confirme su selección. Para eso inicien la codificación del método prepareController y el método asociado a la acción (exit). Ejecuten el programa y cierren el programa. Capturen las pantallas.}
+
+\begin{lstlisting}
+private void prepareController(){
+    setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+    addWindowListener(new WindowAdapter(){
+        @Override
+        public void windowClosing(WindowEvent e){
+            exit();
+        }
+    });
+}
+
+private void exit(){
+    int opcion = JOptionPane.showConfirmDialog(this,
+        "¿Quiere cerrar la aplicacion?", "Confirmar Salida",
+        JOptionPane.YES_NO_OPTION);
+    if(opcion == JOptionPane.YES_OPTION){
+        System.exit(0);
+    }
+}
+\end{lstlisting}
+
+  \imagen[0.75]{ciclo0_confirmar_cierre.png}{Confirmación al cerrar desde el icono}
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\subsection{Ciclo 1: Ventana con menú -- Salir}
+
+El objetivo es implementar un menú clásico para la aplicación con un final adecuado desde la opción del menú para salir. El menú debe ofrecer mínimo las siguientes opciones: Nuevo, Abrir -- Salvar y Salir. Incluyan los separadores de opciones.
+
+\begin{enumerate}
+  \item \enunciado{Expliquen los componentes visuales necesarios para este menú. ¿Cuáles serían atributos y cuáles podrían ser variables del método prepareView? Justifique.}
+
+  \textbf{Componentes visuales necesarios}
+  \begin{itemize}
+    \item \textbf{JMenuBar:} la barra que se ubica en la parte superior del marco del \texttt{JFrame}.
+    \item \textbf{JMenu:} los desplegables individuales que se ubican dentro de la barra de menú (en este caso, ``Archivo'').
+    \item \textbf{JMenuItem:} cada una de las opciones del menú: Nuevo, Abrir, Salvar y Salir.
+    \item \textbf{JSeparator:} la línea horizontal que agrupa visualmente las opciones dentro del menú.
+  \end{itemize}
+
+  \textbf{Atributos de clase}
+  \begin{itemize}
+    \item \textbf{JMenuItem:} requieren oyentes de acción para responder a los clics del usuario. Como los oyentes se asignan en \texttt{prepareControllerMenu}, un método distinto de donde se crean, deben ser atributos. Además, durante la ejecución pueden requerir cambios de estado.
+    \item \textbf{JMenuBar:} es opcional como atributo; solo es necesario si se requiere modificar dinámicamente el menú en tiempo de ejecución.
+  \end{itemize}
+
+  \textbf{Variables locales del método}
+  \begin{itemize}
+    \item \textbf{Menú desplegable (JMenu, menuArchivo):} actúa principalmente como contenedor visual. Una vez que se agregan los ítems a \texttt{menuArchivo} y este se añade a la barra, no suele requerir interacciones directas adicionales por código.
+    \item \textbf{Separadores (JSeparator):} son elementos estrictamente decorativos para dividir secciones dentro del menú desplegable. No manejan eventos ni cambian de estado.
+  \end{itemize}
+
+  \item \enunciado{Construyan la forma del menú propuesto (prepareView - prepareViewMenu). Ejecuten. Capturen la pantalla.}
+
+\begin{lstlisting}
+private void prepareViewMenu() {
+    menuBar = new JMenuBar();
+    JMenu menuArchivo = new JMenu("Archivo");
+    itemNuevo = new JMenuItem("Nuevo");
+    itemAbrir = new JMenuItem("Abrir");
+    itemSalvar = new JMenuItem("Salvar");
+    itemSalir = new JMenuItem("Salir");
+    menuArchivo.add(itemNuevo);
+    menuArchivo.addSeparator();
+    menuArchivo.add(itemAbrir);
+    menuArchivo.add(itemSalvar);
+    menuArchivo.addSeparator();
+    menuArchivo.add(itemSalir);
+    menuBar.add(menuArchivo);
+    setJMenuBar(menuBar);
+}
+\end{lstlisting}
+
+  \imagen[0.75]{ciclo1_menu.png}{Menú Archivo con sus opciones y separadores}
+
+  \item \enunciado{Preparen el ``oyente'' correspondiente al icono cerrar con confirmación (prepareController - prepareControllerMenu). Ejecuten el programa y salgan del programa. Capturen las pantallas.}
+
+  En \texttt{prepareControllerMenu} se asocia a la opción Salir un \texttt{ActionListener} anónimo que invoca el mismo método \texttt{exit()} del ciclo anterior. De esta forma, salir desde el menú y salir desde el icono de cerrar piden la misma confirmación.
+
+\begin{lstlisting}
+itemSalir.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        exit();
+    }
+});
+\end{lstlisting}
+
+  \imagen[0.75]{ciclo1_menu_salir.png}{Selección de la opción Salir}
+  \imagen[0.75]{ciclo1_confirmar_salida.png}{Confirmación de salida desde el menú}
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\subsection{Ciclo 2: Salvar y abrir}
+
+El objetivo es preparar la interfaz para las funciones de persistencia.
+
+\begin{enumerate}
+  \item \enunciado{Detallen el componente JFileChooser, especialmente los métodos: JFileChooser, showOpenDialog, showSaveDialog, getSelectedFile.}
+
+  \texttt{JFileChooser} es un componente de Swing que muestra un diálogo estándar para que el usuario navegue por el sistema de archivos y seleccione un archivo.
+  \begin{itemize}
+    \item \textbf{JFileChooser():} constructor que crea el selector de archivos. Se abre en el directorio por defecto del usuario (su carpeta personal).
+    \item \textbf{showOpenDialog(Component parent):} muestra un diálogo modal de tipo ``Abrir'', centrado sobre el componente \texttt{parent}. Retorna un entero que indica cómo se cerró el diálogo:
+    \begin{itemize}
+      \item \texttt{APPROVE\_OPTION}: el usuario seleccionó un archivo y aceptó.
+      \item \texttt{CANCEL\_OPTION}: el usuario canceló.
+      \item \texttt{ERROR\_OPTION}: ocurrió un error o se cerró el diálogo.
+    \end{itemize}
+    \item \textbf{showSaveDialog(Component parent):} funciona igual que el anterior, pero muestra un diálogo de tipo ``Guardar'', que permite escribir el nombre de un archivo nuevo. Retorna las mismas constantes.
+    \item \textbf{getSelectedFile():} retorna un objeto \texttt{java.io.File} con el archivo que el usuario seleccionó. Con \texttt{getName()} se obtiene su nombre y con \texttt{getAbsolutePath()} su ruta completa.
+  \end{itemize}
+
+  \item \enunciado{Implementen parcialmente los elementos necesarios para salvar y abrir. Al seleccionar los archivos indique que las funcionalidades están en construcción detallando la acción y el nombre del archivo seleccionado.}
+
+  Se agregaron oyentes a las opciones Abrir y Salvar, que invocan los métodos \texttt{open()} y \texttt{save()}. Cada uno crea un \texttt{JFileChooser}, muestra el diálogo correspondiente y, si el usuario aprueba la selección, informa con un \texttt{JOptionPane} la acción realizada, el nombre del archivo y que la funcionalidad está en construcción.
+
+\begin{lstlisting}
+private void open() {
+    JFileChooser selector = new JFileChooser();
+    int respuesta = selector.showOpenDialog(this);
+    if(respuesta == JFileChooser.APPROVE_OPTION) {
+        String nombre = selector.getSelectedFile().getName();
+        JOptionPane.showMessageDialog(null, "el archivo: " + nombre
+            + " no ha sido posible abrirlo, el funcionamiento esta en construccion");
+    }
+}
+\end{lstlisting}
+
+  El método \texttt{save()} es análogo: usa \texttt{showSaveDialog} e informa que no ha sido posible guardar el archivo seleccionado.
+
+  \item \enunciado{Ejecuten las dos opciones y capturen las pantallas más significativas.}
+
+  \imagen{ciclo2_abrir_dialogo.png}{Diálogo para abrir un archivo}
+  \imagen{ciclo2_abrir_mensaje.png}{Mensaje de funcionalidad en construcción al abrir}
+  \imagen{ciclo2_salvar_dialogo.png}{Diálogo para salvar un archivo}
+  \imagen{ciclo2_salvar_mensaje.png}{Mensaje de funcionalidad en construcción al salvar}
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\subsection{Ciclo 3: Forma de la ventana principal}
+
+El objetivo es codificar el diseño de la ventana principal (todos los elementos de primer nivel).
+
+\begin{enumerate}
+  \item \enunciado{Presenten el bosquejo del diseño de interfaz con todos los componentes necesarios. (Incluyan la imagen)}
+
+  \imagen[0.7]{ciclo3_bosquejo.png}{Bosquejo del diseño de la interfaz}
+
+  La ventana principal usa \texttt{BorderLayout}, el layout por defecto del \texttt{JFrame}:
+  \begin{itemize}
+    \item \textbf{Barra de menú:} menú Archivo con Nuevo, Abrir, Salvar y Salir.
+    \item \textbf{NORTH:} un \texttt{JLabel} que informa el tamaño de la serpiente.
+    \item \textbf{CENTER:} el tablero de juego.
+    \item \textbf{SOUTH:} un \texttt{JPanel} con \texttt{GridLayout(1, 2)} que contiene los botones ``cambiar color'' y ``resetear''.
+  \end{itemize}
+
+  \item \enunciado{Continúen con la implementación definiendo los atributos necesarios y extendiendo el método prepareView. Para la zona del tablero definan un método prepareViewBoard y un método refresh que actualiza la vista del tablero considerando, por ahora, el tablero inicial por omisión.}
+
+  Se definieron los atributos \texttt{itemInformativo} (\texttt{JLabel}), \texttt{tablero} (\texttt{JPanel}), \texttt{colorButton} y \texttt{resetButton} (\texttt{JButton}), \texttt{colorSerpiente} (\texttt{Color}) y \texttt{game} (el modelo \texttt{HungrySnake}).
+  \begin{itemize}
+    \item \textbf{prepareViewBoard():} crea el tablero y lo ubica en el centro de la ventana.
+    \item \textbf{refresh():} actualiza la vista según el estado del modelo: repinta el tablero y actualiza el texto con el tamaño de la serpiente.
+  \end{itemize}
+
+  \textbf{Decisión de diseño del tablero.} La primera versión del tablero usaba un \texttt{GridLayout(50, 50)} con 2500 \texttt{JPanel}, uno por casilla, y en cada paso cambiaba el color de fondo de cada uno. Esa versión presentó dos problemas:
+  \begin{enumerate}[label=\arabic*)]
+    \item \textbf{Rendimiento:} en cada paso del juego se recorrían y repintaban 2500 componentes, por lo que el juego se veía con tirones.
+    \item \textbf{Proporción:} el \texttt{GridLayout} estira las celdas para llenar todo el espacio disponible. Como la ventana es más ancha que alta, las celdas quedaban rectangulares y la serpiente se veía más delgada al moverse en horizontal que en vertical.
+  \end{enumerate}
+
+  Por esta razón, el tablero se reemplazó por un único \texttt{JPanel} que se dibuja a sí mismo sobrescribiendo \texttt{paintComponent(Graphics g)}:
+  \begin{itemize}
+    \item El tamaño de cada celda se calcula como \texttt{Math.min(ancho, alto) / n}, donde \texttt{n} es el lado del tablero. Así las celdas siempre son cuadradas.
+    \item El tablero se centra con los desplazamientos \texttt{x0 = (ancho - celda*n) / 2} y \texttt{y0 = (alto - celda*n) / 2}.
+    \item Cada elemento (cuerpo, fruta y obstáculo) se pinta con \texttt{g.fillRect(x0 + columna*celda, y0 + fila*celda, celda, celda)}.
+    \item El método \texttt{refresh()} solo necesita llamar a \texttt{tablero.repaint()}.
+  \end{itemize}
+
+\begin{lstlisting}
+private void prepareViewBoard() {
+    tablero = new JPanel() {
+        @Override
+        protected void paintComponent(Graphics g) {
+            super.paintComponent(g);
+            int n = game.getTamanoTablero();
+            int celda = Math.min(getWidth(), getHeight()) / n;
+            int x0 = (getWidth() - celda * n) / 2;
+            int y0 = (getHeight() - celda * n) / 2;
+
+            g.setColor(Color.WHITE);
+            g.fillRect(x0, y0, celda * n, celda * n);
+
+            g.setColor(colorSerpiente);
+            for (int[] p : game.getCulebra())
+                g.fillRect(x0 + p[1] * celda, y0 + p[0] * celda, celda, celda);
+
+            g.setColor(Color.RED);
+            for (int[] p : game.getFrutas())
+                g.fillRect(x0 + p[1] * celda, y0 + p[0] * celda, celda, celda);
+
+            g.setColor(Color.BLACK);
+            for (int[] p : game.getObstaculos())
+                g.fillRect(x0 + p[1] * celda, y0 + p[0] * celda, celda, celda);
+
+            Toolkit.getDefaultToolkit().sync();
+        }
+    };
+    tablero.setBackground(Color.DARK_GRAY);
+    add(tablero, BorderLayout.CENTER);
+}
+\end{lstlisting}
+
+  \item \enunciado{Ejecuten y capturen la pantalla.}
+
+  \imagen{ciclo3_ventana_principal.png}{Ventana principal con todos sus componentes}
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\subsection{Ciclo 4: Cambiar colores}
+
+El objetivo es implementar este caso de uso.
+
+\begin{enumerate}
+  \item \enunciado{Expliquen los elementos (vista -- controlador) necesarios para implementar este caso de uso.}
+
+  \textbf{Vista}
+  \begin{itemize}
+    \item El botón \texttt{colorButton} (``cambiar color'').
+    \item El atributo \texttt{colorSerpiente}, que guarda el color con el que se pinta la serpiente.
+    \item El diálogo \texttt{JColorChooser}, donde el usuario elige el color.
+  \end{itemize}
+
+  \textbf{Controlador}
+  \begin{itemize}
+    \item Un \texttt{ActionListener} anónimo asociado a \texttt{colorButton} que invoca el método \texttt{changeColor()}.
+    \item El método \texttt{changeColor()}, que abre el \texttt{JColorChooser} y, si el usuario elige un color, actualiza \texttt{colorSerpiente} y llama a \texttt{refresh()} para repintar el tablero.
+  \end{itemize}
+
+  El color es una decisión de presentación y no del dominio, por lo que se guarda en la interfaz y no en el modelo \texttt{HungrySnake}.
+
+  \item \enunciado{Detalle el comportamiento de JColorChooser, especialmente el método estático showDialog.}
+
+  \texttt{JColorChooser} es un componente de Swing que presenta una paleta para seleccionar colores. Su método más usado es:
+
+\begin{lstlisting}
+static Color showDialog(Component component, String title, Color initialColor)
+\end{lstlisting}
+
+  Al ser estático, no es necesario crear un objeto \texttt{JColorChooser}. El método muestra un diálogo modal centrado sobre \texttt{component}, con el título \texttt{title} y con \texttt{initialColor} seleccionado inicialmente. Retorna el \texttt{Color} elegido si el usuario presiona Aceptar, o \texttt{null} si cancela o cierra el diálogo. Por eso es necesario verificar si el resultado es \texttt{null} antes de usarlo.
+
+  \item \enunciado{Implementen los componentes necesarios para cambiar los colores requeridos.}
+
+\begin{lstlisting}
+colorButton.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        changeColor();
+    }
+});
+
+private void changeColor() {
+    Color temp = JColorChooser.showDialog(this,
+        "cambio de color de la serpiente", colorSerpiente);
+    if(temp == null) {
+        return;
+    }
+    colorSerpiente = temp;
+    refresh();
+}
+\end{lstlisting}
+
+  Al botón se le asignó \texttt{setFocusable(false)} para que, después de usarlo, el teclado siga controlando la serpiente.
+
+  \item \enunciado{Ejecuten el caso de uso y capturen las pantallas más significativas.}
+
+  \imagen{ciclo4_color_dialogo.png}{Diálogo JColorChooser}
+  \imagen{ciclo4_color_aplicado.png}{Serpiente con el nuevo color}
+\end{enumerate}
+
+% ===============================================================
+\section{Parte II. Funcionalidades básicas}
+% ===============================================================
+
+\subsection{Ciclo 5: Modelo HungrySnake}
+
+El objetivo es implementar la capa de dominio para HungrySnake.
+
+\begin{enumerate}
+  \item \enunciado{Construya los métodos básicos del juego.}
+
+  La clase \texttt{domain.HungrySnake} representa el estado del juego. El tablero se modela como una cuadrícula de $25 \times 25$ casillas, donde cada posición es un arreglo \texttt{\{fila, columna\}}.
+
+  \begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{lX}
+      \toprule
+      \textbf{Atributo} & \textbf{Descripción} \\
+      \midrule
+      \texttt{tamanoTablero} & Lado del tablero (25). \\
+      \texttt{culebra} & Posiciones del cuerpo; la posición 0 es la cabeza. \\
+      \texttt{frutas} & Posiciones de las frutas. \\
+      \texttt{obstaculos} & Posiciones de los obstáculos. \\
+      \texttt{actualDirection} & Dirección actual del movimiento (W, A, S, D). \\
+      \texttt{inGame} & Indica si el juego sigue activo. \\
+      \bottomrule
+    \end{tabularx}
+    \caption{Atributos de la clase HungrySnake}
+  \end{table}
+
+  \begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{lX}
+      \toprule
+      \textbf{Método} & \textbf{Responsabilidad} \\
+      \midrule
+      \texttt{HungrySnake()} & Crea la serpiente en el centro del tablero y genera la primera fruta. \\
+      \texttt{move(char)} & Avanza la serpiente una casilla. Ignora la media vuelta; si come una fruta crece y, con 10\,\% de probabilidad, aparece un obstáculo; si choca con una pared, un obstáculo o su propio cuerpo, termina el juego. \\
+      \texttt{isValid(f, c)} & Indica si una casilla está dentro del tablero y libre. \\
+      \texttt{generarFrutas()} & Ubica una fruta en una casilla libre aleatoria. \\
+      \texttt{generarObstaculos()} & Ubica un obstáculo en una casilla libre aleatoria. \\
+      \texttt{getCulebra()}, \texttt{getFrutas()}, \texttt{getObstaculos()} & Consultas de las posiciones para la vista. \\
+      \texttt{isInGame()}, \texttt{getTamano()}, \texttt{getTamanoTablero()} & Consultas del estado del juego. \\
+      \bottomrule
+    \end{tabularx}
+    \caption{Métodos de la clase HungrySnake}
+  \end{table}
+
+  \textbf{MDD.} El diseño del dominio se modeló en el diagrama de clases \texttt{hungrySnake.astah}.
+
+  \imagen[0.6]{ciclo5_diagrama_clases.png}{Diagrama de clases del dominio}
+
+  \textbf{BDD.} Las pruebas de unidad, solo de la capa de dominio, se escribieron con JUnit 4 en la clase \texttt{test.HungrySnakeTest}, a partir de los comportamientos esperados del juego:
+
+  \begin{table}[H]
+    \centering
+    \begin{tabularx}{\textwidth}{lX}
+      \toprule
+      \textbf{Prueba} & \textbf{Comportamiento esperado} \\
+      \midrule
+      \texttt{shouldStartWithSizeOne} & La serpiente empieza con tamaño 1 y el juego activo. \\
+      \texttt{shouldStartInTheCenter} & La cabeza empieza en la posición \{12, 12\}. \\
+      \texttt{shouldStartWithOneFruit} & Al iniciar hay exactamente una fruta y ningún obstáculo. \\
+      \texttt{shouldMoveRight} & Al mover a la derecha la cabeza pasa a \{12, 13\}. \\
+      \texttt{shouldNotTurnBack} & Si se mueve a la derecha, un movimiento a la izquierda se ignora y la serpiente sigue a la derecha (\{12, 14\}). \\
+      \texttt{shouldDieWhenHittingWall} & Al salir del tablero el juego termina. \\
+      \texttt{shouldNotMoveWhenDead} & Después de perder, la serpiente no cambia de posición. \\
+      \texttt{shouldIgnoreInvalidKey} & Una tecla distinta de W, A, S o D no cambia nada. \\
+      \texttt{shouldAcceptLowercase} & Las teclas en minúscula funcionan igual que en mayúscula. \\
+      \texttt{shouldPlaceFruitInsideBoard} & En 100 juegos nuevos, la fruta siempre queda dentro del tablero. \\
+      \texttt{shouldGrowWhenEatingFruit} & Al llevar la cabeza hasta la fruta, el tamaño pasa a 2. \\
+      \bottomrule
+    \end{tabularx}
+    \caption{Pruebas de unidad del dominio}
+  \end{table}
+
+  \item \enunciado{Ejecuten las pruebas y capturen el resultado.}
+
+  Las librerías \texttt{junit-4.12.jar} y \texttt{hamcrest-core-1.3.jar} se ubican en la carpeta \texttt{lib}. Desde la carpeta \texttt{HungrySnake}:
+
+\begin{lstlisting}[language=bash]
+javac -d bin -cp lib/junit-4.12.jar src/domain/*.java src/presentation/*.java src/test/*.java
+java -cp bin:lib/junit-4.12.jar:lib/hamcrest-core-1.3.jar org.junit.runner.JUnitCore test.HungrySnakeTest
+\end{lstlisting}
+
+  Las 11 pruebas se ejecutan correctamente.
+
+  \imagen{ciclo5_resultado_pruebas.png}{Resultado de la ejecución de las pruebas}
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\subsection{Ciclo 6: Jugar}
+
+El objetivo es implementar el juego.
+
+\begin{enumerate}
+  \item \enunciado{Expliquen los elementos necesarios para implementar este caso de uso.}
+
+  \begin{itemize}
+    \item \textbf{Modelo:} el método \texttt{move(char)} de \texttt{HungrySnake}, que contiene toda la lógica de un paso del juego.
+    \item \textbf{Vista:} el tablero, que dibuja el estado del modelo en \texttt{paintComponent}, y el \texttt{JLabel} con el tamaño de la serpiente.
+    \item \textbf{Controlador:}
+    \begin{itemize}
+      \item Un \texttt{KeyListener} (\texttt{KeyAdapter} anónimo) sobre la ventana, que guarda en el atributo \texttt{ultimaTecla} la última tecla válida (W, A, S o D). Este atributo inicia con un espacio, que el modelo ignora; así, la serpiente permanece quieta hasta que el jugador presiona la primera dirección.
+      \item Un \texttt{javax.swing.Timer} que cada 55 ms ejecuta \texttt{game.move(ultimaTecla)} y luego \texttt{refresh()}.
+      \item Cuando el modelo indica que el juego terminó (\texttt{isInGame()} es falso), \texttt{refresh()} detiene el \texttt{Timer} y muestra un \texttt{JOptionPane} avisando que el jugador perdió.
+    \end{itemize}
+  \end{itemize}
+
+  \item \enunciado{Implementen los componentes necesarios para jugar. ¿Cuántos oyentes necesitan? ¿Por qué?}
+
+\begin{lstlisting}
+addKeyListener(new KeyAdapter () {
+    @Override
+    public void keyPressed(KeyEvent k) {
+        char tecla = Character.toUpperCase(k.getKeyChar());
+        if (tecla == 'W' || tecla == 'A' || tecla == 'S' || tecla == 'D') {
+            ultimaTecla = tecla;
+        }
+    }
+});
+
+timer = new Timer(55, new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        game.move(ultimaTecla);
+        refresh();
+    }
+});
+timer.start();
+\end{lstlisting}
+
+  Para jugar se necesitan \textbf{dos oyentes}:
+  \begin{enumerate}[label=\arabic*)]
+    \item \textbf{KeyListener:} atiende los eventos del usuario. Solo registra la dirección deseada; no mueve la serpiente.
+    \item \textbf{ActionListener del Timer:} atiende los eventos del tiempo. En cada intervalo avanza la serpiente un paso y refresca la vista.
+  \end{enumerate}
+
+  Se necesitan dos porque son dos fuentes de eventos distintas. En HungrySnake la serpiente debe seguir avanzando aunque el usuario no presione ninguna tecla, y eso solo lo puede producir un evento periódico, como el del \texttt{Timer}. Si el movimiento dependiera solo del teclado, la serpiente avanzaría únicamente al presionar teclas. Separarlos también evita que presionar teclas muy rápido acelere la serpiente: la velocidad la fija únicamente el \texttt{Timer}.
+
+  \item \enunciado{Ejecuten el caso de uso y capturen las pantallas más significativas.}
+
+  \imagen{ciclo6_inicio.png}{Inicio del juego}
+  \imagen{ciclo6_serpiente_crece.png}{La serpiente después de comer varias frutas}
+  \imagen{ciclo6_obstaculo.png}{Aparición de obstáculos en el tablero}
+  \imagen{ciclo6_perder.png}{Mensaje al perder el juego}
+\end{enumerate}
+
+% ===============================================================
+\section{Parte III. Bono: Funcionalidades complementarias}
+% ===============================================================
+
+\subsection{Ciclo 7: Reiniciar}
+
+El objetivo es implementar este caso de uso.
+
+\begin{enumerate}
+  \item \enunciado{Expliquen los elementos a usar para implementar este caso de uso.}
+
+  \pendiente{completar según la implementación}
+
+  \item \enunciado{Implementen los elementos necesarios para reiniciar.}
+
+  \pendiente{código de la implementación}
+
+  \item \enunciado{Ejecuten el caso de uso y capturen las pantallas más significativas.}
+
+  \imagen{ciclo7_antes.png}{Juego antes de reiniciar}
+  \imagen{ciclo7_despues.png}{Juego después de reiniciar}
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\subsection{Ciclo 8: Cambiar el tamaño}
+
+El objetivo es implementar este caso de uso.
+
+\begin{enumerate}
+  \item \enunciado{Expliquen los elementos a usar para implementar este caso de uso.}
+
+  \pendiente{completar según la implementación}
+
+  \item \enunciado{Implementen los elementos necesarios para cambiar el tamaño del juego.}
+
+  \pendiente{código de la implementación}
+
+  \item \enunciado{Ejecuten el caso de uso y capturen las pantallas más significativas.}
+
+  \imagen{ciclo8_pedir_tamano.png}{Solicitud del nuevo tamaño}
+  \imagen{ciclo8_nuevo_tamano.png}{Tablero con el nuevo tamaño}
+\end{enumerate}
+
+% ===============================================================
+\section{Retrospectiva}
+% ===============================================================
+
+\begin{enumerate}
+  \item \enunciado{¿Cuál fue el tiempo total invertido en el laboratorio por cada uno de ustedes? (Horas)}
+
+  \begin{itemize}
+    \item Juan David Espitia: \pendiente{horas}
+    \item Cristian Camilo Salamanca: \pendiente{horas}
+  \end{itemize}
+
+  \item \enunciado{¿Cuál es el estado actual del laboratorio? ¿Por qué?}
+
+  Las Partes I y II están implementadas: la ventana con cierre confirmado, el menú, las opciones de abrir y salvar en construcción, el cambio de color, el modelo del juego y el caso de uso jugar. \pendiente{indicar el estado de las pruebas y de los bonos}
+
+  \item \enunciado{Considerando las prácticas XP del laboratorio, ¿cuál fue la más útil? ¿Por qué?}
+
+  \pendiente{revisar y redactar con sus palabras} La práctica \textit{``When a bug is found tests are created''}. Cuando se encontraba un comportamiento incorrecto en el modelo, escribir primero una prueba que lo reprodujera permitía verificar la corrección y asegurar que el error no volviera a aparecer.
+
+  \item \enunciado{¿Cuál consideran fue el mayor logro? ¿Por qué?}
+
+  \pendiente{revisar y redactar con sus palabras} Separar correctamente el modelo (\texttt{domain}) de la vista-controlador (\texttt{presentation}). Gracias a esto, toda la lógica del juego se puede probar sin abrir ninguna ventana, y la forma de dibujar el tablero se pudo cambiar por completo sin modificar el modelo.
+
+  \item \enunciado{¿Cuál consideran que fue el mayor problema técnico? ¿Qué hicieron para resolverlo?}
+
+  \pendiente{revisar y redactar con sus palabras} El rendimiento y la proporción del tablero. Con 2500 \texttt{JPanel} en un \texttt{GridLayout}, el juego se veía con tirones y las celdas se estiraban según la forma de la ventana. Se resolvió dibujando el tablero en un solo \texttt{JPanel} con \texttt{paintComponent}: las celdas se calculan cuadradas, el tablero se centra y se usa \texttt{Toolkit.getDefaultToolkit().sync()} para que el dibujo sea fluido.
+
+  \item \enunciado{¿Qué hicieron bien como equipo? ¿Qué se comprometen a hacer para mejorar los resultados?}
+
+  \pendiente{respuesta del equipo}
+
+  \item \enunciado{¿Qué referencias usaron? ¿Cuál fue la más útil? Incluyan citas con estándares adecuados.}
+
+  \pendiente{dejar solo las referencias que realmente usaron e indicar la más útil}
+
+  \begin{itemize}
+    \item Oracle. (s.f.). \textit{JFrame (Java SE 21 \& JDK 21)}. \url{https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JFrame.html}
+    \item Oracle. (s.f.). \textit{JFileChooser (Java SE 21 \& JDK 21)}. \url{https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JFileChooser.html}
+    \item Oracle. (s.f.). \textit{JColorChooser (Java SE 21 \& JDK 21)}. \url{https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/JColorChooser.html}
+    \item Oracle. (s.f.). \textit{Timer (Java SE 21 \& JDK 21)}. \url{https://docs.oracle.com/en/java/javase/21/docs/api/java.desktop/javax/swing/Timer.html}
+    \item Oracle. (s.f.). \textit{Performing Custom Painting}. The Java Tutorials. \url{https://docs.oracle.com/javase/tutorial/uiswing/painting/}
+    \item Oracle. (s.f.). \textit{How to Use File Choosers}. The Java Tutorials. \url{https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html}
+  \end{itemize}
+\end{enumerate}
+
+\end{document}

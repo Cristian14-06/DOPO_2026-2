@@ -123,6 +123,26 @@ public class NeoFlix{
         episodes.put(title.toUpperCase(),e); 
     }
     
+    public void remove (String name) throws NeoFlixException{ 
+        if(name.trim().equals("")){
+            throw new NeoFlixException(NeoFlixException.CONTENT_EMPTY);    
+        }
+        
+        Content c = consult(name.trim());
+        if (c == null){
+            throw new NeoFlixException(NeoFlixException.CONTENT_NOT_FOUND); 
+    
+        }
+        
+        contents.remove(c);
+        
+        episodes.remove(name.toUpperCase());
+        
+        
+    }
+    
+    
+    
     /**
      * Adds a new series to the catalog along with its associated episodes.
      * @param title the title of the series

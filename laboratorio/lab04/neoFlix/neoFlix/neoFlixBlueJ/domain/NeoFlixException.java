@@ -19,6 +19,7 @@ public class NeoFlixException extends Exception {
     public static final String WRONG_YEAR = "El año no es valido esta vez";
     public static final String EPISODE_NOT_FOUND = "No ha sido posible encontrar el episodio";
     public static final String NOT_A_SERIES = "El contenido indicado no es una serie";
+    public static final String CONTENT_NOT_FOUND = "El contenido no fue encontrado";
 
     /**
      * Constructs a new NeoFlixException with the specified detail message.

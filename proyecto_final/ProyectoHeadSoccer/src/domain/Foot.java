@@ -24,4 +24,28 @@ public class Foot implements Collidable{
 	public void setKicking(boolean isKicking) {
 		this.isKicking = isKicking;
 	}
+	
+	public void kicking(Side side){
+		if (!isKicking) {
+			setKicking(true);
+			if (side == Side.LEFT) {
+				circle.x += 25;
+			} else {
+				circle.x -= 25;
+			}
+			circle.y -= 25;
+		}
+	}
+
+	public void stopKicking(Side side){
+		if (isKicking) {
+			setKicking(false);
+			if (side == Side.LEFT) {
+				circle.x -= 25;
+			} else {
+				circle.x += 25;
+			}
+			circle.y += 25;
+		}
+	}
 }

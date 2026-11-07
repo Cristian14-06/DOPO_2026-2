@@ -41,6 +41,7 @@ public class HungrySnakeGUI extends JFrame{
    private HungrySnake game;
    private Timer timer;
    private char ultimaTecla = ' ';
+   private JButton sizeButton;
 
   public HungrySnakeGUI(){
 	 game = new HungrySnake();
@@ -57,17 +58,16 @@ public class HungrySnakeGUI extends JFrame{
 
   private void prepareView(){
     Dimension pantalla = Toolkit.getDefaultToolkit().getScreenSize();
-    JPanel paraBotones = new JPanel(new GridLayout(1, 2));
+    JPanel paraBotones = new JPanel(new GridLayout(1, 3));  
     itemInformativo = new JLabel("Tamano de serpiente");
     colorButton = new JButton("cambiar color");
     resetButton = new JButton("resetear");
+    sizeButton = new JButton("tamaño");                     
     colorButton.setFocusable(false);
     resetButton.setFocusable(false);
+    sizeButton.setFocusable(false);                    
     setFocusable(true);
     colorSerpiente = Color.BLUE;
-    
-    
-    
     
     int ancho = pantalla.width / 2;
     int alto = pantalla.height / 2;
@@ -78,39 +78,10 @@ public class HungrySnakeGUI extends JFrame{
     prepareViewBoard();
     add(itemInformativo, BorderLayout.NORTH);
     paraBotones.add(colorButton);
+    paraBotones.add(sizeButton);          
     paraBotones.add(resetButton);
     add(paraBotones, BorderLayout.SOUTH);
     refresh();
-
-  }
-
-  private void prepareViewMenu() {
-        menuBar = new JMenuBar();
- 
- 
-        JMenu menuArchivo = new JMenu("Archivo");
- 
-        
-        itemNuevo = new JMenuItem("Nuevo");
-        itemAbrir = new JMenuItem("Abrir");
-        itemSalvar = new JMenuItem("Salvar");
-        itemSalir = new JMenuItem("Salir");
- 
-       
-        menuArchivo.add(itemNuevo);
-        menuArchivo.addSeparator();
-        menuArchivo.add(itemAbrir);
-        menuArchivo.add(itemSalvar);
-       
-        menuArchivo.addSeparator(); 
-       
-        menuArchivo.add(itemSalir);
- 
-        
-        menuBar.add(menuArchivo);
- 
-        
-        setJMenuBar(menuBar);
     }
   
   private void prepareViewBoard() {
@@ -123,12 +94,15 @@ public class HungrySnakeGUI extends JFrame{
 			  int x0 = (getWidth() - celda * n) / 2;
 			  int y0 = (getHeight() - celda * n) / 2;
 			  
-              g.setColor(Color.WHITE);
+              g.setColor(new Color(144, 238, 144));
               g.fillRect(x0, y0, celda * n, celda * n);                
 
               g.setColor(colorSerpiente);
               for (int[] p : game.getCulebra())
                       g.fillRect(x0 + p[1] * celda, y0 + p[0] * celda, celda, celda);
+
+              int[] cabeza = game.getCulebra().get(0);
+              dibujarOjos(g, x0 + cabeza[1] * celda, y0 + cabeza[0] * celda, celda);
 
               g.setColor(Color.RED);
               for (int[] p : game.getFrutas())
@@ -143,6 +117,37 @@ public class HungrySnakeGUI extends JFrame{
 	  };
       tablero.setBackground(Color.DARK_GRAY);
       add(tablero, BorderLayout.CENTER);
+  }
+
+  private void dibujarOjos(Graphics g, int x, int y, int celda) {
+      int tamano = Math.max(2, celda / 5);
+      int margen = celda / 5;
+      int izquierda = margen;
+      int derecha = celda - margen - tamano;
+      int arriba = margen;
+      int abajo = celda - margen - tamano;
+      int x1, y1, x2, y2;
+      switch (ultimaTecla) {
+          case 'S':
+              x1 = izquierda; y1 = abajo;
+              x2 = derecha;   y2 = abajo;
+              break;
+          case 'A':
+              x1 = izquierda; y1 = arriba;
+              x2 = izquierda; y2 = abajo;
+              break;
+          case 'D':
+              x1 = derecha; y1 = arriba;
+              x2 = derecha; y2 = abajo;
+              break;
+          default:
+              x1 = izquierda; y1 = arriba;
+              x2 = derecha;   y2 = arriba;
+              break;
+      }
+      g.setColor(Color.BLACK);
+      g.fillOval(x + x1, y + y1, tamano, tamano);
+      g.fillOval(x + x2, y + y2, tamano, tamano);
   }
 
   private void prepareController(){
@@ -164,7 +169,7 @@ public class HungrySnakeGUI extends JFrame{
     	}
     });
 
-    timer = new Timer(55, new ActionListener() {
+    timer = new Timer(120, new ActionListener() {
     	@Override
     	public void actionPerformed(ActionEvent e) {
     		game.move(ultimaTecla);
@@ -180,7 +185,6 @@ public class HungrySnakeGUI extends JFrame{
 	 }
    });
    
-    
     prepareControllerMenu();
   }
   
@@ -265,7 +269,3 @@ public class HungrySnakeGUI extends JFrame{
   }
   
 }
-
-
-
-

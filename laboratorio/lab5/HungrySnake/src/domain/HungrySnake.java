@@ -12,7 +12,11 @@ public class HungrySnake{
 	private ArrayList<int[]> obstaculos;
 	
 	public HungrySnake() {
-		tamanoTablero = 25;
+		this(25);
+	}
+	
+	public HungrySnake(int tamano) {
+		this.tamanoTablero = tamano;
 		culebra = new ArrayList<>();
 		frutas = new ArrayList<>();
 		obstaculos = new ArrayList<>();
@@ -151,6 +155,17 @@ public class HungrySnake{
 	
 	public int getTamanoTablero() {
 		return tamanoTablero;
+	}
+	
+	public void reiniciar() {
+		culebra.clear();
+		culebra.add(new int[]{tamanoTablero / 2, tamanoTablero / 2});
+		frutas.clear();
+		generarFrutas();
+		obstaculos.clear();
+		actualDirection = 'D';
+		inGame = true;
+		gano = false;
 	}
 	
 }

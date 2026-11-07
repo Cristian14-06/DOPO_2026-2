@@ -108,4 +108,17 @@ public class HungrySnakeTest{
         assertEquals(2, juegoPrueba.getTamano());
    }
 
+   @Test
+   public void shouldResetGame() {
+        HungrySnake juegoPrueba = new HungrySnake();
+        juegoPrueba.move('D');
+        juegoPrueba.move('D');
+        juegoPrueba.reiniciar();
+        assertEquals(1, juegoPrueba.getTamano());
+        assertTrue(juegoPrueba.isInGame());
+        assertArrayEquals(new int[]{12, 12}, juegoPrueba.getCulebra().get(0));
+        assertEquals(1, juegoPrueba.getFrutas().size());
+        assertEquals(0, juegoPrueba.getObstaculos().size());
+   }
+
 }

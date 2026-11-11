@@ -1,0 +1,397 @@
+\documentclass[11pt,letterpaper]{article}
+
+% ------------------------------------------------------------------
+% Paquetes
+% ------------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish,es-noshorthands]{babel}
+\usepackage{newtxtext,newtxmath}          % Times New Roman
+\usepackage[margin=2.5cm]{geometry}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage[hidelinks]{hyperref}
+
+% ------------------------------------------------------------------
+% Estilo
+% ------------------------------------------------------------------
+\titleformat{\section}{\large\bfseries}{}{0em}{}[\vspace{-0.6em}\rule{\linewidth}{0.4pt}]
+\titleformat{\subsection}{\normalsize\bfseries}{}{0em}{}
+\titlespacing*{\section}{0pt}{1.2em}{0.8em}
+\titlespacing*{\subsection}{0pt}{1em}{0.4em}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small DOPO -- Laboratorio 6: Persistencia}
+\fancyhead[R]{\small Espitia -- Salamanca}
+\fancyfoot[C]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+\captionsetup{font=small,labelfont=bf}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\setlist[enumerate]{leftmargin=*,itemsep=0.3em}
+\setlist[itemize]{itemsep=0.1em}
+
+% Enunciado y respuesta
+\newcommand{\pregunta}[1]{\textit{#1}\par}
+\newcommand{\resp}{\textbf{R/}~}
+
+% Espacio para captura: si el archivo existe en imagenes/ se incluye,
+% si no, se deja un recuadro con la ruta esperada.
+\newcommand{\captura}[3][0.75]{%
+  \begin{figure}[H]
+    \centering
+    \IfFileExists{imagenes/#2}{%
+      \includegraphics[width=#1\linewidth]{imagenes/#2}%
+    }{%
+      \fbox{\parbox[c][4.5cm][c]{#1\linewidth}{\centering
+        \small Captura pendiente\\[4pt]\texttt{imagenes/#2}}}%
+    }
+    \caption{#3}
+  \end{figure}}
+
+% Código
+\lstset{
+  basicstyle=\ttfamily\small,
+  frame=single,
+  keywordstyle=\bfseries,
+  commentstyle=\itshape,
+  breaklines=true, columns=fullflexible, showstringspaces=false,
+  xleftmargin=4pt, xrightmargin=4pt, aboveskip=0.8em, belowskip=0.8em,
+  literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1
+           {ñ}{{\~n}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+}
+\lstdefinestyle{java}{language=Java}
+\lstdefinestyle{txt}{language={}, numbers=left, numberstyle=\tiny, numbersep=6pt, xleftmargin=16pt}
+
+% ==================================================================
+\begin{document}
+
+% ------------------------------------------------------------------
+% Portada
+% ------------------------------------------------------------------
+\begin{titlepage}
+  \centering
+  \vspace*{2cm}
+  {\large\textsc{Escuela Colombiana de Ingeniería Julio Garavito}\par}
+  \vspace{0.4cm}
+  {\normalsize Desarrollo Orientado por Objetos (DOPO) -- Grupo 501\par}
+  \vspace{3cm}
+  \rule{\linewidth}{0.8pt}\par
+  \vspace{0.4cm}
+  {\Huge\bfseries Laboratorio 6\par}
+  \vspace{0.3cm}
+  {\LARGE Persistencia\par}
+  \vspace{0.4cm}
+  \rule{\linewidth}{0.8pt}\par
+  \vspace{3cm}
+  {\large\textbf{Integrantes}\par}
+  \vspace{0.2cm}
+  {\large Juan David Espitia\par Cristian Camilo Salamanca\par}
+  \vspace{1.2cm}
+  {\large\textbf{Profesora}\par}
+  \vspace{0.2cm}
+  {\large María Irma Díaz Rozo\par}
+  \vfill
+  {\large Bogotá D.C., 2026-2\par}
+\end{titlepage}
+
+\tableofcontents
+\newpage
+
+% ==================================================================
+\section{Parte I. Creando la maqueta}
+% ==================================================================
+
+\subsection{A. Safari inicial}
+
+\begin{enumerate}
+  \item \pregunta{¿Cuál ambiente seleccionaron? ¿Por qué?}
+  \resp Inicialmente se usó BlueJ por un inconveniente con la importación de fuentes. Sin embargo, se eligió VS Code como ambiente principal, ya que permite un desarrollo orientado a objetos más profesional: navegación entre clases, refactorización y ejecución integrada de pruebas JUnit.
+
+  \item \pregunta{Ejecuten el programa y capturen la pantalla.}
+  \captura{I-A-2-ejecucion.png}{Ejecución inicial de EcoSafari.}
+  \captura{I-A-2-ejecucion-2.png}{Ejecución de EcoSafari después de algunos clics.}
+\end{enumerate}
+
+\subsection{B. Maqueta: MVC}
+
+\begin{enumerate}
+  \item \textbf{Modelo.} En la fachada \texttt{EcoSafari} se crearon los métodos \texttt{open}, \texttt{saveAs}, \texttt{import\_} y \texttt{exportAs}, que reciben un \texttt{File} y propagan una \texttt{EcoSafariException}:
+\begin{lstlisting}[style=java]
+public void open(File file) throws EcoSafariException {
+    String fileName = (file != null) ? file.getName() : "";
+    throw new EcoSafariException("Opción open en construcción. Archivo " + fileName);
+}
+\end{lstlisting}
+  \captura{I-B-1-modelo.png}{Métodos de entrada-salida en la fachada del dominio.}
+
+  \item \textbf{Vista.} El método \texttt{prepareViewMenu} construye el menú \textit{Archivo} con las seis opciones y sus separadores.
+  \captura{I-B-2-menu.png}{Método prepareViewMenu.}
+  \captura[0.55]{I-B-2-menu-abierto.png}{Menú Archivo.}
+
+  \item \textbf{Controlador.} El método \texttt{prepareControllerMenu} asocia cada opción con su método: \texttt{optionNew}, \texttt{optionOpen}, \texttt{optionSaveAs}, \texttt{optionImport}, \texttt{optionExportAs} y \texttt{optionExit}.
+  \begin{enumerate}[label=\alph*)]
+    \item \textbf{Salir:} \texttt{optionExit} termina la aplicación con \texttt{System.exit(0)}, sin confirmación.
+    \item \textbf{Nuevo:} \texttt{optionNew} reemplaza el safari actual por uno nuevo y repinta la vista.
+    \captura{I-B-3b-nuevo.png}{Resultado de la opción Nuevo.}
+    \item \textbf{Entrada-salida:} cada opción abre un \texttt{JFileChooser}, llama al método del modelo y muestra la excepción en un \texttt{JOptionPane}.
+    \captura[0.6]{I-B-3c-abrir.png}{Abrir: mensaje de opción en construcción.}
+    \captura[0.6]{I-B-3c-salvar.png}{Salvar como: mensaje de opción en construcción.}
+    \captura[0.6]{I-B-3c-importar.png}{Importar: mensaje de opción en construcción.}
+    \captura[0.6]{I-B-3c-exportar.png}{Exportar como: mensaje de opción en construcción.}
+  \end{enumerate}
+\end{enumerate}
+
+% ==================================================================
+\section{Parte II. Implementando persistencia}
+% ==================================================================
+
+\subsection{A. Salvar y abrir}
+
+\begin{enumerate}
+  \item Las versiones de maqueta se conservaron como \texttt{open00} y \texttt{saveAs00}.
+
+  \item \textbf{saveAs.} Serializa el safari completo con \texttt{ObjectOutputStream}. Para ello \texttt{EcoSafari} y todas las entidades implementan \texttt{Serializable} y declaran \texttt{serialVersionUID}.
+\begin{lstlisting}[style=java]
+try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file))) {
+    out.writeObject(this);
+} catch (IOException e) {
+    throw new EcoSafariException("el siguiente archivo no ha sido posible guardarlo " + file.getName());
+}
+\end{lstlisting}
+
+  \item \pregunta{¿El archivo se creó en el disco? ¿Cuánto espacio ocupa?}
+  \resp Sí. \texttt{safariOne.dat} ocupa aproximadamente 2.3~KB (2\,311 bytes). El tamaño varía ligeramente entre ejecuciones porque la simulación tiene un componente aleatorio (\texttt{Ground}).
+  \captura{II-A-3-safariOne-dat.png}{Archivo safariOne.dat en el disco.}
+
+  \item \textbf{open.} Lee el objeto con \texttt{ObjectInputStream} y reemplaza el tablero actual por el leído.
+
+  \item \pregunta{Prueba de aceptación: iniciar, crear un nuevo estado y abrir safariOne.dat.}
+  \captura{II-A-5-nuevo-estado.png}{Nuevo estado antes de abrir.}
+  \captura{II-A-5-abierto.png}{Estado restaurado desde safariOne.dat.}
+\end{enumerate}
+
+\subsection{B. Exportar e importar}
+
+\begin{enumerate}
+  \item Las versiones de maqueta se conservaron como \texttt{import00} y \texttt{exportAs00}.
+
+  \item \textbf{exportAs.} Recorre el tablero y escribe una línea por entidad con el formato \texttt{Tipo fila, columna}, usando \texttt{getClass().getSimpleName()}.
+
+  \item \pregunta{Exportar como safariOne.txt, editarlo y analizar. ¿Qué pasó?}
+  \resp Se generó un archivo de texto legible, con una línea por cada entidad. Las celdas donde una entidad estaba sobre el suelo (por ejemplo, \texttt{Grass} sobre \texttt{Ground}) solo aparecen con la entidad visible. El archivo guarda tipo y posición, pero no el estado interno (energía).
+  \captura{II-B-3-safariOne-txt.png}{Contenido de safariOne.txt exportado.}
+
+  \item \textbf{import\_.} Lee cada línea, la separa con \texttt{trim} y \texttt{split} y crea la entidad correspondiente en la posición indicada.
+
+  \item \pregunta{Exportar a safariOther.txt, salir, entrar, Nuevo e importar. ¿Qué resultado obtuvieron?}
+  \resp Se recuperó el mismo tablero: mismos tipos y posiciones. Las entidades inician con su estado por defecto (energía 100), ya que el archivo de texto no lo guarda.
+  \captura{II-B-5-safariOther.png}{Safari después de importar safariOther.txt.}
+
+  \item \pregunta{Escribir un safariOne.txt correcto e importarlo. ¿Qué resultado obtuvieron?}
+  \resp El tablero se construyó exactamente con las entidades del archivo.
+\begin{lstlisting}[style=txt]
+Elephant 5, 5
+Elephant 10, 10
+Shrub 6, 6
+Storm 0, 20
+SavannaElephant 8, 8
+Chameleon 2, 0
+Grass 19, 2
+Zebra 20, 2
+Lion 22, 2
+Ground 18, 0
+...
+\end{lstlisting}
+  \captura{II-B-6-safariOne-importado.png}{Safari importado desde safariOne.txt.}
+
+  \item Se eliminó el método \texttt{someEntities()}. El constructor crea un safari vacío y los elementos solo se agregan mediante archivos.
+\end{enumerate}
+
+\subsection{C. Comportamiento}
+
+\begin{enumerate}
+  \item \pregunta{Tres clics, guardar y abrir.}
+  \resp Al abrir, el safari continúa exactamente donde quedó: posiciones, energía y estado de cada entidad.
+  \captura{II-C-1-guardar-abrir.png}{Safari después de guardar y abrir.}
+
+  \item \pregunta{Tres clics, exportar e importar.}
+  \resp Se recuperan los tipos y posiciones, pero las entidades reinician su estado interno.
+  \captura{II-C-2-exportar-importar.png}{Safari después de exportar e importar.}
+
+  \item \pregunta{¿Qué diferencias ven entre 1 y 2?}
+  \resp Guardar crea un archivo binario con el objeto completo, incluido el estado interno de cada entidad. Exportar crea un archivo de texto, editable a mano, que solo describe qué entidad hay y dónde. Por eso, al importar, cada entidad se construye de nuevo con sus valores iniciales, mientras que al abrir la simulación continúa sin cambios.
+\end{enumerate}
+
+% ==================================================================
+\section{Parte III. Fortaleciendo la persistencia}
+% ==================================================================
+
+\subsection{A. Guardar y abrir}
+
+\begin{enumerate}
+  \item Las versiones con mensaje general se conservaron como \texttt{open01} y \texttt{saveAs01}.
+
+  \item Antes de leer o escribir se valida el archivo, y cada caso tiene su propio mensaje:
+  \begin{itemize}
+    \item Archivo nulo: \textit{No se ha especificado ningún archivo para abrir/guardar.}
+    \item Archivo inexistente (\texttt{open}): \textit{el siguiente archivo no existe.}
+    \item Directorio: \textit{el siguiente archivo en realidad es un directorio.}
+    \item Extensión distinta de \texttt{.dat}: \textit{el siguiente archivo no es un .dat.}
+    \item Contenido inválido (\texttt{open}): \textit{no ha sido posible abrirlo por corrupción o incompatibilidad con EcoSafari.}
+    \item Falla de escritura (\texttt{saveAs}): \textit{no ha sido posible guardarlo por error de escritura o permisos.}
+  \end{itemize}
+
+  \item \pregunta{Prueba de aceptación de un nuevo mensaje.}
+  \resp Se intentó abrir un archivo inexistente. Resultado: \textit{``el siguiente archivo no existe: noexiste.dat''}.
+  \captura[0.6]{III-A-3-mensaje.png}{Mensaje de error detallado al abrir.}
+\end{enumerate}
+
+\subsection{B. Exportar e importar}
+
+\begin{enumerate}
+  \item Las versiones con mensaje general se conservaron como \texttt{import01} y \texttt{exportAs01}.
+
+  \item Se aplicaron las mismas validaciones de archivo (nulo, inexistente, directorio y extensión \texttt{.txt}). Además, \texttt{import\_} distingue líneas con datos incompletos, coordenadas no numéricas y tipos de entidad no reconocidos.
+
+  \item \pregunta{Prueba de aceptación de un nuevo mensaje.}
+  \resp Se intentó exportar a un archivo con extensión \texttt{.dat}. Resultado: \textit{``el siguiente archivo no es un .txt: a.dat''}.
+  \captura[0.6]{III-B-3-mensaje.png}{Mensaje de error detallado al exportar.}
+\end{enumerate}
+
+\subsection{Pruebas de unidad}
+
+Las pruebas de persistencia están en \texttt{EcoSafariPersistenceTest} (24 pruebas) y cubren guardar y abrir, exportar e importar, cada error del minicompilador y la diferencia de estado entre ambos mecanismos: \texttt{open} conserva la energía y \texttt{import\_} la reinicia. El proyecto completo suma 53 pruebas, todas exitosas.
+
+\captura[0.6]{III-pruebas.png}{Ejecución de las pruebas de unidad.}
+
+% ==================================================================
+\section{Parte IV. Bono: perfeccionando importar}
+% ==================================================================
+
+\subsection{A. Minicompilador}
+
+\begin{enumerate}
+  \item La versión anterior se conservó como \texttt{import02}.
+
+  \item Cada error indica la línea, la palabra que lo produce y la causa, con el formato:
+  \begin{center}
+    \texttt{Línea \textit{n}: error en '\textit{palabra}'. Causa: \textit{descripción}.}
+  \end{center}
+  Además, si alguna línea falla se conserva el tablero anterior, de modo que un archivo con errores no deja el safari a medias.
+
+  \item \pregunta{safariErr.txt con mínimo tres errores diferentes.}
+\begin{lstlisting}[style=txt]
+Dragon 5, 5
+Elephant 10, abc
+Lion 50, 50
+Bush 15, 15
+Storm 5, 5
+\end{lstlisting}
+  \resp El archivo se fue corrigiendo línea a línea con ayuda del importador, que reportó en orden: la clase \texttt{Dragon} no existe; la columna \texttt{abc} no es un número entero; las coordenadas \texttt{50, 50} están fuera del tablero (0 a 24); y la clase \texttt{Bush} no existe, pues en la aplicación se llama \texttt{Shrub}.
+
+  \captura[0.6]{IV-A-3-error-1.png}{Error 1: clase inexistente.}
+  \captura[0.6]{IV-A-3-error-2.png}{Error 2: coordenada no numérica.}
+  \captura[0.6]{IV-A-3-error-3.png}{Error 3: coordenadas fuera de límites.}
+  \captura[0.6]{IV-A-3-error-4.png}{Error 4: nombre de clase incorrecto.}
+\end{enumerate}
+
+\subsection{B. Minicompilador flexible}
+
+\begin{enumerate}
+  \item La versión anterior se conservó como \texttt{import03}.
+
+  \item El \texttt{switch} de tipos se reemplazó por reflexión: la clase se busca por su nombre y se invoca su constructor \texttt{(EcoSafari, int, int)}. Así cualquier entidad futura se importa sin modificar el método.
+\begin{lstlisting}[style=java]
+try {
+    Class.forName("domain." + tipo)
+         .getConstructor(EcoSafari.class, int.class, int.class)
+         .newInstance(this, i, j);
+} catch (ClassNotFoundException ce) {
+    throw new EcoSafariException("Línea " + numeroLinea + ": error en '" + tipo
+        + "'. Causa: la clase descrita en el archivo no existe.");
+} catch (NoSuchMethodException | InstantiationException
+         | IllegalAccessException | InvocationTargetException e) {
+    throw new EcoSafariException("Línea " + numeroLinea + ": error en '" + tipo
+        + "'. Causa: la clase descrita tiene inconvenientes en su constructor.");
+}
+\end{lstlisting}
+
+  \item \pregunta{¿exportAs necesita cambiar para ser flexible?}
+  \resp No. \texttt{exportAs} obtiene el tipo con \texttt{getClass().getSimpleName()}, por lo que ya funciona con cualquier clase nueva sin modificaciones.
+
+  \item No aplica, ya que \texttt{exportAs} no requirió cambios.
+
+  \item \pregunta{safariFlex.txt para probar la flexibilidad.}
+\begin{lstlisting}[style=txt]
+Elephant 5, 5
+Lion 8, 8
+Zebra 12, 12
+Chameleon 3, 3
+Shrub 15, 15
+Storm 2, 20
+Grass 19, 2
+Ground 18, 0
+SavannaElephant 10, 10
+Dragon 1, 1
+\end{lstlisting}
+  \resp Las nueve primeras clases se reconocen sin estar escritas en el código del importador. La línea 10 produce el error significativo: \textit{``Línea 10: error en 'Dragon'. Causa: la clase descrita en el archivo no existe.''}
+  \captura[0.6]{IV-B-5-safariFlex.png}{Error significativo al importar safariFlex.txt.}
+\end{enumerate}
+
+% ==================================================================
+\section{Retrospectiva}
+% ==================================================================
+
+\begin{enumerate}
+  \item \pregunta{¿Cuál fue el tiempo total invertido por cada uno? (Horas)}
+  \resp Juan David Espitia: \textit{[completar]} horas. Cristian Camilo Salamanca: \textit{[completar]} horas.
+
+  \item \pregunta{¿Cuál es el estado actual del laboratorio? ¿Por qué?}
+  \resp Completo, incluido el bono. Todas las opciones del menú funcionan, los errores se reportan en detalle y las 53 pruebas de unidad pasan.
+
+  \item \pregunta{¿Cuál práctica XP fue la más útil? ¿Por qué?}
+  \resp La propiedad colectiva del código: ambos integrantes conocían y podían modificar cualquier clase, lo que facilitó corregir errores en el dominio y en la interfaz sin depender del otro.
+
+  \item \pregunta{¿Cuál consideran fue el mayor logro? ¿Por qué?}
+  \resp El minicompilador flexible: con reflexión, el importador reconoce cualquier entidad futura y reporta los errores con línea, palabra y causa.
+
+  \item \pregunta{¿Cuál fue el mayor problema técnico? ¿Qué hicieron para resolverlo?}
+  \resp Un archivo con errores dejaba el safari a medio cargar, porque las entidades se registran en el tablero desde su constructor. Se resolvió guardando una referencia al tablero anterior y restaurándola si la importación falla.
+
+  \item \pregunta{¿Qué hicieron bien como equipo? ¿Qué se comprometen a hacer para mejorar?}
+  \resp Se dividió bien el trabajo entre modelo, vista y pruebas. Como mejora, se comprometen a escribir las pruebas de unidad antes de implementar cada método.
+
+  \item \pregunta{¿Qué referencias usaron? ¿Cuál fue la más útil?}
+  \resp La más útil fue la documentación oficial de Java sobre serialización y reflexión.
+\end{enumerate}
+
+% ------------------------------------------------------------------
+\begin{thebibliography}{9}
+\setlength{\itemsep}{0.3em}
+
+\bibitem{serial}
+Oracle. (2024). \textit{Java Object Serialization Specification}. Oracle Corporation. \url{https://docs.oracle.com/en/java/javase/21/docs/specs/serialization/index.html}
+
+\bibitem{reflect}
+Oracle. (2024). \textit{Class Class<T>} [Documentación de la API de Java SE 21]. \url{https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Class.html}
+
+\bibitem{io}
+Oracle. (2024). \textit{The Java Tutorials: Basic I/O}. \url{https://docs.oracle.com/javase/tutorial/essential/io/}
+
+\bibitem{swing}
+Oracle. (2024). \textit{How to Use File Choosers}. The Java Tutorials. \url{https://docs.oracle.com/javase/tutorial/uiswing/components/filechooser.html}
+
+\bibitem{xp}
+Beck, K., \& Andres, C. (2004). \textit{Extreme Programming Explained: Embrace Change} (2.ª ed.). Addison-Wesley.
+
+\end{thebibliography}
+
+\end{document}

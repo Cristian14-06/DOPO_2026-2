@@ -1,0 +1,10 @@
+Elephant 5, 5
+Lion 8, 8
+Zebra 12, 12
+Chameleon 3, 3
+Shrub 15, 15
+Storm 2, 20
+Grass 19, 2
+Ground 18, 0
+SavannaElephant 10, 10
+Dragon 1, 1

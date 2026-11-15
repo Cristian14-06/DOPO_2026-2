@@ -1,49 +1,32 @@
 package domain;
 
 /**
- * Freezing special power that launches the ball with high speed and freezes the rival upon impact.
+ * Tiro de poder de CanadÃ¡: CongelaciÃ³n.
+ * Congela al oponente en un bloque de hielo durante 3 segundos.
  * 
- * @author Juan Esppitia
+ * @author Juan Espitia
  * @author Cristian Salamanca
  */
 public class FreezePower extends Power {
 
-	/**
-	 * Applies the freeze effect by stunning the rival's head.
-	 * 
-	 * @param ball Soccer ball in play
-	 * @param rival Opponent player
-	 */
-	@Override
-	public void applyPower(Ball ball, Player rival) {
-		if (rival != null && rival.getHead() != null) {
-			rival.getHead().setStunned(true);
-		}
-	}
+    /**
+     * Constructs Canada's Freeze power.
+     */
+    public FreezePower() {
+        super("Congelación", 40.0, 3.0, PlayerEffect.FROZEN);
+    }
 
-	/**
-	 * Restores rival state when freeze effect expires.
-	 * 
-	 * @param rival Opponent player
-	 */
-	@Override
-	public void stopPower(Player rival) {
-		if (rival != null && rival.getHead() != null) {
-			rival.getHead().setStunned(false);
-		}
-	}
-	
-	/**
-	 * Propels the ball with high velocity towards the opponent's goal.
-	 * 
-	 * @param ball Soccer ball in play
-	 * @param side Shooting player field side
-	 */
-	@Override
-	public void affectBall(Ball ball, Side side) {
-		if (ball == null) return;
-		double dir = (side == Side.LEFT) ? 1.0 : -1.0;
-		ball.setHorizontalSpeed(18 * dir);
-		ball.setVerticalSpeed(-8);
-	}
+    /**
+     * Launches the ball forward with an upward arc.
+     *
+     * @param ball Ball in play
+     * @param side Side of the shooting player
+     */
+    @Override
+    public void affectBall(Ball ball, Side side) {
+        if (ball == null) return;
+        double dir = (side == Side.LEFT) ? 1.0 : -1.0;
+        ball.setHorizontalSpeed(19.0 * dir);
+        ball.setVerticalSpeed(-6.0);
+    }
 }

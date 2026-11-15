@@ -1,9 +1,11 @@
 package domain;
 
+import java.util.Optional;
+
 /**
  * Abstract base class for 2D geometric shapes with Cartesian position and collision detection.
  * 
- * @author Juan Esppitia
+ * @author Juan Espitia
  * @author Cristian Salamanca
  */
 public abstract class Figure {
@@ -89,4 +91,12 @@ public abstract class Figure {
 	 * @return True if colliding, false otherwise
 	 */
 	public abstract boolean detectCollisionWithRectangle(Rectangle rectangle);
+
+	/**
+	 * Computes contact information (outward normal and penetration depth) if the given ball circle overlaps this figure.
+	 *
+	 * @param ball Ball circle to test against
+	 * @return Contact details if overlapping, empty otherwise
+	 */
+	public abstract Optional<Contact> contactWith(Circle ball);
 }

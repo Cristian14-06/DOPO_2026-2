@@ -5,7 +5,7 @@ import java.util.Set;
 /**
  * Common interface for player input controllers, decoupled from presentation.
  * 
- * @author Juan Esppitia
+ * @author Juan Espitia
  * @author Cristian Salamanca
  */
 public interface Controller {
@@ -16,7 +16,7 @@ public interface Controller {
      * @param match Read-only match state for decision making
      * @return Set of decided actions
      */
-    Set<PlayerAction> decide(ReaderMatch match);
+    Set<PlayerAction> decide(MatchView match);
 
     /**
      * Polymorphically receives raw input intentions from the user interface.

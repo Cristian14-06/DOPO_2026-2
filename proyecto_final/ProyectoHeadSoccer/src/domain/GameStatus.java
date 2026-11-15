@@ -1,14 +1,16 @@
 package domain;
 
 /**
- * Enumerates match execution states.
+ * Lifecycle states of a DOPOSoccer match.
  * 
- * @author Juan Esppitia
+ * @author Juan Espitia
  * @author Cristian Salamanca
  */
 public enum GameStatus {
+	NOT_STARTED,
 	PLAYING,
 	PAUSED,
-	GOLDEN_GOAL,
+	GOAL_SCORED,
+	SUDDEN_DEATH,
 	FINISHED
 }

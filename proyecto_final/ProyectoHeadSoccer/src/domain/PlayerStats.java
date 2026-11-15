@@ -1,128 +1,124 @@
 package domain;
 
 /**
- * Performance statistics governing jump, kick strength, and movement speed for a player.
+ * Performance statistics governing speed, jump, kick damage multiplier, and maximum health (survival).
+ * All stats scale from 1 to 10 according to the DOPOSoccer specification.
  * 
- * @author Juan Esppitia
+ * @author Juan Espitia
  * @author Cristian Salamanca
  */
 public class PlayerStats {
+	private int speed;
 	private int jump;
 	private int kick;
-	private int speed;
+	private int survival;
 
 	/**
-	 * Constructs player statistics with explicit jump, kick, and speed ratings.
-	 * 
-	 * @param jump Jump attribute rating (1 to 5)
-	 * @param kick Kick attribute rating (1 to 5)
-	 * @param speed Speed attribute rating (1 to 5)
-	 */
-	public PlayerStats(int jump, int kick, int speed) {
-		this.jump = jump;
-		this.kick = kick;
-		this.speed = speed;
-	}
-
-	/**
-	 * Default constructor initializing balanced baseline statistics.
+	 * Default constructor initializing all statistics at baseline rating 1.
 	 */
 	public PlayerStats() {
-		this.jump = 3;
-		this.kick = 3;
-		this.speed = 3;
+		this.speed = 1;
+		this.jump = 1;
+		this.kick = 1;
+		this.survival = 1;
 	}
 
 	/**
-	 * Returns the jump rating.
+	 * Constructs player statistics with explicit ratings.
 	 * 
-	 * @return Jump level
+	 * @param speed Movement speed rating (1 to 10)
+	 * @param jump Jump rating (1 to 10)
+	 * @param kick Kick damage rating (1 to 10)
+	 * @param survival Health rating (1 to 10)
 	 */
-	public int getJump() {
-		return jump;
+	public PlayerStats(int speed, int jump, int kick, int survival) {
+		this.speed = validate(speed);
+		this.jump = validate(jump);
+		this.kick = validate(kick);
+		this.survival = validate(survival);
 	}
 
-	/**
-	 * Sets the jump rating ensuring bounds between 1 and 5.
-	 * 
-	 * @param jump Jump level to set
-	 * @throws HeadSoccerException If rating is out of bounds
-	 */
-	public void setJump(int jump) throws HeadSoccerException {
-		if (jump < 1 || jump > 5) {
-			throw new HeadSoccerException(HeadSoccerException.PLAYER_STATS_OUT_OF_BOUNDS);
+	private int validate(int val) {
+		if (val < 1 || val > 10) {
+			throw new IllegalArgumentException(DOPOSoccerException.INVALID_STAT + ": " + val);
 		}
-		this.jump = jump;	
+		return val;
 	}
 
 	/**
-	 * Returns the kick rating.
+	 * Returns the displacement in pixels per frame based on speed rating (+10% per level above 1).
 	 * 
-	 * @return Kick level
-	 */
-	public int getKick() {
-		return kick;
-	}
-
-	/**
-	 * Sets the kick rating ensuring bounds between 1 and 5.
-	 * 
-	 * @param kick Kick level to set
-	 * @throws HeadSoccerException If rating is out of bounds
-	 */
-	public void setKick(int kick) throws HeadSoccerException {
-		if (kick < 1 || kick > 5) {
-			throw new HeadSoccerException(HeadSoccerException.PLAYER_STATS_OUT_OF_BOUNDS);
-		}
-		this.kick = kick;
-	}
-
-	/**
-	 * Returns the speed rating.
-	 * 
-	 * @return Speed level
-	 */
-	public int getSpeed() {
-		return speed;
-	}
-
-	/**
-	 * Sets the speed rating ensuring bounds between 1 and 5.
-	 * 
-	 * @param speed Speed level to set
-	 * @throws HeadSoccerException If rating is out of bounds
-	 */
-	public void setSpeed(int speed) throws HeadSoccerException {
-		if (speed < 1 || speed > 5) {
-			throw new HeadSoccerException(HeadSoccerException.PLAYER_STATS_OUT_OF_BOUNDS);
-		}
-		this.speed = speed;
-	}
-
-	/**
-	 * Converts the speed rating into horizontal displacement pixels per frame.
-	 * 
-	 * @return Pixels per frame
+	 * @return Speed displacement in pixels
 	 */
 	public double speedPx() {
-		return 3.0 + speed * 0.8;
+		return 3.5 * (1.0 + 0.10 * (speed - 1));
 	}
 
 	/**
-	 * Converts the jump rating into vertical impulse velocity.
+	 * Returns the vertical jump impulse based on jump rating (+10% per level above 1).
 	 * 
-	 * @return Vertical impulse velocity
+	 * @return Jump impulse in pixels/tick
 	 */
 	public double jumpPx() {
-		return 12.0 + jump * 1.5;
+		return 12.8 * (1.0 + 0.10 * (jump - 1));
 	}
 
 	/**
-	 * Converts the kick rating into impulse force applied to the ball.
+	 * Computes the kick damage multiplier formula:
+	 * multiplicadorKick = 1 + 0.10 * (Kick - 1)
 	 * 
-	 * @return Kick impulse force
+	 * @return Damage multiplier (1.0 to 1.9)
 	 */
-	public double kickPx() {
-		return 15.0 + kick * 2.5;
+	public double getMultiplicadorKick() {
+		return 1.0 + 0.10 * (kick - 1);
+	}
+
+	/**
+	 * Computes normal kick damage against rival:
+	 * danioPatada = 10 * multiplicadorKick
+	 * 
+	 * @return Kick damage amount
+	 */
+	public double getDanioPatada() {
+		return 10.0 * getMultiplicadorKick();
+	}
+
+	/**
+	 * Computes maximum player health based on survival rating:
+	 * vidaMax = 100 * (1 + 0.10 * (Survival - 1))
+	 * 
+	 * @return Maximum health points (100 to 190)
+	 */
+	public double getVidaMax() {
+		return 100.0 * (1.0 + 0.10 * (survival - 1));
+	}
+
+	/**
+	 * Returns the ball impulse force imparted by a kick (unaffected by kick damage rating).
+	 * 
+	 * @return Kick impulse force for the ball
+	 */
+	public double kickBallForce() {
+		return 18.0;
+	}
+
+	public int getSpeed() { return speed; }
+	public void setSpeed(int speed) {
+		this.speed = validate(speed);
+	}
+
+	public int getJump() { return jump; }
+	public void setJump(int jump) {
+		this.jump = validate(jump);
+	}
+
+	public int getKick() { return kick; }
+	public void setKick(int kick) {
+		this.kick = validate(kick);
+	}
+
+	public int getSurvival() { return survival; }
+	public void setSurvival(int survival) {
+		this.survival = validate(survival);
 	}
 }

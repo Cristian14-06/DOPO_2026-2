@@ -6,7 +6,7 @@ import java.util.Set;
 /**
  * Controller implementation that manages player actions driven by human keyboard input.
  * 
- * @author Juan Esppitia
+ * @author Juan Espitia
  * @author Cristian Salamanca
  */
 public class HumanController implements Controller {
@@ -19,7 +19,7 @@ public class HumanController implements Controller {
      * @return Set of active player actions
      */
     @Override 
-    public Set<PlayerAction> decide(ReaderMatch match) {
+    public Set<PlayerAction> decide(MatchView match) {
         return this.actions;
     }
 

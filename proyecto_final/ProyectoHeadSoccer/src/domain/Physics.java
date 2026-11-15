@@ -3,10 +3,13 @@ package domain;
 /**
  * Global physical constants and utility calculations for the game physics engine.
  * 
- * @author Juan Esppitia
+ * @author Juan Espitia
  * @author Cristian Salamanca
  */
 public final class Physics {
+
+    
+    
     /*
      * Private constructor for utility class.
      */
@@ -15,9 +18,10 @@ public final class Physics {
 
     public static final int FPS = 60;
     public static final double GRAVITY = 2.0;
-    public static final double RESTITUTION = 0.78;
-    public static final double CORNER_RESTITUTION = 0.94;
+    public static final double RESTITUTION = 0.48;
+    public static final double CORNER_RESTITUTION = 0.74;
     public static final double FRICTION = 0.6;
+    public static final int TICK_MS = 1000/FPS;
 
     /**
      * Converts a duration in seconds to equivalent frame ticks.

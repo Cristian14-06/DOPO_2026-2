@@ -3,31 +3,41 @@ package domain;
 import java.util.Set;
 
 /**
- * Represents a soccer player entity composed of head, body, and foot limbs, with movement and physics simulation.
+ * Represents a soccer player entity composed of head, body, and foot limbs, with health, stats, power, and status effects.
+ * Complies with DOPOSoccer specifications for damage, powers, health, and stun mechanics.
  * 
- * @author Juan Esppitia
+ * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class Player implements Collidable {
-	private String name;
-	private Country country;
-	private Side side;
-	private Power power; 
-	private Head head;
-	private Body body;
-	private Foot foot;
-	private PlayerStats stats;
-	private double verticalSpeed;
-	private boolean onTop;
-	private int points;
+public class Player implements PlayerView {
+	private final PlayerProfile profile;
+	private final Country country;
+	private final Side side;
+	private final Power power;
+	private final PlayerBody playerBody;
+	private final Life life;
+	private final EffectState effect;
+	private boolean wasKicking = false;
+	private boolean wasPowerPressed = false;
+	private boolean kickDealtDamage = false;
 
 	/**
-	 * Default constructor initializing default player values.
+	 * Constructs a match player backed by a persistent player profile.
+	 *
+	 * @param profile Persistent player profile
+	 * @param country Country representation
+	 * @param side Pitch side assigned
+	 * @param power Special power ability
 	 */
-	public Player() {
-		this.verticalSpeed = 0;
-		this.onTop = false;
-		this.points = 0;
+	public Player(PlayerProfile profile, Country country, Side side, Power power) {
+		this.profile = (profile != null) ? profile : new PlayerProfile("Player");
+		this.country = country;
+		this.side = side;
+		this.power = power;
+		this.playerBody = new PlayerBody(side);
+		this.playerBody.getFoot().setPowerKicking((int) this.profile.getStats().kickBallForce());
+		this.life = new Life(this.profile.getStats().getVidaMax());
+		this.effect = new EffectState();
 	}
 
 	/**
@@ -40,36 +50,16 @@ public class Player implements Collidable {
 	 * @param stats Player performance stats
 	 */
 	public Player(String name, Country country, Side side, Power power, PlayerStats stats) {
-		double initialX = (side == Side.LEFT) ? 100 : Field.WIDTH - 100;
-		this.name = name;
-		this.country = country;
-		this.side = side;
-		this.power = power;
-		this.stats = stats;
-		this.verticalSpeed = 0;
-		this.onTop = false;
-		this.points = 0;
-		this.head = new Head(initialX, side);
-		this.body = new Body(initialX, side);
-		this.foot = new Foot(initialX, side);
-		if (this.stats != null) {
-			this.foot.setPowerKicking((int) this.stats.kickPx());
-		}
+		this(new PlayerProfile(name, stats), country, side, power);
 	}
 
 	/**
 	 * Resets player position and vertical state to kickoff coordinates.
 	 */
 	public void resetPosition() {
-		double initialX = (side == Side.LEFT) ? 100 : Field.WIDTH - 100;
-		this.verticalSpeed = 0;
-		this.onTop = false;
-		this.head = new Head(initialX, side);
-		this.body = new Body(initialX, side);
-		this.foot = new Foot(initialX, side);
-		if (this.stats != null) {
-			this.foot.setPowerKicking((int) this.stats.kickPx());
-		}
+		this.playerBody.resetPosition();
+		this.playerBody.getFoot().setPowerKicking((int) profile.getStats().kickBallForce());
+		clearEffect();
 	}
 
 	/**
@@ -79,96 +69,160 @@ public class Player implements Collidable {
 	 * @param dy Vertical offset in pixels
 	 */
 	public void translate(double dx, double dy) {
-		if (head != null && head.getCircle() != null) {
-			head.getCircle().translate(dx, dy);
-		}
-		if (body != null && body.getRectangle() != null) {
-			body.getRectangle().translate(dx, dy);
-		}
-		if (foot != null && foot.getCircle() != null) {
-			foot.getCircle().translate(dx, dy);
-		}
+		this.playerBody.translate(dx, dy);
 	}
 
 	/**
-	 * Moves player leftwards according to speed attribute.
+	 * Indicates if player is currently disabled from moving, jumping or kicking.
+	 * 
+	 * @return True if disabled
+	 */
+	public boolean isDisabled() {
+		return life.isStunned() || !effect.canMove() || playerBody.getHead().isStunned();
+	}
+
+	/**
+	 * Moves player horizontally to the left according to speed stat and status effects.
 	 */
 	public void moveLeft() {
-		if (!head.isStunned() && head.getCircle().getX() - head.getCircle().getRadius() > 0) {
-			translate(-stats.speedPx(), 0);
+		if (isDisabled()) return;
+		if (effect.isConfused()) {
+			moveRightInternal();
+			return;
 		}
+		moveLeftInternal();
 	}
-	
+
 	/**
-	 * Moves player rightwards according to speed attribute.
+	 * Moves player horizontally to the right according to speed stat and status effects.
 	 */
 	public void moveRight() {
-		if (!head.isStunned() && head.getCircle().getX() + head.getCircle().getRadius() < Field.WIDTH) {
-			translate(stats.speedPx(), 0);
+		if (isDisabled()) return;
+		if (effect.isConfused()) {
+			moveLeftInternal();
+			return;
 		}
+		moveRightInternal();
 	}
-	
-	/**
-	 * Performs a fast horizontal dash to the left.
-	 */
-	public void dashLeft() {
-		if (!head.isStunned() && head.getCircle().getX() - head.getCircle().getRadius() > 0) {
-			translate(-stats.speedPx() * 2, 0);
-		}
-		collideWithEdges();
+
+	private void moveLeftInternal() {
+		double spd = profile.getStats().speedPx() * effect.speedFactor();
+		playerBody.translate(-spd, 0);
+		playerBody.collideWithEdges();
 	}
-	
-	/**
-	 * Performs a fast horizontal dash to the right.
-	 */
-	public void dashRight() {
-		if (!head.isStunned() && head.getCircle().getX() + head.getCircle().getRadius() < Field.WIDTH) {
-			translate(stats.speedPx() * 2, 0);
-		}
-		collideWithEdges();
+
+	private void moveRightInternal() {
+		double spd = profile.getStats().speedPx() * effect.speedFactor();
+		playerBody.translate(spd, 0);
+		playerBody.collideWithEdges();
 	}
 	
 	/**
 	 * Applies an upward jump impulse if player is on the ground or atop another surface.
 	 */
 	public void jump() {
-		double groundY = foot.getCircle().getY() + foot.getCircle().getRadius() + (foot.isKicking() ? 25 : 0);
-		if (!head.isStunned() && (groundY >= Field.HEIGHT || onTop)) {
-			verticalSpeed = -stats.jumpPx(); 
-			onTop = false;
-		}
+		if (isDisabled() || !effect.canJump()) return;
+		playerBody.jump(profile.getStats().jumpPx());
 	}
 	
 	/**
-	 * Updates vertical position, gravity, and ground landing contact.
+	 * Updates vertical position, gravity, status effect timers, and ground landing contact.
 	 */
 	public void moveVertical() {
-		translate(0, verticalSpeed);
-		double groundY = foot.getCircle().getY() + foot.getCircle().getRadius() + (foot.isKicking() ? 25 : 0);
-		if (groundY < Field.HEIGHT && !onTop) { 
-			verticalSpeed += Physics.GRAVITY;
-		} else {
-			if (groundY > Field.HEIGHT) {
-				translate(0, Field.HEIGHT - groundY);
-			}
-			verticalSpeed = 0;
+		life.tick();
+		if (effect.getCurrent() == PlayerEffect.PUSHED && effect.getTicksRemaining() > 0) {
+			translate(-side.dir() * 4.0, 0.0);
+			collideWithEdges();
 		}
+		effect.tick();
+		if (!life.isStunned() && effect.canMove()) {
+			playerBody.getHead().setStunned(false);
+		}
+		playerBody.tick();
+	}
+
+	/**
+	 * Frame tick updating power charge and physics.
+	 */
+	public void tick() {
+		if (power != null) {
+			power.tickCharge();
+		}
+		moveVertical();
 	}
 	
 	/**
 	 * Initiates the kick animation and foot displacement.
 	 */
 	public void kick() {
-		if (!head.isStunned()) {
-			foot.kicking(side);
+		if (isDisabled() || !effect.canKick()) return;
+		if (!playerBody.isKicking()) {
+			kickDealtDamage = false;
 		}
+		playerBody.startKick();
 	}
 
 	/**
 	 * Stops the kick animation and returns the foot to idle position.
 	 */
 	public void stopKick() {
-		foot.stopKicking(side);
+		playerBody.stopKick();
+	}
+
+	/**
+	 * Activates the player's special power aura when power gauge is full.
+	 */
+	public void activatePower() {
+		if (power != null && !isDisabled()) {
+			power.activateAura();
+		}
+	}
+
+	/**
+	 * Receives goal notification, adding 25% to the power gauge according to rules.
+	 */
+	public void onGoalReceived() {
+		if (power != null) {
+			power.addQuarterOnGoalReceived();
+		}
+	}
+
+	/**
+	 * Applies damage to player health, triggering a 3-second stun at zero health.
+	 * 
+	 * @param damage Damage amount to deduct
+	 */
+	public void takeDamage(double damage) {
+		life.takeDamage(damage);
+		if(life.isStunned()){
+			playerBody.getHead().setStunned(true);
+		}
+	}
+
+	/**
+	 * Applies a status effect from an opponent power, replacing any active effect.
+	 * 
+	 * @param statusEffect Status effect to apply
+	 * @param durationSeconds Duration in seconds
+	 */
+	public void applyEffect(PlayerEffect statusEffect, double durationSeconds) {
+		effect.apply(statusEffect, durationSeconds);
+		if (statusEffect == PlayerEffect.FROZEN) {
+			playerBody.getHead().setStunned(true);
+		} else if (statusEffect == PlayerEffect.KNOCKED_OUT) {
+			playerBody.setVerticalSpeed(-10.0);
+			playerBody.clearSupport();
+		}
+	}
+
+	/**
+	 * Clears active status effect.
+	 */
+	public void clearEffect() {
+		effect.clear();
+		if (!life.isStunned()) {
+			playerBody.getHead().setStunned(false);
+		}
 	}
 
 	/**
@@ -180,11 +234,14 @@ public class Player implements Collidable {
 	 */
 	public void applyInput(Set<PlayerAction> actions, Ball ball, Player rival) {
 		if (actions == null) {
-			stopKick();
+			wasKicking = false;
+			wasPowerPressed = false;
 			return;
 		}
 
-		boolean isKickingAction = false;
+		boolean kickingNow = actions.contains(PlayerAction.KICK);
+		boolean powerNow = actions.contains(PlayerAction.POWER);
+
 		for (PlayerAction action : actions) {
 			switch (action) {
 				case LEFT:
@@ -197,20 +254,20 @@ public class Player implements Collidable {
 					jump();
 					break;
 				case KICK:
-					kick();
-					isKickingAction = true;
+					if (!wasKicking) {
+						kick();
+					}
 					break;
 				case POWER:
-					if (ball != null && rival != null) {
-						usePower(ball, rival);
+					if (!wasPowerPressed) {
+						activatePower();
 					}
 					break;
 			}
 		}
 
-		if (!isKickingAction) {
-			stopKick();
-		}
+		wasKicking = kickingNow;
+		wasPowerPressed = powerNow;
 	}
 
 	/**
@@ -223,35 +280,24 @@ public class Player implements Collidable {
 	}
 	
 	/**
+	 * Clears support state before collision resolution on each tick.
+	 */
+	public void clearSupport() {
+		playerBody.clearSupport();
+	}
+
+	/**
 	 * Resolves collision, stacking, and push mechanics between this player and an opponent.
 	 * 
 	 * @param player Opponent player to collide with
 	 */
 	public void collideWithPlayer(Player player) {
-		if (this.head.getCircle().detectCollisionWithCircle(player.head.getCircle()) ||
-		    this.head.getCircle().detectCollisionWithRectangle(player.body.getRectangle()) ||
-		    this.body.getRectangle().detectCollisionWithCircle(player.head.getCircle()) ||
-		    this.body.getRectangle().detectCollisionWithRectangle(player.body.getRectangle()) ||
-		    this.foot.getCircle().detectCollisionWithCircle(player.head.getCircle()) ||
-			this.foot.getCircle().detectCollisionWithCircle(player.foot.getCircle()) ||
-			this.foot.getCircle().detectCollisionWithRectangle(player.body.getRectangle()) ||
-		    this.head.getCircle().detectCollisionWithCircle(player.foot.getCircle())) {
-			
-			if (this.foot.getCircle().detectCollisionWithCircle(player.head.getCircle()) && 
-					this.foot.getCircle().getY() < player.head.getCircle().getY()) {
-				verticalSpeed = 0;
-				onTop = true;
-			} else {
-				onTop = false;
-			}
-			
-			double push = (this.head.getCircle().getX() < player.head.getCircle().getX()) 
-					? -player.stats.getSpeed() 
-					: player.stats.getSpeed();
-			translate(push, 0);
-			collideWithEdges();
-		} else {
-			onTop = false;
+		if (player == null) return;
+		playerBody.collideWithPlayer(player.playerBody, player.profile.getStats().speedPx());
+
+		if (!kickDealtDamage && !isDisabled() && playerBody.isKickHitting(player.playerBody)) {
+			player.takeDamage(profile.getStats().getDanioPatada());
+			kickDealtDamage = true;
 		}
 	}
 
@@ -259,269 +305,130 @@ public class Player implements Collidable {
 	 * Restricts player movement to remain within horizontal pitch boundaries.
 	 */
 	public void collideWithEdges() {
-		if (head.getCircle().getX() - head.getCircle().getRadius() < 0) {
-			double overflow = -(head.getCircle().getX() - head.getCircle().getRadius());
-			translate(overflow, 0);
-		}
-		if (head.getCircle().getX() + head.getCircle().getRadius() > Field.WIDTH) {
-			double overflow = (head.getCircle().getX() + head.getCircle().getRadius()) - Field.WIDTH;
-			translate(-overflow, 0);
-		}
+		playerBody.collideWithEdges();
 	}
 	
 	/**
-	 * Resolves collision against a goal structure, allowing head collision or standing atop crossbars.
+	 * Resolves physical collision with soccer goal crossbar and net structures.
 	 * 
-	 * @param goal Goal post structure
+	 * @param goal Goal entity to collide against
 	 */
 	public void collideWithGoal(Goal goal) {
-		if (this.head.getCircle().detectCollisionWithRectangle(goal.getCrossBar())) {
-			verticalSpeed = 0;
-		} else if (this.foot.getCircle().detectCollisionWithRectangle(goal.getCrossBar())) {
-			verticalSpeed = 0;
-			onTop = true;
-		} else {
-			onTop = false;
-		}
+		playerBody.collideWithGoal(goal);
 	}
 
 	/**
-	 * Checks if the player's foot rests directly on top of the soccer ball.
-	 * 
-	 * @param ball Ball reference
-	 */
-	public void collideMyFootWithBall(Ball ball){
-		if(this.foot.getCircle().getX() >= ball.getCircle().getX() - ball.getCircle().getRadius() &&
-		this.foot.getCircle().getX() <= ball.getCircle().getX() + ball.getCircle().getRadius() &&
-		this.foot.getCircle().getY() + this.foot.getCircle().getRadius() >= ball.getCircle().getY() - ball.getCircle().getRadius()){
-			onTop = true;
-		}
-	}
-
-	/**
-	 * Executes one tick cycle updating powers, stun timers, foot animations, and gravity.
-	 */
-	public void tick() {
-		if (power != null) {
-			power.tick();
-		}
-		if (head != null && head.isStunned()) {
-			head.tick();
-		}
-
-		if (foot != null) {
-			foot.tick(side);
-		}
-		moveVertical();
-	}
-
-	/**
-	 * Returns the player's name.
-	 * 
-	 * @return Player name
-	 */
-	public String getName() {
-		return name;
-	}
-
-	/**
-	 * Sets the player's name.
-	 * 
-	 * @param name Player name to assign
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	/**
-	 * Returns the player's nationality.
-	 * 
-	 * @return Country representation
-	 */
-	public Country getCountry() {
-		return country;
-	}
-
-	/**
-	 * Sets the player's nationality.
-	 * 
-	 * @param country Country to assign
-	 */
-	public void setCountry(Country country) {
-		this.country = country;
-	}
-
-	/**
-	 * Returns the player's special power.
-	 * 
-	 * @return Power instance
-	 */
-	public Power getPower() {
-		return power;
-	}
-
-	/**
-	 * Assigns the player's special power.
-	 * 
-	 * @param power Power instance to assign
-	 */
-	public void setPower(Power power) {
-		this.power = power;
-	}
-
-	/**
-	 * Triggers special power activation on the ball and opponent.
-	 * 
+	 * Resolves ball collisions against this player's body, head, and foot.
+	 *
 	 * @param ball Ball in play
-	 * @param rival Opponent player
 	 */
-	public void usePower(Ball ball, Player rival) {
-		if (power != null) {
-			power.activate(ball, side);
+	public void collideWithBall(Ball ball) {
+		playerBody.collideWithBall(ball, power);
+	}
+
+	/**
+	 * Returns this player's kick damage multiplier from stats.
+	 *
+	 * @return Kick multiplier
+	 */
+	public double getKickMultiplier() {
+		return profile.getStats().getMultiplicadorKick();
+	}
+
+	/**
+	 * Applies damage and status effect from an opponent power hit.
+	 *
+	 * @param hit Power hit payload to apply
+	 */
+	public void receiveHit(PowerHit hit) {
+		if (hit == null) return;
+		if (hit.getDamage() > 0) {
+			takeDamage(hit.getDamage());
+		}
+		if (hit.getEffect() != null && hit.getEffect() != PlayerEffect.NONE) {
+			applyEffect(hit.getEffect(), hit.getDurationSeconds());
 		}
 	}
 
 	/**
-	 * Returns the accumulated goals or points.
-	 * 
-	 * @return Points scored
+	 * Checks whether the ball overlaps any part of this player (head, body, or foot).
+	 *
+	 * @param ball Ball in play
+	 * @return True if any limb overlaps the ball
 	 */
-	public int getPoints() {
-		return points;
+	public boolean isHitByBall(Ball ball) {
+		return playerBody.isHitByBall(ball);
 	}
 
-	/**
-	 * Sets the accumulated goals or points.
-	 * 
-	 * @param points Points to assign
-	 */
-	public void setPoints(int points) {
-		this.points = points;
+	public String getName() { return profile.getName(); }
+	public Country getCountry() { return country; }
+	public Side getSide() { return side; }
+	public Head getHead() { return playerBody.getHead(); }
+	public Body getBody() { return playerBody.getBody(); }
+	public Foot getFoot() { return playerBody.getFoot(); }
+	public PlayerStats getStats() { return profile.getStats(); }
+	public Power getPower() { return power; }
+	public double getVerticalSpeed() { return playerBody.getVerticalSpeed(); }
+	public int getPoints() { return profile.getPoints(); }
+	public void addPoints(int amount) { profile.addPoints(amount); }
+	public double getVidaActual() { return life.getCurrent(); }
+	public double getVidaMax() { return life.getMax(); }
+	public PlayerEffect getCurrentEffect() { return effect.getCurrent(); }
+	public boolean isStunnedByZeroHealth() { return life.isStunned(); }
+	public int getStunTicksRemaining() { return life.getStunTicksRemaining(); }
+
+	@Override
+	public double getLife() {
+		return life.getCurrent();
 	}
 
-	/**
-	 * Returns the assigned side of the pitch.
-	 * 
-	 * @return Side enum value
-	 */
-	public Side getSide() {
-		return side;
+	@Override
+	public double getMaxLife() {
+		return life.getMax();
 	}
 
-	/**
-	 * Sets the assigned side of the pitch.
-	 * 
-	 * @param side Side enum value
-	 */
-	public void setSide(Side side) {
-		this.side = side;
+	@Override
+	public double getPowerProgress() {
+		return (power != null) ? power.getCharge() : 0.0;
 	}
 
-	/**
-	 * Returns the head limb component.
-	 * 
-	 * @return Head instance
-	 */
-	public Head getHead() {
-		return head;
+	@Override
+	public boolean hasAura() {
+		return power != null && power.isAuraActive();
 	}
 
-	/**
-	 * Sets the head limb component.
-	 * 
-	 * @param head Head instance to assign
-	 */
-	public void setHead(Head head) {
-		this.head = head;
+	@Override
+	public boolean isStunned() {
+		return life.isStunned();
 	}
 
-	/**
-	 * Returns the body limb component.
-	 * 
-	 * @return Body instance
-	 */
-	public Body getBody() {
-		return body;
+	@Override
+	public boolean isKicking() {
+		return playerBody.isKicking();
 	}
 
-	/**
-	 * Sets the body limb component.
-	 * 
-	 * @param body Body instance to assign
-	 */
-	public void setBody(Body body) {
-		this.body = body;
+	@Override
+	public String getActiveEffectName() {
+		return (effect.getCurrent() != PlayerEffect.NONE) ? effect.getCurrent().name() : "";
 	}
 
-	/**
-	 * Returns the foot limb component.
-	 * 
-	 * @return Foot instance
-	 */
-	public Foot getFoot() {
-		return foot;
+	@Override
+	public Circle getHeadShape() {
+		return playerBody.getHeadShape();
 	}
 
-	/**
-	 * Sets the foot limb component.
-	 * 
-	 * @param foot Foot instance to assign
-	 */
-	public void setFoot(Foot foot) {
-		this.foot = foot;
+	@Override
+	public Rectangle getBodyShape() {
+		return playerBody.getBodyShape();
 	}
 
-	/**
-	 * Returns the player's statistical attributes.
-	 * 
-	 * @return PlayerStats instance
-	 */
-	public PlayerStats getStats() {
-		return stats;
+	@Override
+	public Circle getFootShape() {
+		return playerBody.getFootShape();
 	}
 
-	/**
-	 * Sets the player's statistical attributes.
-	 * 
-	 * @param stats PlayerStats to assign
-	 */
-	public void setStats(PlayerStats stats) {
-		this.stats = stats;
-	}
-
-	/**
-	 * Returns the current vertical velocity.
-	 * 
-	 * @return Vertical speed in pixels per tick
-	 */
-	public double getVerticalSpeed() {
-		return verticalSpeed;
-	}
-
-	/**
-	 * Sets the vertical velocity.
-	 * 
-	 * @param verticalSpeed Vertical speed in pixels per tick
-	 */
-	public void setVerticalSpeed(double verticalSpeed) {
-		this.verticalSpeed = verticalSpeed;
-	}
-
-	/**
-	 * Checks if the player is currently resting on a surface.
-	 * 
-	 * @return True if supported, false otherwise
-	 */
-	public boolean isOnTop() {
-		return onTop;
-	}
-
-	/**
-	 * Sets whether the player is supported on top of a surface.
-	 * 
-	 * @param onTop True if supported, false otherwise
-	 */
-	public void setOnTop(boolean onTop) {
-		this.onTop = onTop;
+	@Override
+	public int getStat(StatType type) {
+		return profile.getStat(type);
 	}
 }

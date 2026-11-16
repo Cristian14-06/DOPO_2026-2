@@ -1,0 +1,4 @@
+INDEX VERSION 1.134+C:\Users\Cristian\DOPO_2026-2\proyecto_final\.metadata\.plugins\org.eclipse.jdt.core
+1865797976.index
+1951770614.index
+2197954919.index

@@ -14,12 +14,17 @@ public class DOPOSoccerException extends Exception{
     public static final String NOT_ENOUGH_POINTS = "puntos no suficientes";
     public static final String NULL_ARGUMENT = "argumento nulo";
     public static final String MODALITY_NOT_SUPPORTED = "modalidad no soportada";
+<<<<<<< HEAD
     public static final String NO_ACTIVE_MATCH = "No hay una partida activa para guardar";
     public static final String FILE_NOT_FOUND = "El archivo seleccionado no existe";
     public static final String SAVE_ERROR = "No fue posible guardar el archivo";
     public static final String OPEN_ERROR = "No fue posible abrir el archivo";
     public static final String INVALID_FILE = "El archivo no corresponde a una partida válida";
     public static final String MAX_STAT_REACHED = "La estadística ya alcanzó el nivel máximo";
+=======
+    public static final String SAVE_ERROR = "No se pudo guardar la partida";
+    public static final String OPEN_ERROR = "No se pudo abrir la partida";
+>>>>>>> b6f49dc0f20b13fe73c109c51ef4638bef4c9d74
 
     /**
      * Constructs a DOPOSoccerException with the specified detail message.

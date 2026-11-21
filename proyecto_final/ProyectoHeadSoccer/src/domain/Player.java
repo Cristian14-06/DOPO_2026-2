@@ -1,5 +1,6 @@
 package domain;
 
+import java.io.Serializable;
 import java.util.Set;
 import java.util.List;
 import java.util.Collections;
@@ -11,7 +12,8 @@ import java.util.Collections;
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class Player implements PlayerView {
+public class Player implements PlayerView, Serializable {
+	private static final long serialVersionUID = 1L;
 	private final PlayerProfile profile;
 	private final Country country;
 	private final Side side;
@@ -22,6 +24,17 @@ public class Player implements PlayerView {
 	private boolean wasKicking = false;
 	private boolean wasPowerPressed = false;
 	private boolean kickDealtDamage = false;
+
+	/**
+	 * Constructs a match player backed by a persistent player profile, resolving power from the country.
+	 *
+	 * @param profile Persistent player profile
+	 * @param country Country representation
+	 * @param side Pitch side assigned
+	 */
+	public Player(PlayerProfile profile, Country country, Side side) {
+		this(profile, country, side, (country != null) ? country.getPower() : null);
+	}
 
 	/**
 	 * Constructs a match player backed by a persistent player profile.
@@ -132,11 +145,7 @@ public class Player implements PlayerView {
 	 */
 	public void moveVertical() {
 		life.tick();
-		if (effect.getCurrent() == PlayerEffect.PUSHED && effect.getTicksRemaining() > 0) {
-			translate(-side.dir() * 4.0, 0.0);
-			collideWithEdges();
-		}
-		effect.tick();
+		effect.tick(playerBody, side);
 		if (!life.isStunned() && effect.canMove()) {
 			playerBody.getHead().setStunned(false);
 		}
@@ -208,13 +217,8 @@ public class Player implements PlayerView {
 	 * @param durationSeconds Duration in seconds
 	 */
 	public void applyEffect(PlayerEffect statusEffect, double durationSeconds) {
-		effect.apply(statusEffect, durationSeconds);
-		if (statusEffect == PlayerEffect.FROZEN) {
-			playerBody.getHead().setStunned(true);
-		} else if (statusEffect == PlayerEffect.KNOCKED_OUT) {
-			playerBody.setVerticalSpeed(-10.0);
-			playerBody.clearSupport();
-		}
+		Effect next = (statusEffect != null) ? statusEffect.createEffect() : new NoneEffect();
+		effect.apply(next, durationSeconds, playerBody);
 	}
 
 	/**
@@ -380,8 +384,8 @@ public class Player implements PlayerView {
 		if (hit.getDamage() > 0) {
 			takeDamage(hit.getDamage());
 		}
-		if (hit.getEffect() != null && hit.getEffect() != PlayerEffect.NONE) {
-			applyEffect(hit.getEffect(), hit.getDurationSeconds());
+		if (hit.getEffect() != null && hit.getEffect().getType() != PlayerEffect.NONE) {
+			effect.apply(hit.getEffect(), hit.getDurationSeconds(), playerBody);
 		}
 	}
 
@@ -395,21 +399,46 @@ public class Player implements PlayerView {
 		return playerBody.isHitByBall(ball);
 	}
 
+	/**
+	 * Ends any active power shot state for this player.
+	 */
+	public void finishPowerShot() {
+		if (power != null) {
+			power.finishPowerShot();
+		}
+	}
+
+	/**
+	 * Advances per-frame power shot effects such as illusion clones.
+	 *
+	 * @param ball Ball in play
+	 */
+	public void updatePowerShot(Ball ball) {
+		if (power != null) {
+			power.updateShot(ball);
+		}
+	}
+
+	/**
+	 * Evaluates whether this player's active power shot hits the opponent and returns the hit payload.
+	 *
+	 * @param rival Opponent player
+	 * @param ball Ball in play
+	 * @return PowerHit payload if hit, or null otherwise
+	 */
+	public PowerHit powerHitOn(Player rival, Ball ball) {
+		if (power == null || rival == null || !power.isPowerShotActive() || !rival.isHitByBall(ball)) {
+			return null;
+		}
+		return power.onHitRival(getKickMultiplier());
+	}
+
 	public String getName() { return profile.getName(); }
 	public Country getCountry() { return country; }
 	public Side getSide() { return side; }
-	public Head getHead() { return playerBody.getHead(); }
-	public Body getBody() { return playerBody.getBody(); }
-	public Foot getFoot() { return playerBody.getFoot(); }
-	public PlayerStats getStats() { return profile.getStats(); }
-	public Power getPower() { return power; }
 	public double getVerticalSpeed() { return playerBody.getVerticalSpeed(); }
 	public int getPoints() { return profile.getPoints(); }
 	public void addPoints(int amount) { profile.addPoints(amount); }
-	public double getVidaActual() { return life.getCurrent(); }
-	public double getVidaMax() { return life.getMax(); }
-	public PlayerEffect getCurrentEffect() { return effect.getCurrent(); }
-	public boolean isStunnedByZeroHealth() { return life.isStunned(); }
 	public int getStunTicksRemaining() { return life.getStunTicksRemaining(); }
 
 	@Override

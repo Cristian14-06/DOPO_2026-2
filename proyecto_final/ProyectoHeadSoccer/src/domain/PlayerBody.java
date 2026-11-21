@@ -1,5 +1,6 @@
 package domain;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -10,7 +11,8 @@ import java.util.Optional;
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class PlayerBody {
+public class PlayerBody implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final Side side;
     private final Head head;
     private final Body body;
@@ -169,11 +171,11 @@ public class PlayerBody {
         if(ball == null) return;
         if(foot.isKicking()){
             collideFootWithBall(ball, power);
-            ball.bounceOff(head.getCircle(), Physics.RESTITUTION, 20.0);
-            ball.bounceOff(body.getRectangle(), Physics.RESTITUTION, 0);
+            ball.bounceOff(head.getCircle(), Physics.HEAD_RESTITUTION, Physics.HEAD_IMPULSE);
+            ball.bounceOff(body.getRectangle(), Physics.BODY_RESTITUTION, 0.0);
         }else{
-            ball.bounceOff(head.getCircle(), Physics.RESTITUTION, 20.0);
-            ball.bounceOff(body.getRectangle(), Physics.RESTITUTION, 0); 
+            ball.bounceOff(head.getCircle(), Physics.HEAD_RESTITUTION, Physics.HEAD_IMPULSE);
+            ball.bounceOff(body.getRectangle(), Physics.BODY_RESTITUTION, 0.0); 
             collideFootWithBall(ball, power);          
         }
     }
@@ -184,10 +186,11 @@ public class PlayerBody {
         if(contact.isEmpty()) return;
         Contact c = contact.get();
         if(foot.isKicking()){
-            ball.getCircle().translate(c.getNormal().getX() * c.getPenetration(), c.getNormal().getY() * c.getPenetration());
-            boolean inFront = (ball.getX() - footCircle.getX()) * side.dir() > -ball.getRadius();
+            
+            boolean inFront = (ball.getX() - footCircle.getX()) * side.dir() >= -ball.getRadius();
             if(inFront){
-                Vector2 vel = new Vector2(side.dir(), -0.45).normalized().scale(foot.getPowerKicking());
+                ball.getCircle().translate(side.dir() * c.getPenetration(), 0);
+                Vector2 vel = new Vector2(side.dir(), Physics.KICK_LIFT_FACTOR).normalized().scale(foot.getPowerKicking());
                 ball.setHorizontalSpeed(vel.getX());
                 ball.setVerticalSpeed(vel.getY());
                 if(power != null && power.isAuraActive()){
@@ -196,7 +199,7 @@ public class PlayerBody {
                 return;
             }
         }
-        ball.bounceOff(footCircle, Physics.RESTITUTION, 0.0);
+        ball.bounceOff(footCircle, Physics.FOOT_RESTITUTION, 0.0);
     }
 
     /**
@@ -211,10 +214,6 @@ public class PlayerBody {
         return ballCircle.detectCollisionWithCircle(head.getCircle())
                 || ballCircle.detectCollisionWithRectangle(body.getRectangle())
                 || ballCircle.detectCollisionWithCircle(foot.getCircle());
-    }
-
-    public void collideWithPlayer(PlayerBody other){
-        
     }
 
     /**

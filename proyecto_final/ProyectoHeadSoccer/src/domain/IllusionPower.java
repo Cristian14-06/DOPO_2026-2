@@ -13,13 +13,17 @@ public class IllusionPower extends Power {
     private int illusionTicksRemaining;
 
     public IllusionPower() {
+<<<<<<< HEAD
         super("Ilusión", 30.0, 2.5, PlayerEffect.CONFUSED);
+=======
+        super("Ilusión", 2.5);
+>>>>>>> b6f49dc0f20b13fe73c109c51ef4638bef4c9d74
         this.fakeBalls = new ArrayList<>();
         this.illusionTicksRemaining = 0;
     }
 
     @Override
-    public void affectBall(Ball ball, Side side) {
+    protected void shapeShot(Ball ball, Side side) {
         if (ball == null) return;
 
         double dir = (side == Side.LEFT) ? 1.0 : -1.0;
@@ -69,6 +73,7 @@ public class IllusionPower extends Power {
         return getDecoyBalls();
     }
 
+<<<<<<< HEAD
     @Override
     public List<Circle> getDecoyBalls() {
         List<Circle> copies = new ArrayList<>();
@@ -93,6 +98,44 @@ public class IllusionPower extends Power {
 
     @Override
     public void updateShot(Ball ball) {
+=======
+    /**
+     * Checks whether illusion decoy balls are currently active.
+     *
+     * @return True if illusion is active
+     */
+    public boolean hasActiveIllusion() {
+        return illusionTicksRemaining > 0 && !fakeBalls.isEmpty();
+    }
+
+    /**
+     * Returns the base power damage for Ilusión.
+     *
+     * @return 30.0
+     */
+    @Override
+    public double getBaseDamage() {
+        return 30.0;
+    }
+
+    /**
+     * Creates the CONFUSED effect applied on impact.
+     *
+     * @return ConfusedEffect instance
+     */
+    @Override
+    public Effect createEffect() {
+        return new ConfusedEffect();
+    }
+
+    /**
+     * Updates decoy clone positions during each simulation tick.
+     *
+     * @param ball Real ball in play
+     */
+    @Override
+    protected void updateActiveShot(Ball ball){
+>>>>>>> b6f49dc0f20b13fe73c109c51ef4638bef4c9d74
         updateClones(ball);
     }
 }

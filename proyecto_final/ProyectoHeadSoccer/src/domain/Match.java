@@ -1,5 +1,8 @@
 package domain;
 
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -12,7 +15,8 @@ import java.util.Set;
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class Match implements MatchView {
+public class Match implements MatchView, Serializable {
+    private static final long serialVersionUID = 1L;
     protected Player player1;
     protected Player player2;
     protected Controller controller1;
@@ -23,8 +27,12 @@ public class Match implements MatchView {
     protected GameStatus state;
     private GameStatus stateBeforePause;
     protected MatchRule rule;
+<<<<<<< HEAD
     protected List<MatchListener>  listeners = new ArrayList<>();
     private final Modality modality;
+=======
+    protected transient List<MatchListener> listeners = new ArrayList<>();
+>>>>>>> b6f49dc0f20b13fe73c109c51ef4638bef4c9d74
   
 
     protected int goalCelebrationTicks;
@@ -40,10 +48,10 @@ public class Match implements MatchView {
         this.ball = new Ball();
         this.field = new Field();
         this.scoreBoard = new ScoreBoard();
-        this.player1 = new Player("jugador 1",config.getLeftCountry(), Side.LEFT, config.getLeftCountry().getPower(), new PlayerStats());
-        this.player2 =  new Player("jugador 2",config.getRightCountry(), Side.RIGHT, config.getRightCountry().getPower(), new PlayerStats());
+        this.player1 = new Player(new PlayerProfile("jugador 1"), config.getLeftCountry(), Side.LEFT);
+        this.player2 = new Player(new PlayerProfile("jugador 2"), config.getRightCountry(), Side.RIGHT);
         this.controller1 = new HumanController();
-        this.controller2 = (config.getModality() == Modality.PVC) ? new COMController(Side.RIGHT) : new HumanController();
+        this.controller2 = (config.getModality() == Modality.PVC) ? config.getMachineProfile().create(Side.RIGHT) : new HumanController();
         this.rule = (config.getMatchType() == MatchType.GOALS) ? new GoalRule(config.getTargetValue()) : new TimeRule(config.getTargetValue());
         this.state = GameStatus.PLAYING;
         this.stateBeforePause = GameStatus.NOT_STARTED;
@@ -141,15 +149,18 @@ public class Match implements MatchView {
         player1.clearSupport();
         player2.clearSupport();
 
-        ball.collideWithEdges();
-        ball.bounceOff(field.getLeftGoal().getCrossBar(), Physics.RESTITUTION, 0.0);
-        ball.bounceOff(field.getRightGoal().getCrossBar(), Physics.RESTITUTION, 0.0);
 
-        player1.collideWithBall(ball);
-        player2.collideWithBall(ball);
+
+
 
         player1.collideWithEdges();
         player2.collideWithEdges();
+
+        ball.collideWithEdges();
+        ball.bounceOff(field.getLeftGoal().getCrossBar(), Physics.CROSSBAR_RESTITUTION, 0.0);
+        ball.bounceOff(field.getRightGoal().getCrossBar(), Physics.CROSSBAR_RESTITUTION, 0.0);
+
+
 
         player1.collideWithGoal(field.getLeftGoal());
         player1.collideWithGoal(field.getRightGoal());
@@ -159,6 +170,7 @@ public class Match implements MatchView {
         player1.collideWithPlayer(player2);
         player2.collideWithPlayer(player1);
 
+<<<<<<< HEAD
         if (player1.hasActivePowerShot() && player2.isHitByBall(ball)) {
             player2.receiveHit(player1.consumePowerHit());
         }
@@ -166,6 +178,14 @@ public class Match implements MatchView {
         if (player2.hasActivePowerShot() && player1.isHitByBall(ball)) {
             player1.receiveHit(player2.consumePowerHit());
         }
+=======
+        player1.collideWithBall(ball);
+        player2.collideWithBall(ball);
+
+
+        player2.receiveHit(player1.powerHitOn(player2, ball));
+        player1.receiveHit(player2.powerHitOn(player1, ball));
+>>>>>>> b6f49dc0f20b13fe73c109c51ef4638bef4c9d74
     }
 
     /**
@@ -270,7 +290,11 @@ public class Match implements MatchView {
     public void removeListener(MatchListener listener) {
         listeners.remove(listener);
     }
-
+    
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException{
+        in.defaultReadObject();
+        listeners = new ArrayList<>();
+    }
 
 
 

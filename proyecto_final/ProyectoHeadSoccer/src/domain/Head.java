@@ -1,12 +1,15 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
  * Represents the player's head entity for heading the ball and managing stun effects.
  * 
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class Head implements Collidable {
+public class Head implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private Circle circle;
 	private int kicksRecieved;
 	private int kickTicks;
@@ -100,7 +103,11 @@ public class Head implements Collidable {
 		}
 	}
 
-	@Override
+	/**
+	 * Handles foot kick collisions against the head.
+	 *
+	 * @param foot Opponent foot entity
+	 */
 	public void collideWithFoot(Foot foot) {
 		if (foot == null || foot.getCircle() == null) return;
 		boolean kicking = foot.isKicking();

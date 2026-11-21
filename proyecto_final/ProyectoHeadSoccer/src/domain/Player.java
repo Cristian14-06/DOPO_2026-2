@@ -1,6 +1,8 @@
 package domain;
 
 import java.util.Set;
+import java.util.List;
+import java.util.Collections;
 
 /**
  * Represents a soccer player entity composed of head, body, and foot limbs, with health, stats, power, and status effects.
@@ -334,6 +336,39 @@ public class Player implements PlayerView {
 	public double getKickMultiplier() {
 		return profile.getStats().getMultiplicadorKick();
 	}
+
+	public void finishPowerShot() {
+		if (power != null) {
+			power.finishPowerShot();
+		}
+	}
+
+	public void updatePowerShot(Ball ball) {
+    	if (power != null) {
+        	power.updateShot(ball);
+    	}
+	}
+
+	public boolean hasActivePowerShot() {
+		return power != null && power.isPowerShotActive();
+	}
+
+	public PowerHit consumePowerHit() {
+		if (power == null) {
+			return null;
+		}
+		return power.onHitRival(getKickMultiplier());
+	}
+
+	public List<Circle> getDecoyBalls() {
+		if (power == null) {
+			return Collections.emptyList();
+		}
+		return power.getDecoyBalls();
+	}
+
+
+
 
 	/**
 	 * Applies damage and status effect from an opponent power hit.

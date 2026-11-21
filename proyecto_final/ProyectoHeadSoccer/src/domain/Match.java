@@ -24,6 +24,7 @@ public class Match implements MatchView {
     private GameStatus stateBeforePause;
     protected MatchRule rule;
     protected List<MatchListener>  listeners = new ArrayList<>();
+    private final Modality modality;
   
 
     protected int goalCelebrationTicks;
@@ -49,6 +50,7 @@ public class Match implements MatchView {
         this.goalCelebrationTicks = 0;
         this.pointsAwarded = false;
         resetPositions();
+        this.modality = config.getModality();
     }
 
 
@@ -60,19 +62,20 @@ public class Match implements MatchView {
             ball.reset(Field.WIDTH / 2.0, 40.0);
             ball.setPowerShot(false);
         }
+
         if (player1 != null) {
             player1.resetPosition();
-            if (player1.getPower() != null) {
-                player1.getPower().finishPowerShot();
-            }
+            player1.finishPowerShot();
         }
+
         if (player2 != null) {
             player2.resetPosition();
-            if (player2.getPower() != null) {
-                player2.getPower().finishPowerShot();
-            }
+            player2.finishPowerShot();
         }
     }
+
+
+
 
     /**
      * Executes one frame tick of the match cycle.
@@ -109,8 +112,8 @@ public class Match implements MatchView {
         player2.tick();
         ball.tick();
         
-        if (player1.getPower() != null) player1.getPower().updateShot(ball);
-        if (player2.getPower() != null) player2.getPower().updateShot(ball);
+        player1.updatePowerShot(ball);
+        player2.updatePowerShot(ball);
 
         boolean wasStunned1 = player1.isStunned();
         boolean wasStunned2 = player2.isStunned();
@@ -156,12 +159,12 @@ public class Match implements MatchView {
         player1.collideWithPlayer(player2);
         player2.collideWithPlayer(player1);
 
-        if (player1.getPower() != null && player1.getPower().isPowerShotActive() && player2.isHitByBall(ball)) {
-            player2.receiveHit(player1.getPower().onHitRival(player1.getKickMultiplier()));
+        if (player1.hasActivePowerShot() && player2.isHitByBall(ball)) {
+            player2.receiveHit(player1.consumePowerHit());
         }
 
-        if (player2.getPower() != null && player2.getPower().isPowerShotActive() && player1.isHitByBall(ball)) {
-            player1.receiveHit(player2.getPower().onHitRival(player2.getKickMultiplier()));
+        if (player2.hasActivePowerShot() && player1.isHitByBall(ball)) {
+            player1.receiveHit(player2.consumePowerHit());
         }
     }
 
@@ -336,4 +339,24 @@ public class Match implements MatchView {
     public void setController1(Controller controller1) { this.controller1 = controller1; }
     public Controller getController2() { return controller2; }
     public void setController2(Controller controller2) { this.controller2 = controller2; }
+
+    @Override
+    public Modality getModality() {
+        return modality;
+    }
+
+    @Override
+    public List<Circle> getFakeBalls() {
+        List<Circle> fakeBalls = new ArrayList<>();
+
+        if (player1 != null) {
+            fakeBalls.addAll(player1.getDecoyBalls());
+        }
+
+        if (player2 != null) {
+            fakeBalls.addAll(player2.getDecoyBalls());
+        }
+
+        return fakeBalls;
+    }
 }

@@ -1,7 +1,7 @@
 package domain;
 
 import java.util.Optional;
-
+import java.util.List;
 /**
  * Read-only view of the match state for presentation and AI controllers.
  * 
@@ -20,4 +20,6 @@ public interface MatchView {
     int getFieldHeight();
     Rectangle getGoalArea(Side side);
     Rectangle getCrossBar(Side side);
+    Modality getModality();
+    List<Circle> getFakeBalls();
 }

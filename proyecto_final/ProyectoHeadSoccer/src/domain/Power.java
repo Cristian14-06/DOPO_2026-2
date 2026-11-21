@@ -1,5 +1,8 @@
 package domain;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Base abstract class defining the rules and mechanics of special power shots according to DOPOSoccer specs:
  * 1. Charges in 10 seconds (~600 ticks at 60 FPS).
@@ -148,4 +151,9 @@ public abstract class Power {
      * @param side Side of the shooter
      */
     public abstract void affectBall(Ball ball, Side side);
+
+
+    public List<Circle> getDecoyBalls() {
+       return Collections.emptyList();
+    }
 }

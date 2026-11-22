@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<libraryInfos>
+    <libraryInfo home="C:\Program Files\Java\jre-1.8" version="1.8.0_391">
+        <bootpath>
+            <entry path="C:\Program Files\Java\jre-1.8\lib\resources.jar"/>
+            <entry path="C:\Program Files\Java\jre-1.8\lib\rt.jar"/>
+            <entry path="C:\Program Files\Java\jre-1.8\lib\jsse.jar"/>
+            <entry path="C:\Program Files\Java\jre-1.8\lib\jce.jar"/>
+            <entry path="C:\Program Files\Java\jre-1.8\lib\charsets.jar"/>
+            <entry path="C:\Program Files\Java\jre-1.8\lib\jfr.jar"/>
+            <entry path="C:\Program Files\Java\jre-1.8\classes"/>
+        </bootpath>
+        <extensionDirs>
+            <entry path="C:\Program Files\Java\jre-1.8\lib\ext"/>
+            <entry path="C:\WINDOWS\Sun\Java\lib\ext"/>
+        </extensionDirs>
+        <endorsedDirs>
+            <entry path="C:\Program Files\Java\jre-1.8\lib\endorsed"/>
+        </endorsedDirs>
+    </libraryInfo>
+    <libraryInfo home="C:\Users\Cristian\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_25.0.5.v20261030-0959\jre" version="25.0.5"/>
+    <libraryInfo home="C:\Program Files\Eclipse Adoptium\jdk-17.0.21.10002-hotspot" version="17.0.21.1"/>
+    <libraryInfo home="C:\Program Files (x86)\Java\jre1.8.0_511" version="1.8.0_511">
+        <bootpath>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\lib\resources.jar"/>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\lib\rt.jar"/>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\lib\jsse.jar"/>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\lib\jce.jar"/>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\lib\charsets.jar"/>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\lib\jfr.jar"/>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\classes"/>
+        </bootpath>
+        <extensionDirs>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\lib\ext"/>
+            <entry path="C:\WINDOWS\Sun\Java\lib\ext"/>
+        </extensionDirs>
+        <endorsedDirs>
+            <entry path="C:\Program Files (x86)\Java\jre1.8.0_511\lib\endorsed"/>
+        </endorsedDirs>
+    </libraryInfo>
+    <libraryInfo home="C:\Users\Cristian\.p2\pool\plugins\org.eclipse.justj.openjdk.hotspot.jre.full.win32.x86_64_25.0.5.v20261030-0959" version="25.0.5">
+        <bootpath>
+            <entry path="null"/>
+        </bootpath>
+        <extensionDirs>
+            <entry path="null"/>
+        </extensionDirs>
+        <endorsedDirs>
+            <entry path="null"/>
+        </endorsedDirs>
+    </libraryInfo>
+    <libraryInfo home="C:\Program Files\Eclipse Adoptium\jdk-25.0.5.10002-hotspot" version="25.0.5.1"/>
+    <libraryInfo home="C:\Program Files\Java\jdk-1.8" version="1.8.0_391">
+        <bootpath>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\lib\resources.jar"/>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\lib\rt.jar"/>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\lib\jsse.jar"/>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\lib\jce.jar"/>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\lib\charsets.jar"/>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\lib\jfr.jar"/>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\classes"/>
+        </bootpath>
+        <extensionDirs>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\lib\ext"/>
+            <entry path="C:\WINDOWS\Sun\Java\lib\ext"/>
+        </extensionDirs>
+        <endorsedDirs>
+            <entry path="C:\Program Files\Java\jdk-1.8\jre\lib\endorsed"/>
+        </endorsedDirs>
+    </libraryInfo>
+</libraryInfos>

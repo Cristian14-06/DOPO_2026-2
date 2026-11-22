@@ -123,9 +123,9 @@ public class PhotoHeadSoccer extends JPanel implements MatchListener {
         }
     }
 
-    /* =========================================================================
+    /* 
      *  PANTALLA 1: MENÚ PRINCIPAL (HEAD SOCCER GAME / DOPOSoccer)
-     * ========================================================================= */
+    */
     private void drawMenuScreen(Graphics2D g2d) {
         int w = getWidth();
         int h = getHeight();
@@ -172,9 +172,9 @@ public class PhotoHeadSoccer extends JPanel implements MatchListener {
         g2d.drawString(tip, w / 2 - g2d.getFontMetrics().stringWidth(tip) / 2, h - 30);
     }
 
-    /* =========================================================================
+    /* 
      *  PANTALLA 2: SELECCIÓN DE JUGADORES (SELECT PLAYERS)
-     * ========================================================================= */
+     */
     private void drawSelectPlayersScreen(Graphics2D g2d) {
         int w = getWidth();
         int h = getHeight();
@@ -271,9 +271,9 @@ public class PhotoHeadSoccer extends JPanel implements MatchListener {
         drawGlossyButton(g2d, btnContinue, "CONTINUE ➔", new Color(245, 175, 25), Color.BLACK, 20);
     }
 
-    /* =========================================================================
+    /* 
      *  PANTALLA 3: SELECCIÓN DE CAMPO (SELECT THE CAMP / RESOLUCIÓN)
-     * ========================================================================= */
+     */
     private void drawSelectCampScreen(Graphics2D g2d) {
         int w = getWidth();
         int h = getHeight();
@@ -316,9 +316,9 @@ public class PhotoHeadSoccer extends JPanel implements MatchListener {
         drawGlossyButton(g2d, btnStart, "⚽ START ⚽", new Color(40, 180, 40), Color.WHITE, 24);
     }
 
-    /* =========================================================================
+    /*
      *  PANTALLA 4: PARTIDO EN JUEGO (STATE PLAYING, PAUSE, GOAL, DRAW, FINISHED)
-     * ========================================================================= */
+    */
     private void drawMatchScreen(Graphics2D g2d, MatchView match) {
         if (match == null) return;
         int fieldW = match.getFieldWidth();
@@ -518,9 +518,9 @@ public class PhotoHeadSoccer extends JPanel implements MatchListener {
         g2d.drawLine(bx, by - r + 2, bx, by + r - 2);
     }
 
-    /* =========================================================================
+    /* 
      *  HUD SUPERIOR: BARRAS DE VIDA, PODER, MARCADOR Y TIMER
-     * ========================================================================= */
+     */
     public void drawHUD(Graphics2D g2d, MatchView match) {
         int w = getWidth();
 
@@ -601,9 +601,9 @@ public class PhotoHeadSoccer extends JPanel implements MatchListener {
         }
     }
 
-    /* =========================================================================
+    /* 
      *  OVERLAYS DE ESTADOS
-     * ========================================================================= */
+      */
     private void drawPauseOverlay(Graphics2D g2d) {
         int w = getWidth();
         int h = getHeight();
@@ -682,9 +682,9 @@ public class PhotoHeadSoccer extends JPanel implements MatchListener {
         drawGlossyButton(g2d, btnMenu, "VOLVER AL MENÚ", new Color(245, 175, 25), Color.BLACK, 18);
     }
 
-    /* =========================================================================
+    /* 
      *  MÉTODOS AUXILIARES DE RENDERIZADO DE BOTONES INTERACTIVOS
-     * ========================================================================= */
+     */
     private void drawGlossyButton(Graphics2D g2d, java.awt.Rectangle r, String text, Color bg, Color fg, int fontSize) {
         g2d.setColor(bg);
         g2d.fillRoundRect(r.x, r.y, r.width, r.height, 16, 16);

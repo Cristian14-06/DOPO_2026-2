@@ -3,6 +3,11 @@ package test;
 import domain.*;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.EnumSet;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+
 import static org.junit.Assert.*;
 
 /**
@@ -316,5 +321,214 @@ public class DOPOSoccerDomainTest {
         }
 
         assertEquals(GameStatus.SUDDEN_DEATH, match.getStatus());
+    }
+
+    /**
+     * Verifies that upgrading a stat with enough points deducts cost, increments level, and doubles future cost.
+     *
+     * @throws DOPOSoccerException if upgrade unexpectedly fails
+     */
+    @Test
+    public void testProfileUpgradeDeductsPointsAndDoublesCost() throws DOPOSoccerException {
+        PlayerProfile profile = new PlayerProfile("Juan");
+        profile.addPoints(2000);
+
+        assertEquals(500, profile.upgradeCost(StatType.SPEED));
+        profile.upgrade(StatType.SPEED);
+        assertEquals(2, profile.getStat(StatType.SPEED));
+        assertEquals(1500, profile.getPoints());
+
+        assertEquals(1000, profile.upgradeCost(StatType.SPEED));
+        profile.upgrade(StatType.SPEED);
+        assertEquals(3, profile.getStat(StatType.SPEED));
+        assertEquals(500, profile.getPoints());
+
+        assertEquals(2000, profile.upgradeCost(StatType.SPEED));
+    }
+
+    /**
+     * Verifies that upgrading without enough points throws NOT_ENOUGH_POINTS without mutating state.
+     */
+    @Test
+    public void testProfileUpgradeWithoutEnoughPointsThrowsException() {
+        PlayerProfile profile = new PlayerProfile("Juan");
+        profile.addPoints(400);
+
+        try {
+            profile.upgrade(StatType.KICK);
+            fail("Expected DOPOSoccerException when points are insufficient");
+        } catch (DOPOSoccerException e) {
+            assertEquals(DOPOSoccerException.NOT_ENOUGH_POINTS, e.getMessage());
+            assertEquals(1, profile.getStat(StatType.KICK));
+            assertEquals(400, profile.getPoints());
+        }
+    }
+
+    /**
+     * Verifies that upgrading a stat already at level 10 throws MAX_STAT_REACHED and returns cost 0.
+     */
+    @Test
+    public void testProfileUpgradeAtMaxLevelThrowsException() {
+        PlayerProfile profile = new PlayerProfile("Juan", new PlayerStats(10, 1, 1, 1));
+        profile.addPoints(100000);
+
+        assertEquals(0, profile.upgradeCost(StatType.SPEED));
+        try {
+            profile.upgrade(StatType.SPEED);
+            fail("Expected DOPOSoccerException when stat is already at max level");
+        } catch (DOPOSoccerException e) {
+            assertEquals(DOPOSoccerException.MAX_STAT_REACHED, e.getMessage());
+            assertEquals(10, profile.getStat(StatType.SPEED));
+            assertEquals(100000, profile.getPoints());
+        }
+    }
+
+    /**
+     * Verifies that PlayerView exposes active PlayerEffect and normalized remaining progress [0.0, 1.0].
+     */
+    @Test
+    public void testPlayerViewEffectAndProgressTrackRemainingFraction() {
+        assertEquals(PlayerEffect.NONE, p2.getActiveEffect());
+        assertEquals(0.0, p2.getEffectProgress(), 0.001);
+
+        p2.applyEffect(PlayerEffect.ELECTROCUTED, 3.0);
+        assertEquals(PlayerEffect.ELECTROCUTED, p2.getActiveEffect());
+        assertEquals(1.0, p2.getEffectProgress(), 0.001);
+
+        for (int i = 0; i < 90; i++) {
+            p2.moveVertical();
+        }
+        assertEquals(0.5, p2.getEffectProgress(), 0.01);
+
+        for (int i = 0; i < 90; i++) {
+            p2.moveVertical();
+        }
+        assertEquals(PlayerEffect.NONE, p2.getActiveEffect());
+        assertEquals(0.0, p2.getEffectProgress(), 0.001);
+    }
+
+    /**
+     * Verifies that BallView exposes power shot country, charging state, and normalized charge progress.
+     */
+    @Test
+    public void testBallViewPowerShotCountryAndChargingProgress() {
+        for (int i = 0; i < 605; i++) {
+            p1.tick();
+        }
+        p1.activatePower();
+
+        double footX = p1.getFootShape().getX();
+        Ball shotBall = new Ball(footX + 16.0, Field.HEIGHT - 10.0, 10.0);
+        p1.kick();
+        p1.tick();
+        assertTrue(p1.collideWithBall(shotBall));
+
+        assertTrue(shotBall.hasPowerShot());
+        assertEquals(Country.SOUTH_KOREA, shotBall.getPowerShotCountry());
+        assertTrue(shotBall.isPowerShotCharging());
+        assertEquals(0.0, shotBall.getPowerShotChargeProgress(), 0.001);
+
+        int halfTicks = Power.TICKS_PER_POWER / 2;
+        for (int i = 0; i < halfTicks; i++) {
+            p1.updatePowerShot(shotBall);
+        }
+        assertTrue(shotBall.isPowerShotCharging());
+        assertEquals(0.5, shotBall.getPowerShotChargeProgress(), 0.02);
+
+        for (int i = halfTicks; i < Power.TICKS_PER_POWER; i++) {
+            p1.updatePowerShot(shotBall);
+        }
+        assertFalse(shotBall.isPowerShotCharging());
+        assertEquals(0.0, shotBall.getPowerShotChargeProgress(), 0.001);
+        assertTrue(shotBall.getHorizontalSpeed() > 0.0);
+    }
+
+    /**
+     * Verifies that MatchListener events onPowerActivated, onBallKicked, onPowerShot, and onPowerHit
+     * fire once each at the expected moments during a match.
+     *
+     * @throws DOPOSoccerException if match configuration is invalid
+     */
+    @Test
+    public void testMatchEventsFireOnceAtExpectedMoments() throws DOPOSoccerException {
+        DOPOSoccer game = new DOPOSoccer();
+        MatchConfig config = MatchConfig.builder()
+                .modality(Modality.PVP)
+                .leftCountry(Country.SOUTH_KOREA)
+                .rightCountry(Country.CAMEROON)
+                .matchType(MatchType.TIME)
+                .targetValue(2)
+                .build();
+
+        AtomicInteger powerActivatedCount = new AtomicInteger(0);
+        AtomicInteger ballKickedCount = new AtomicInteger(0);
+        AtomicInteger powerShotCount = new AtomicInteger(0);
+        AtomicInteger powerHitCount = new AtomicInteger(0);
+        AtomicReference<Country> shotCountry = new AtomicReference<>();
+        AtomicReference<Side> hitVictim = new AtomicReference<>();
+        AtomicReference<Double> hitDamage = new AtomicReference<>(0.0);
+
+        game.addListener(new MatchListener() {
+            @Override
+            public void onPowerActivated(Side side) {
+                if (side == Side.LEFT) powerActivatedCount.incrementAndGet();
+            }
+
+            @Override
+            public void onBallKicked(Side kicker) {
+                if (kicker == Side.LEFT) ballKickedCount.incrementAndGet();
+            }
+
+            @Override
+            public void onPowerShot(Side shooter, Country country) {
+                if (shooter == Side.LEFT) {
+                    powerShotCount.incrementAndGet();
+                    shotCountry.set(country);
+                }
+            }
+
+            @Override
+            public void onPowerHit(Side victim, double damage) {
+                powerHitCount.incrementAndGet();
+                hitVictim.set(victim);
+                hitDamage.set(damage);
+            }
+        });
+
+        game.newMatch(config);
+
+        for (int i = 0; i < 605; i++) {
+            game.tick();
+        }
+        assertEquals(0, powerActivatedCount.get());
+
+        game.setIntention(Side.LEFT, EnumSet.of(PlayerAction.POWER));
+        game.tick();
+        game.tick();
+        assertEquals(1, powerActivatedCount.get());
+
+        for (int i = 0; i < 120 && powerShotCount.get() == 0; i++) {
+            double px = game.getMatch().getPlayer(Side.LEFT).getFootShape().getX();
+            double bx = game.getMatch().getBall().getX();
+            if (Math.abs(bx - px) < 28.0) {
+                game.setIntention(Side.LEFT, EnumSet.of(PlayerAction.RIGHT, PlayerAction.KICK));
+            } else {
+                game.setIntention(Side.LEFT, EnumSet.of(PlayerAction.RIGHT));
+            }
+            game.tick();
+        }
+
+        assertEquals(1, powerShotCount.get());
+        assertEquals(Country.SOUTH_KOREA, shotCountry.get());
+        assertTrue(ballKickedCount.get() >= 1);
+
+        game.setIntention(Side.LEFT, EnumSet.noneOf(PlayerAction.class));
+        for (int i = 0; i < Power.TICKS_PER_POWER + 60 && powerHitCount.get() == 0; i++) {
+            game.tick();
+        }
+
+        assertEquals(1, powerHitCount.get());
+        assertEquals(Side.RIGHT, hitVictim.get());
+        assertTrue(hitDamage.get() > 0.0);
     }
 }

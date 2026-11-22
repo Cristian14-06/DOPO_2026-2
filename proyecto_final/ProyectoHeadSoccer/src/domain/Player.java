@@ -1,9 +1,9 @@
 package domain;
 
 import java.io.Serializable;
-import java.util.Set;
-import java.util.List;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Represents a soccer player entity composed of head, body, and foot limbs, with health, stats, power, and status effects.
@@ -328,8 +328,13 @@ public class Player implements PlayerView, Serializable {
 	 *
 	 * @param ball Ball in play
 	 */
-	public void collideWithBall(Ball ball) {
-		playerBody.collideWithBall(ball, power);
+	public boolean collideWithBall(Ball ball) {
+		boolean hadArua = hasAura();
+		boolean collide = playerBody.collideWithBall(ball, power);
+		if(hadArua && !hasAura()){
+			ball.setPowerShotCountry(country);
+		}
+		return collide;
 	}
 
 	/**
@@ -340,39 +345,6 @@ public class Player implements PlayerView, Serializable {
 	public double getKickMultiplier() {
 		return profile.getStats().getMultiplicadorKick();
 	}
-
-	public void finishPowerShot() {
-		if (power != null) {
-			power.finishPowerShot();
-		}
-	}
-
-	public void updatePowerShot(Ball ball) {
-    	if (power != null) {
-        	power.updateShot(ball);
-    	}
-	}
-
-	public boolean hasActivePowerShot() {
-		return power != null && power.isPowerShotActive();
-	}
-
-	public PowerHit consumePowerHit() {
-		if (power == null) {
-			return null;
-		}
-		return power.onHitRival(getKickMultiplier());
-	}
-
-	public List<Circle> getDecoyBalls() {
-		if (power == null) {
-			return Collections.emptyList();
-		}
-		return power.getDecoyBalls();
-	}
-
-
-
 
 	/**
 	 * Applies damage and status effect from an opponent power hit.
@@ -441,6 +413,15 @@ public class Player implements PlayerView, Serializable {
 	public void addPoints(int amount) { profile.addPoints(amount); }
 	public int getStunTicksRemaining() { return life.getStunTicksRemaining(); }
 
+	/**
+	 * Returns the underlying player profile for domain persistence coordination.
+	 *
+	 * @return Player profile
+	 */
+	PlayerProfile getProfile() {
+		return profile;
+	}
+
 	@Override
 	public double getLife() {
 		return life.getCurrent();
@@ -477,6 +458,16 @@ public class Player implements PlayerView, Serializable {
 	}
 
 	@Override
+	public PlayerEffect getActiveEffect() {
+		return effect.getCurrent();
+	}
+
+	@Override
+	public double getEffectProgress() {
+		return effect.getProgress();
+	}
+
+	@Override
 	public Circle getHeadShape() {
 		return playerBody.getHeadShape();
 	}
@@ -494,5 +485,17 @@ public class Player implements PlayerView, Serializable {
 	@Override
 	public int getStat(StatType type) {
 		return profile.getStat(type);
+	}
+
+	/**
+	 * Decoy balls currently created by this player's power (Illusion).
+	 *
+	 * @return Copies of the decoy balls, or an empty list
+	 */
+	public List<Circle> getDecoyBalls() {
+		if (power == null) {
+			return Collections.emptyList();
+		}
+		return power.getDecoyBalls();
 	}
 }

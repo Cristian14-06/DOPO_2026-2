@@ -14,13 +14,15 @@ public enum PlayerEffect {
     PUSHED(PushedEffect::new),
     ELECTROCUTED(ElectrocutedEffect::new),
     KNOCKED_OUT(KnockedOutEffect::new),
-    CONFUSED(ConfusedEffect::new),
-    FROZEN(FrozenEffect::new);
+    CONFUSED(ConfusedEffect::new);
     
 
     private final Supplier<Effect> effectFactory;
 
-    PlayerEffect(Supplier<Effect> effectFactory){
+    /*
+     * Constructs a player effect enum constant bound to its strategy factory.
+     */
+    PlayerEffect(Supplier<Effect> effectFactory) {
         this.effectFactory = effectFactory;
     }
 

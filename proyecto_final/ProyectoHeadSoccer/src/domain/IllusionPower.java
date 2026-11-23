@@ -4,11 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tiro de poder de Estados Unidos: IlusiÃ³n.
- * CÃ³mo sale: El balÃ³n se divide en 8 balones idÃ©nticos; 7 son falsos y desaparecen al terminar el efecto.
- * Efecto: ConfusiÃ³n (el rival no sabe cuÃ¡l es el balÃ³n real. Los 8 balones se ven igual para ambos jugadores por 2.5 s).
- * DaÃ±oTiro: 30 (DaÃ±o real 6 * 5 = 30).
- * 
+ * United States signature power shot: Illusion.
+ * Splits the visual ball into eight identical balls (seven decoys) for 2.5 seconds,
+ * inflicting the Confused status effect and dealing 30 base power damage.
+ *
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
@@ -20,7 +19,7 @@ public class IllusionPower extends Power {
      * Constructs USA's Illusion power.
      */
     public IllusionPower() {
-        super("IlusiÃ³n", 30.0, 2.5, PlayerEffect.CONFUSED);
+        super("Ilusión", 2.5);
         this.fakeBalls = new ArrayList<>();
         this.illusionTicksRemaining = 0;
     }
@@ -32,7 +31,7 @@ public class IllusionPower extends Power {
      * @param side Side of the shooting player
      */
     @Override
-    public void affectBall(Ball ball, Side side) {
+    protected void shapeShot(Ball ball, Side side) {
         if (ball == null) return;
         double dir = (side == Side.LEFT) ? 1.0 : -1.0;
         ball.setHorizontalSpeed(18.0 * dir);
@@ -80,7 +79,23 @@ public class IllusionPower extends Power {
      * @return List of fake ball circles
      */
     public List<Circle> getFakeBalls() {
-        return fakeBalls;
+        return getDecoyBalls();
+    }
+
+    /**
+     * Returns copies of the active decoy balls, so callers cannot move the real ones.
+     *
+     * @return Copies of the decoy circles, or an empty list if the illusion is not active
+     */
+    @Override
+    public List<Circle> getDecoyBalls() {
+        List<Circle> copies = new ArrayList<>();
+        if (hasActiveIllusion()) {
+            for (Circle ball : fakeBalls) {
+                copies.add(new Circle(ball.getX(), ball.getY(), ball.getRadius()));
+            }
+        }
+        return copies;
     }
 
     /**
@@ -93,12 +108,32 @@ public class IllusionPower extends Power {
     }
 
     /**
+     * Returns the base power damage for Illusion.
+     *
+     * @return 30.0
+     */
+    @Override
+    public double getBaseDamage() {
+        return 30.0;
+    }
+
+    /**
+     * Creates the CONFUSED effect applied on impact.
+     *
+     * @return ConfusedEffect instance
+     */
+    @Override
+    public Effect createEffect() {
+        return new ConfusedEffect();
+    }
+
+    /**
      * Updates decoy clone positions during each simulation tick.
      *
      * @param ball Real ball in play
      */
     @Override
-    public void updateShot(Ball ball){
+    protected void updateActiveShot(Ball ball){
         updateClones(ball);
     }
 }

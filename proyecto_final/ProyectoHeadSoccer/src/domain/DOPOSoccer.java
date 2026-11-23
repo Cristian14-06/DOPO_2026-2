@@ -1,5 +1,6 @@
 package domain;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -13,6 +14,35 @@ import java.util.Set;
 public class DOPOSoccer {
     private Match currentMatch;
     private final List<MatchListener> listeners = new ArrayList<>();
+    private final MatchRepository matchRepository;
+    private final ProfileRepository profileRepository;
+
+    /**
+     * Creates a facade instance with the given match and profile persistence repositories.
+     *
+     * @param matchRepository Repository used to save and open matches
+     * @param profileRepository Repository used to load and persist player profiles
+     */
+    public DOPOSoccer(MatchRepository matchRepository, ProfileRepository profileRepository) {
+        this.matchRepository = matchRepository;
+        this.profileRepository = profileRepository;
+    }
+
+    /**
+     * Creates a facade instance without a configured match repository.
+     */
+    public DOPOSoccer() {
+        this(null, null);
+    }
+
+    /**
+     * Creates a facade instance with the given match persistence repository.
+     *
+     * @param matchRepository Repository used to save and open matches
+     */
+    public DOPOSoccer(MatchRepository matchRepository) {
+        this(matchRepository, null);
+    }
 
     /**
      * Starts a new match from the given configuration and attaches registered listeners.
@@ -24,10 +54,12 @@ public class DOPOSoccer {
         if (config == null) {
             throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);
         }
-        this.currentMatch = new Match(config);
-        for (MatchListener listener : listeners) {
-            this.currentMatch.addListener(listener);
-        }
+
+        PlayerProfile leftProfile = (profileRepository != null) ? profileRepository.load(config.getLeftPlayerName()) : null;
+        PlayerProfile rightProfile = (profileRepository != null) ? profileRepository.load(config.getRightPlayerName()) : null;
+
+        this.currentMatch = new Match(config, leftProfile, rightProfile);
+        attachListeners();
     }
 
     /**
@@ -124,6 +156,104 @@ public class DOPOSoccer {
         listeners.remove(listener);
         if (currentMatch != null) {
             currentMatch.removeListener(listener);
+        }
+    }
+
+    /*
+     * Attaches all registered listeners and the profile persistence callback to the active match.
+     */
+    private void attachListeners() {
+        if (currentMatch == null) return;
+        for (MatchListener listener : listeners) {
+            currentMatch.addListener(listener);
+        }
+
+        if (profileRepository != null) {
+            this.currentMatch.addListener(new MatchListener() {
+                @Override
+                public void onMatchFinished(Side winner, int winnerPoints, int loserPoints) {
+                    saveProfileOnFinish(winner, winnerPoints, loserPoints);
+                }
+            });
+        }
+    }
+
+    /*
+     * Reloads fresh player profiles, credits earned match points, and persists both profiles.
+     */
+    private void saveProfileOnFinish(Side winner, int winnerPoints, int loserPoints) {
+        if (currentMatch == null || profileRepository == null) return;
+        int leftEarned = (winner == null || winner == Side.LEFT) ? winnerPoints : loserPoints;
+        int rightEarned = (winner == null || winner == Side.RIGHT) ? winnerPoints : loserPoints;
+        try {
+            PlayerProfile freshLeft = profileRepository.load(currentMatch.getProfile(Side.LEFT).getName());
+            PlayerProfile freshRight = profileRepository.load(currentMatch.getProfile(Side.RIGHT).getName());
+            freshLeft.addPoints(leftEarned);
+            freshRight.addPoints(rightEarned);
+            profileRepository.save(freshLeft);
+            profileRepository.save(freshRight);
+        } catch (DOPOSoccerException doex) {
+            for (MatchListener listener : listeners) {
+                listener.onProfileSaveFailed(doex.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Saves the active match to the specified file.
+     *
+     * @param file Destination file
+     * @throws DOPOSoccerException if there is no active match, repository is missing, or saving fails
+     */
+    public void save(File file) throws DOPOSoccerException {
+        if (currentMatch == null) throw new DOPOSoccerException(DOPOSoccerException.NO_ACTIVE_MATCH);
+        if (matchRepository == null) throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);
+        currentMatch.pause();
+        matchRepository.save(currentMatch, file);
+    }
+
+    /**
+     * Returns a read-only view of the stored profile for the given player name.
+     *
+     * @param playerName Player display name
+     * @return Read-only ProfileView
+     * @throws DOPOSoccerException if profile repository is missing or loading fails
+     */
+    public ProfileView getProfile(String playerName) throws DOPOSoccerException {
+        if (profileRepository == null) {
+            throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);
+        }
+        return profileRepository.load(playerName);
+    }
+
+    /**
+     * Upgrades the given statistic for the named player and persists the updated profile.
+     *
+     * @param playerName Player display name
+     * @param type Statistic type to upgrade
+     * @throws DOPOSoccerException if repository is missing, upgrade rules fail, or saving fails
+     */
+    public void upgrade(String playerName, StatType type) throws DOPOSoccerException {
+        if (profileRepository == null) {
+            throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);
+        }
+        PlayerProfile profile = profileRepository.load(playerName);
+        profile.upgrade(type);
+        profileRepository.save(profile);
+    }
+
+    /**
+     * Opens a saved match from the specified file and reattaches registered listeners.
+     *
+     * @param file Source file
+     * @throws DOPOSoccerException if repository is missing or loading fails
+     */
+    public void open(File file) throws DOPOSoccerException {
+        if (matchRepository == null) throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);
+        currentMatch = matchRepository.open(file);
+
+        if (currentMatch != null) {
+            attachListeners();
         }
     }
 }

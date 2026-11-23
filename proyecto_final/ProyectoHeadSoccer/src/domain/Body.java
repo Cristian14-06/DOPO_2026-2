@@ -1,12 +1,15 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
  * Represents the rectangular torso/body of a player.
  * 
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class Body implements Collidable {
+public class Body implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private Rectangle rectangle;
 
 	/**
@@ -35,10 +38,10 @@ public class Body implements Collidable {
 	 * @param side Side of the field the player defends
 	 */
 	public Body(double playerX, Side side) {
-		double width = 26;
-		double height = 22;
+		double width = 18;
+		double height = 16;
 		double bodyX = playerX - (width / 2.0);
-		double bodyY = Field.HEIGHT - 38;
+		double bodyY = Field.HEIGHT - 26;
 		this.rectangle = new Rectangle(bodyX, bodyY, width, height);
 	}
 

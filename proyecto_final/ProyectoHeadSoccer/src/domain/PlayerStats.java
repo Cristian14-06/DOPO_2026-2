@@ -1,5 +1,7 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
  * Performance statistics governing speed, jump, kick damage multiplier, and maximum health (survival).
  * All stats scale from 1 to 10 according to the DOPOSoccer specification.
@@ -7,7 +9,8 @@ package domain;
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class PlayerStats {
+public class PlayerStats implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private int speed;
 	private int jump;
 	private int kick;
@@ -43,6 +46,41 @@ public class PlayerStats {
 			throw new IllegalArgumentException(DOPOSoccerException.INVALID_STAT + ": " + val);
 		}
 		return val;
+	}
+
+	/**
+	 * Increments the specified statistic by one level up to the maximum rating of 10.
+	 *
+	 * @param statType Statistic to increment
+	 * @throws DOPOSoccerException if statType is null or already at maximum level
+	 */
+	public void increment(StatType statType) throws DOPOSoccerException{
+		if (statType == null) {
+			throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);
+		}
+		switch (statType) {
+			case SPEED:
+        		if (speed >= 10) throw new DOPOSoccerException(DOPOSoccerException.MAX_STAT_REACHED);
+        		speed++;
+				break;
+
+			case JUMP:
+        		if (jump >= 10) throw new DOPOSoccerException(DOPOSoccerException.MAX_STAT_REACHED);
+        		jump++;
+				break;
+				
+			case KICK:
+        		if (kick >= 10) throw new DOPOSoccerException(DOPOSoccerException.MAX_STAT_REACHED);
+        		kick++;
+				break;
+
+			case SURVIVAL:
+        		if (survival >= 10) throw new DOPOSoccerException(DOPOSoccerException.MAX_STAT_REACHED);
+        		survival++;
+				break;
+			default:
+				break;
+		} 
 	}
 
 	/**

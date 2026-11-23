@@ -16,6 +16,8 @@ public class ClumsyMachine extends MachineController {
     private static final int MIN_ACTION_TICKS = 12;
     private static final int EXTRA_RANDOM_TICKS = 18;
     private static final double POWER_CHANCE = 0.10;
+    private static final double FULL_POWER = 100.0;
+    private static final int CHOICES = 6;
 
     private final Random random;
     private int actionTimer = 0;
@@ -42,7 +44,16 @@ public class ClumsyMachine extends MachineController {
     }
 
     /**
-     * {@inheritDoc}
+     * Picks a random action and keeps it for 12 to 29 ticks, so the machine looks clumsy instead of shaking.
+     * The possible choices are: move left, move right, jump, kick, move roughly toward the ball
+     * (sometimes the wrong way) with an occasional kick, or stay idle for a moment.
+     * When the power bar is full it activates the power with a 10% chance per decision.
+     *
+     * @param match Read-only match view
+     * @param me Read-only view of the controlled player
+     * @param ball Read-only ball view
+     * @param rival Read-only view of the opponent
+     * @return Actions to perform during this tick
      */
     @Override
     protected Set<PlayerAction> chooseActions(MatchView match, PlayerView me, BallView ball, PlayerView rival) {
@@ -54,7 +65,7 @@ public class ClumsyMachine extends MachineController {
         bufferedActions.clear();
         actionTimer = MIN_ACTION_TICKS + random.nextInt(EXTRA_RANDOM_TICKS);
 
-        int choice = random.nextInt(6);
+        int choice = random.nextInt(CHOICES);
         switch (choice) {
             case 0:
                 bufferedActions.add(PlayerAction.LEFT);
@@ -69,7 +80,6 @@ public class ClumsyMachine extends MachineController {
                 bufferedActions.add(PlayerAction.KICK);
                 break;
             case 4:
-                // Move towards or away from the ball clumsily
                 if (ball.getX() > me.getHeadShape().getX()) {
                     bufferedActions.add(random.nextBoolean() ? PlayerAction.RIGHT : PlayerAction.LEFT);
                 } else {
@@ -81,12 +91,10 @@ public class ClumsyMachine extends MachineController {
                 break;
             case 5:
             default:
-                // Idle hesitation frame
                 break;
         }
 
-        // Randomly attempts to activate power when fully charged
-        if (me.getPowerProgress() >= 100.0 && random.nextDouble() < POWER_CHANCE) {
+        if (me.getPowerProgress() >= FULL_POWER && random.nextDouble() < POWER_CHANCE) {
             bufferedActions.add(PlayerAction.POWER);
         }
 

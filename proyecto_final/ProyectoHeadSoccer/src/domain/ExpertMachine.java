@@ -31,7 +31,21 @@ public class ExpertMachine extends MachineController {
     }
 
     /**
-     * {@inheritDoc}
+     * Chooses between the defensive and the offensive behavior, in this order:
+     * <ul>
+     *   <li>Defends if a power shot is coming toward its goal or the rival has the aura.</li>
+     *   <li>Attacks if the rival is stunned or knocked out.</li>
+     *   <li>In sudden death, defends while the ball is in its own half and attacks otherwise.</li>
+     *   <li>Defends while winning, unless the score is tied with little time left.</li>
+     *   <li>Attacks in any other case.</li>
+     * </ul>
+     * It also activates the power when the bar is full and the ball is close and in front.
+     *
+     * @param match Read-only match view
+     * @param me Read-only view of the controlled player
+     * @param ball Read-only ball view
+     * @param rival Read-only view of the opponent
+     * @return Actions to perform during this tick
      */
     @Override
     protected Set<PlayerAction> chooseActions(MatchView match, PlayerView me, BallView ball, PlayerView rival) {

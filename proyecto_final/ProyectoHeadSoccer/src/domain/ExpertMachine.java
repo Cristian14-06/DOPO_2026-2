@@ -11,24 +11,24 @@ import java.util.Set;
  */
 public class ExpertMachine extends MachineController {
     private static final long serialVersionUID = 1L;
+    private static final int LOW_TIME_SECONDS = 15;
+    private static final double POWER_BALL_DISTANCE = 45.0;
+    private static final double FULL_POWER = 100.0;
+    private static final double OWN_HALF_FACTOR = 0.45;
+
     private final OffensiveMachine offensive;
     private final DefensiveMachine defensive;
-    private final static int LOW_TIME_SECONDS = 15;
-    private final static double POWER_BALL_DISTANCE = 45.0;
-    private final static double FULL_POWER = 100.0;
-
-
 
     /**
      * Constructs an expert machine controller for the given pitch side.
      *
      * @param side Pitch side controlled by this AI
      */
-     public ExpertMachine(Side side){
-         super(side);
-         this.defensive = new DefensiveMachine(side);
-         this.offensive = new OffensiveMachine(side);
-     }
+    public ExpertMachine(Side side) {
+        super(side);
+        this.defensive = new DefensiveMachine(side);
+        this.offensive = new OffensiveMachine(side);
+    }
 
     /**
      * {@inheritDoc}
@@ -41,10 +41,15 @@ public class ExpertMachine extends MachineController {
         boolean lowTimeTie = (myGoals == rivalGoals) && remaining >= 0 && remaining <= LOW_TIME_SECONDS;
 
         MachineController chosen;
-        if (rival != null && rival.hasAura()) {
+        boolean ballPowerThreat = ball.hasPowerShot() && (ball.getHorizontalSpeed() * side.dir() < 0);
+
+        if (ballPowerThreat || (rival != null && rival.hasAura())) {
             chosen = defensive;
         } else if (rival != null && (rival.isStunned() || PlayerEffect.KNOCKED_OUT.name().equals(rival.getActiveEffectName()))) {
             chosen = offensive;
+        } else if (match.isSuddenDeath()) {
+            double distToGoal = Math.abs(ball.getX() - ownGoalX(match));
+            chosen = (distToGoal < match.getFieldWidth() * OWN_HALF_FACTOR) ? defensive : offensive;
         } else if (myGoals > rivalGoals && !lowTimeTie) {
             chosen = defensive;
         } else {
@@ -55,8 +60,9 @@ public class ExpertMachine extends MachineController {
         actions.addAll(chosen.chooseActions(match, me, ball, rival));
 
         if (me.getPowerProgress() >= FULL_POWER) {
-            double distBall = Math.hypot(me.getHeadShape().getX() - ball.getX(), me.getHeadShape().getY() - ball.getY());
-            if (distBall < POWER_BALL_DISTANCE) {
+            double myX = me.getHeadShape().getX();
+            double distBall = Math.hypot(myX - ball.getX(), me.getHeadShape().getY() - ball.getY());
+            if (distBall <= POWER_BALL_DISTANCE && (ball.getX() - myX) * side.dir() >= 0) {
                 actions.add(PlayerAction.POWER);
             }
         }

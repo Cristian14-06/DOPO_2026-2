@@ -1,5 +1,6 @@
 package domain;
 
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -10,7 +11,8 @@ import java.util.Optional;
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class PlayerBody {
+public class PlayerBody implements Serializable {
+    private static final long serialVersionUID = 1L;
     private final Side side;
     private final Head head;
     private final Body body;
@@ -18,16 +20,21 @@ public class PlayerBody {
     private Vector2 anchor;
     private double verticalSpeed;
     private boolean onTop;
+    private double lastHorizontalMove;
+    private static final double DRIBBLE_SPEED_FACTOR = 1.5;
 
-    private void syncShapes(){
+    /*
+     * Synchronizes head, torso, and foot collision shapes with the current anchor and kick offsets.
+     */
+    private void syncShapes() {
         head.getCircle().setX(anchor.getX());
-        head.getCircle().setY(anchor.getY() - 55);
+        head.getCircle().setY(anchor.getY() - 38);
         
-        body.getRectangle().setX(anchor.getX() - 13);
-        body.getRectangle().setY(anchor.getY() - 38);
+        body.getRectangle().setX(anchor.getX() - 9);
+        body.getRectangle().setY(anchor.getY() - 26);
 
-        foot.getCircle().setX(anchor.getX() + side.dir()*8 + foot.getKickOffsetX(side));
-        foot.getCircle().setY(anchor.getY() - 12 + foot.getKickOffsetY());
+        foot.getCircle().setX(anchor.getX() + side.dir()*6 + foot.getKickOffsetX(side));
+        foot.getCircle().setY(anchor.getY() - 8 + foot.getKickOffsetY());
         
     }
 
@@ -56,6 +63,7 @@ public class PlayerBody {
         onTop = false;
         foot.stopKicking(side);
         syncShapes();
+        this.lastHorizontalMove = 0;
     }
 
     /**
@@ -67,6 +75,16 @@ public class PlayerBody {
     public void translate(double dx, double dy) {
         anchor = anchor.add(new Vector2(dx, dy));
         syncShapes();
+    }
+
+    /**
+     * Translates the player horizontally and records the movement delta for ground dribbling.
+     *
+     * @param dx Horizontal displacement in pixels
+     */
+    public void moveHorizontally(double dx) {
+        this.lastHorizontalMove = dx;
+        translate(dx, 0);
     }
 
     /**
@@ -119,6 +137,9 @@ public class PlayerBody {
         resolveBodyAgainstBar(body.getRectangle(), bar);
     }
 
+    /*
+     * Pushes a circular limb out of the goal crossbar and updates vertical support state.
+     */
     private void resolveCircleAgainstBar(Circle circle, Rectangle bar) {
         Optional<Contact> contactOpt = bar.contactWith(circle);
         if (!contactOpt.isPresent()) return;
@@ -135,6 +156,9 @@ public class PlayerBody {
         }
     }
 
+    /*
+     * Resolves AABB overlap between the player's torso rectangle and the goal crossbar.
+     */
     private void resolveBodyAgainstBar(Rectangle br, Rectangle bar) {
         double overlapX = Math.min(br.right(), bar.right()) - Math.max(br.left(), bar.left());
         double overlapY = Math.min(br.bottom(), bar.bottom()) - Math.max(br.top(), bar.top());
@@ -165,38 +189,63 @@ public class PlayerBody {
      * @param ball Ball in play
      * @param power Player power to trigger if aura is active on kick contact
      */
-    public void collideWithBall(Ball ball, Power power){
-        if(ball == null) return;
+    public boolean collideWithBall(Ball ball, Power power){
+        boolean collide;
+        boolean hitHead;
+        boolean hitBody;
+        if (ball == null || ball.isPowerShotCharging()) return false;
         if(foot.isKicking()){
-            collideFootWithBall(ball, power);
-            ball.bounceOff(head.getCircle(), Physics.RESTITUTION, 20.0);
-            ball.bounceOff(body.getRectangle(), Physics.RESTITUTION, 0);
+            collide = collideFootWithBall(ball, power);
+            hitHead = ball.bounceOff(head.getCircle(), Physics.HEAD_RESTITUTION, Physics.HEAD_IMPULSE);
+            hitBody = ball.bounceOff(body.getRectangle(), Physics.BODY_RESTITUTION, 0.0);
         }else{
-            ball.bounceOff(head.getCircle(), Physics.RESTITUTION, 20.0);
-            ball.bounceOff(body.getRectangle(), Physics.RESTITUTION, 0); 
-            collideFootWithBall(ball, power);          
+            hitHead = ball.bounceOff(head.getCircle(), Physics.HEAD_RESTITUTION, Physics.HEAD_IMPULSE);
+            hitBody= ball.bounceOff(body.getRectangle(), Physics.BODY_RESTITUTION, 0.0); 
+            collide = collideFootWithBall(ball, power);          
         }
+        if((hitHead || hitBody) && power != null && power.isAuraActive()){
+            power.executePowerShot(ball, side);
+        }
+        this.lastHorizontalMove = 0.0;
+        return collide;
     }
 
-    private void collideFootWithBall(Ball ball, Power power){
+    /*
+     * Resolves foot-to-ball contact, launching a kick or power shot when kicking in front of the ball.
+     */
+    private boolean collideFootWithBall(Ball ball, Power power) {
+        boolean hitFoot = false;
         Circle footCircle = this.foot.getCircle();
         Optional<Contact> contact = footCircle.contactWith(ball.getCircle());
-        if(contact.isEmpty()) return;
+        if(contact.isEmpty()) return false;
         Contact c = contact.get();
         if(foot.isKicking()){
-            ball.getCircle().translate(c.getNormal().getX() * c.getPenetration(), c.getNormal().getY() * c.getPenetration());
-            boolean inFront = (ball.getX() - footCircle.getX()) * side.dir() > -ball.getRadius();
+            
+            boolean inFront = (ball.getX() - footCircle.getX()) * side.dir() >= -ball.getRadius();
             if(inFront){
-                Vector2 vel = new Vector2(side.dir(), -0.45).normalized().scale(foot.getPowerKicking());
+                ball.getCircle().translate(side.dir() * c.getPenetration(), 0);
+                Vector2 vel = new Vector2(side.dir(), Physics.KICK_LIFT_FACTOR).normalized().scale(foot.getPowerKicking());
                 ball.setHorizontalSpeed(vel.getX());
                 ball.setVerticalSpeed(vel.getY());
                 if(power != null && power.isAuraActive()){
                     power.executePowerShot(ball, side);
                 }
-                return;
+                return true;
             }
         }
-        ball.bounceOff(footCircle, Physics.RESTITUTION, 0.0);
+        hitFoot = ball.bounceOff(footCircle, Physics.FOOT_RESTITUTION, 0.0);
+        if((hitFoot && Math.abs(this.lastHorizontalMove) > 0.01) && ball.getY() + ball.getRadius() >= Field.HEIGHT - 2.0 && (ball.getX()-footCircle.getX())*lastHorizontalMove > 0){
+            double dir = Math.signum(lastHorizontalMove);
+            double dribbleSpeed = Math.abs(lastHorizontalMove)*DRIBBLE_SPEED_FACTOR;
+            if (ball.getHorizontalSpeed() * dir < dribbleSpeed) {
+                ball.setHorizontalSpeed(dir * dribbleSpeed);
+            }
+        }
+        if (hitFoot && power != null && power.isAuraActive()) {
+            power.executePowerShot(ball, side);
+        }
+
+        return false;
     }
 
     /**
@@ -211,10 +260,6 @@ public class PlayerBody {
         return ballCircle.detectCollisionWithCircle(head.getCircle())
                 || ballCircle.detectCollisionWithRectangle(body.getRectangle())
                 || ballCircle.detectCollisionWithCircle(foot.getCircle());
-    }
-
-    public void collideWithPlayer(PlayerBody other){
-        
     }
 
     /**

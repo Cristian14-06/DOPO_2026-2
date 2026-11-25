@@ -1,7 +1,6 @@
 package domain;
 
-import java.util.Optional;
-
+import java.io.Serializable;
 import java.util.Optional;
 
 /**
@@ -10,17 +9,21 @@ import java.util.Optional;
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class Ball implements Collidable, BallView {
+public class Ball implements BallView, Serializable {
+	private static final long serialVersionUID = 1L;
 	private Circle circle;
 	private double verticalSpeed;
 	private double horizontalSpeed;
 	private boolean powerShot;
+	private Country powerShotCountry;
+	private boolean powerShotCharging;
+	private double powerShotChargeProgress;
 	
 	/**
 	 * Default constructor initializing ball at origin with default radius.
 	 */
 	public Ball() {
-		this.circle = new Circle(0, 0, 10);
+		this.circle = new Circle(0, 0, 8);
 	}
 
 	/**
@@ -89,79 +92,6 @@ public class Ball implements Collidable, BallView {
 	}
 
 	/**
-	 * Handles collision impulse against a player's foot.
-	 * 
-	 * @param foot Foot entity collided with
-	 */
-	@Override
-	public void collideWithFoot(Foot foot) {
-		if (foot == null || foot.getCircle() == null) return;
-		if (!this.circle.detectCollisionWithCircle(foot.getCircle())) return;
-
-		double dx = this.circle.getX() - foot.getCircle().getX();
-		double dy = this.circle.getY() - foot.getCircle().getY();
-		double distance = Math.hypot(dx, dy);
-		if (distance == 0) {
-			dx = 1;
-			dy = -1;
-			distance = Math.hypot(dx, dy);
-		}
-		int powerKick = foot.getPowerKicking();
-		setHorizontalSpeed((dx / distance) * powerKick);
-		setVerticalSpeed((dy / distance) * powerKick);
-	}
-	
-	/**
-	 * Resolves physical bounce against a rectangular obstacle such as crossbar or player body.
-	 * 
-	 * @param r Rectangle entity collided with
-	 */
-	public void collideWithGB(Rectangle r) {
-		if (r == null || !r.detectCollisionWithCircle(this.circle)) return;
-
-		if (circle.getX() >= r.left() && circle.getX() <= r.right()) {
-			setVerticalSpeed(-verticalSpeed * Physics.RESTITUTION);
-		} else if (circle.getY() >= r.top() && circle.getY() <= r.bottom()) {
-			setHorizontalSpeed(-horizontalSpeed * Physics.RESTITUTION);
-		} else {
-			double cornerX = (circle.getX() < r.left()) ? r.left() : r.right();
-			double cornerY = (circle.getY() < r.top()) ? r.top() : r.bottom();
-			double dx = circle.getX() - cornerX;
-			double dy = circle.getY() - cornerY;
-			double distance = Math.hypot(dx, dy);
-			if (distance == 0) {
-				dx = 0;
-				dy = -1;
-				distance = 1;
-			}
-			double speed = Math.hypot(horizontalSpeed, verticalSpeed) * Physics.CORNER_RESTITUTION;
-			setHorizontalSpeed((dx / distance) * speed);
-			setVerticalSpeed((dy / distance) * speed);
-		}
-	}
-	
-	/**
-	 * Handles collision and header impulse against a player's head.
-	 * 
-	 * @param head Head entity collided with
-	 */
-	public void collideWithHead(Head head) {
-		if (head == null || head.getCircle() == null) return;
-		if (!this.circle.detectCollisionWithCircle(head.getCircle())) return;
-
-		double dx = this.circle.getX() - head.getCircle().getX();
-		double dy = this.circle.getY() - head.getCircle().getY();
-		double distance = Math.hypot(dx, dy);
-		if (distance == 0) {
-			dx = 0;
-			dy = -1;
-			distance = 1;
-		}
-		setHorizontalSpeed((dx / distance) * 20);
-		setVerticalSpeed((dy / distance) * 20);	
-	}
-	
-	/**
 	 * Resolves bounces against field boundary edges (floor, ceiling, walls).
 	 */
 	public void collideWithEdges() {
@@ -179,7 +109,12 @@ public class Ball implements Collidable, BallView {
 		}
 		if (this.circle.getY() + this.circle.getRadius() >= Field.HEIGHT) {
 			this.circle.setY(Field.HEIGHT - this.circle.getRadius());
-			setVerticalSpeed(-Math.abs(verticalSpeed) * Physics.RESTITUTION);
+			if(verticalSpeed >= 5){
+				setVerticalSpeed(-Math.abs(verticalSpeed) * Physics.RESTITUTION);
+			}else{
+				setVerticalSpeed(0.0);
+			}
+				
 		}
 	}
 
@@ -189,17 +124,24 @@ public class Ball implements Collidable, BallView {
 		if(opt.isEmpty()) return false;
 		Contact c = opt.get();
 		Vector2 normal = c.getNormal();
-		this.circle.translate(normal.getX() * c.getPenetration(), normal.getY() * c.getPenetration());
 
-		Vector2 v = new Vector2(horizontalSpeed, verticalSpeed);
-		if (impulse > 0) {
-			v = normal.scale(impulse);
-		} else {
-			double vn = v.dot(normal);
-			if (vn < 0) {
-				v = v.sub(normal.scale((1.0 + restitution) * vn));
+		boolean onFloor = this.getCircle().getY() + this. getCircle().getRadius() >= Field.HEIGHT - 0.5;
+		if(onFloor && normal.getY() > 0){
+			if(Math.abs(normal.getX()) > 0.01){
+				normal = new Vector2(Math.signum(normal.getX()), 0);
+			}else{
+				normal = new Vector2(0, -1);
 			}
 		}
+		this.circle.translate(normal.getX() * c.getPenetration(), normal.getY() * c.getPenetration());
+		if (this.circle.getY() + this.circle.getRadius() > Field.HEIGHT) {
+            this.circle.setY(Field.HEIGHT - this.circle.getRadius());
+		}
+
+		Vector2 v = new Vector2(horizontalSpeed, verticalSpeed);
+		double vn = v.dot(normal);
+		if (vn < 0) v = v.sub(normal.scale((1.0 + restitution) * vn));
+		if(impulse > 0) v = v.add(normal.scale(impulse));
 		this.horizontalSpeed = v.getX();
 		this.verticalSpeed = v.getY();
 		return true;
@@ -245,6 +187,8 @@ public class Ball implements Collidable, BallView {
 		copy.setHorizontalSpeed(horizontalSpeed);
 		copy.setVerticalSpeed(verticalSpeed);
 		copy.setPowerShot(powerShot);
+		copy.setPowerShotCountry(powerShotCountry);
+		copy.setPowerShotCharging(powerShotCharging, powerShotChargeProgress);
 		return copy;
 	}
 
@@ -268,7 +212,64 @@ public class Ball implements Collidable, BallView {
 		return powerShot;
 	}
 
+	/**
+	 * Returns the country that launched the active power shot, or null if none.
+	 *
+	 * @return Shooting country or null
+	 */
+	public Country getPowerShotCountry() {
+		return powerShotCountry;
+	}
+
+	/**
+	 * Indicates whether the ball is currently suspended while charging a power shot.
+	 *
+	 * @return True if charging a power shot
+	 */
+	public boolean isPowerShotCharging() {
+		return powerShotCharging;
+	}
+
+	/**
+	 * Returns the normalized charge progress [0.0, 1.0] while suspended for a power shot.
+	 *
+	 * @return Charge progress in [0.0, 1.0]
+	 */
+	public double getPowerShotChargeProgress() {
+		return powerShotChargeProgress;
+	}
+
+	/**
+	 * Marks whether the ball currently carries a power shot, clearing power visual state when false.
+	 *
+	 * @param powerShot True when a power shot starts, false to clear
+	 */
 	public void setPowerShot(boolean powerShot) {
 		this.powerShot = powerShot;
+		if (!powerShot) {
+			this.powerShotCountry = null;
+			this.powerShotCharging = false;
+			this.powerShotChargeProgress = 0.0;
+		}
+	}
+
+	/**
+	 * Sets the country associated with the current power shot.
+	 *
+	 * @param country Country that fired the power shot
+	 */
+	public void setPowerShotCountry(Country country) {
+		this.powerShotCountry = country;
+	}
+
+	/**
+	 * Updates the power shot charging state and normalized progress [0.0, 1.0].
+	 *
+	 * @param charging True while suspended in windup
+	 * @param progress Charge progress clamped to [0.0, 1.0]
+	 */
+	public void setPowerShotCharging(boolean charging, double progress) {
+		this.powerShotCharging = charging;
+		this.powerShotChargeProgress = charging ? Math.max(0.0, Math.min(1.0, progress)) : 0.0;
 	}
 }

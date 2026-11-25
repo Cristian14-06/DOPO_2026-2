@@ -1,12 +1,15 @@
 package domain;
 
+import java.io.Serializable;
+
 /**
  * Represents the player's foot entity for kicking and ball collisions.
  * 
  * @author Juan Espitia
  * @author Cristian Salamanca
  */
-public class Foot implements Collidable {
+public class Foot implements Serializable {
+    private static final long serialVersionUID = 1L;
     public static final double KICK_REACH_X = 20.0;
     public static final double KICK_LIFT_Y = 6.0;
     public static final int KICK_SWEEP_TICKS = 4;
@@ -44,8 +47,8 @@ public class Foot implements Collidable {
      * @param side Player field side
      */
     public Foot(double playerX, Side side) {
-        double radius = 12;
-        double footX = (side == Side.LEFT) ? (playerX + 8) : (playerX - 8);
+        double radius = 8;
+        double footX = (side == Side.LEFT) ? (playerX + 6) : (playerX - 6);
         double footY = Field.HEIGHT - radius;
         this.circle = new Circle(footX, footY, radius);
         this.powerKicking = 22;

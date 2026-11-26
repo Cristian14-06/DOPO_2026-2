@@ -1,6 +1,11 @@
 package presentation;
 
-import domain.*;
+import domain.DOPOSoccer;
+import domain.GameStatus;
+import domain.MatchView;
+import domain.Physics;
+import domain.PlayerAction;
+import domain.Side;
 import persistence.Log;
 import persistence.SerializedMatchRepository;
 import persistence.SerializedProfileRepository;
@@ -114,6 +119,7 @@ public class HeadSoccerGUI extends JFrame implements KeyListener, ActionListener
         });
 
         setCurrentScreen(Screen.MENU);
+        this.photo.startMusic();
 
         this.gameLoop = new Timer(Physics.TICK_MS, this);
         this.gameLoop.start();
@@ -229,6 +235,11 @@ public class HeadSoccerGUI extends JFrame implements KeyListener, ActionListener
         int code = e.getKeyCode();
         activeKeys.add(code);
 
+        if (code == KeyEvent.VK_N) {
+            photo.toggleMute();
+            return;
+        }
+
         if (currentScreen == Screen.MENU) {
             if (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_SPACE) {
                 setCurrentScreen(Screen.SELECT_PLAYERS);
@@ -260,8 +271,6 @@ public class HeadSoccerGUI extends JFrame implements KeyListener, ActionListener
             } else if (code == KeyEvent.VK_M) {
                 game.finish();
                 setCurrentScreen(Screen.MENU);
-            } else if (code == KeyEvent.VK_N) {
-                photo.toggleMute();
             }
         } else if (status == GameStatus.PAUSED) {
             if (code == KeyEvent.VK_P) {
@@ -269,8 +278,6 @@ public class HeadSoccerGUI extends JFrame implements KeyListener, ActionListener
             } else if (code == KeyEvent.VK_M) {
                 game.finish();
                 setCurrentScreen(Screen.MENU);
-            } else if (code == KeyEvent.VK_N) {
-                photo.toggleMute();
             }
         } else if (status == GameStatus.FINISHED) {
             if (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_M || code == KeyEvent.VK_SPACE) {

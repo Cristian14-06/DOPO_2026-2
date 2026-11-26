@@ -2,6 +2,7 @@ package domain;
 
 import java.io.Serializable;
 import java.util.Optional;
+import java.util.Random;
 
 /**
  * Encapsulates a player's physical limbs (head, torso, foot), anchor position,
@@ -22,6 +23,9 @@ public class PlayerBody implements Serializable {
     private boolean onTop;
     private double lastHorizontalMove;
     private static final double DRIBBLE_SPEED_FACTOR = 1.5;
+    private static final double KICK_LIFT_HIGHEST = -1.45;
+    private static final double KICK_LIFT_LOWEST = -0.45;
+    private final Random kickRandom;
 
     /*
      * Synchronizes head, torso, and foot collision shapes with the current anchor and kick offsets.
@@ -44,7 +48,19 @@ public class PlayerBody implements Serializable {
      * @param side Field side defended by this player
      */
     public PlayerBody(Side side){
+        this(side, new Random());
+    }
+
+    /**
+     * Constructs a player body with an injectable random generator for the kick angle variation,
+     * so tests can reproduce the exact same kicks with a fixed seed.
+     *
+     * @param side Field side defended by this player
+     * @param kickRandom Random generator used to vary the kick lift; a new one is created if null
+     */
+    public PlayerBody(Side side, Random kickRandom){
         this.side = side;
+        this.kickRandom = (kickRandom != null) ? kickRandom : new Random();
         anchor = new Vector2(side.startX(), Field.HEIGHT);
         head = new Head(anchor.getX(), side);
         body = new Body(anchor.getX(), side);
@@ -191,23 +207,94 @@ public class PlayerBody implements Serializable {
      */
     public boolean collideWithBall(Ball ball, Power power){
         boolean collide;
-        boolean hitHead;
-        boolean hitBody;
-        if (ball == null || ball.isPowerShotCharging()) return false;
-        if(foot.isKicking()){
+        boolean hitHead = false;
+        boolean hitBody = false;
+        if (ball == null) return false;
+
+        if (ball.isPowerShotCharging()) {
+            if (power == null || !power.isChargingShot()) {
+                pushOutOfChargingBall(ball.getCircle());
+            }
+            this.lastHorizontalMove = 0.0;
+            return false;
+        }
+
+        if (foot.isKicking()) {
             collide = collideFootWithBall(ball, power);
+            if (!ball.isPowerShotCharging()) {
+                hitHead = ball.bounceOff(head.getCircle(), Physics.HEAD_RESTITUTION, Physics.HEAD_IMPULSE);
+                hitBody = ball.bounceOff(body.getRectangle(), Physics.BODY_RESTITUTION, 0.0);
+            }
+        } else {
             hitHead = ball.bounceOff(head.getCircle(), Physics.HEAD_RESTITUTION, Physics.HEAD_IMPULSE);
             hitBody = ball.bounceOff(body.getRectangle(), Physics.BODY_RESTITUTION, 0.0);
-        }else{
-            hitHead = ball.bounceOff(head.getCircle(), Physics.HEAD_RESTITUTION, Physics.HEAD_IMPULSE);
-            hitBody= ball.bounceOff(body.getRectangle(), Physics.BODY_RESTITUTION, 0.0); 
-            collide = collideFootWithBall(ball, power);          
+            collide = collideFootWithBall(ball, power);
         }
-        if((hitHead || hitBody) && power != null && power.isAuraActive()){
-            power.executePowerShot(ball, side);
+        if (hitHead || hitBody) {
+            triggerPowerShot(ball, power);
         }
         this.lastHorizontalMove = 0.0;
         return collide;
+    }
+
+    /*
+     * Pushes all limbs horizontally out of a suspended charging ball so opponents cannot walk through it.
+     */
+    private void pushOutOfChargingBall(Circle ballCircle) {
+        if (ballCircle == null) return;
+        pushCircleOutHorizontally(this.head.getCircle(), ballCircle);
+        pushCircleOutHorizontally(this.foot.getCircle(), ballCircle);
+        pushBodyOutHorizontally(this.body.getRectangle(), ballCircle);
+        collideWithEdges();
+    }
+
+    /*
+     * Separates a circular limb horizontally from a stationary charging ball using exact circle clearance.
+     */
+    private void pushCircleOutHorizontally(Circle circle, Circle ballCircle) {
+        double dy = circle.getY() - ballCircle.getY();
+        double sumRad = circle.getRadius() + ballCircle.getRadius();
+        if (Math.abs(dy) >= sumRad) return;
+        double minDx = Math.sqrt(sumRad * sumRad - dy * dy);
+        double dx = circle.getX() - ballCircle.getX();
+        if (Math.abs(dx) < minDx) {
+            double pushDir = (dx != 0.0) ? Math.signum(dx) : -side.dir();
+            translate(pushDir * (minDx - Math.abs(dx) + 0.05), 0.0);
+        }
+    }
+
+    /*
+     * Separates the rectangular torso horizontally from a stationary charging ball.
+     */
+    private void pushBodyOutHorizontally(Rectangle br, Circle ballCircle) {
+        if (!br.detectCollisionWithCircle(ballCircle)) return;
+        double closestY = Math.max(br.top(), Math.min(ballCircle.getY(), br.bottom()));
+        double dy = ballCircle.getY() - closestY;
+        double r = ballCircle.getRadius();
+        if (Math.abs(dy) >= r) return;
+        double clearanceX = Math.sqrt(r * r - dy * dy);
+        if (anchor.getX() >= ballCircle.getX()) {
+            double targetLeft = ballCircle.getX() + clearanceX + 0.05;
+            if (br.left() < targetLeft) {
+                translate(targetLeft - br.left(), 0.0);
+            }
+        } else {
+            double targetRight = ballCircle.getX() - clearanceX - 0.05;
+            if (br.right() > targetRight) {
+                translate(targetRight - br.right(), 0.0);
+            }
+        }
+    }
+
+    /*
+     * Triggers the player's power shot holding the ball in front of the head toward the opponent's goal.
+     */
+    private void triggerPowerShot(Ball ball, Power power) {
+        if (power == null || !power.isAuraActive()) return;
+        Circle hc = head.getCircle();
+        double holdX = hc.getX() + side.dir() * (hc.getRadius() + ball.getRadius() + 4.0);
+        double holdY = hc.getY();
+        power.executePowerShot(ball, side, holdX, holdY);
     }
 
     /*
@@ -217,32 +304,30 @@ public class PlayerBody implements Serializable {
         boolean hitFoot = false;
         Circle footCircle = this.foot.getCircle();
         Optional<Contact> contact = footCircle.contactWith(ball.getCircle());
-        if(contact.isEmpty()) return false;
+        if (contact.isEmpty()) return false;
         Contact c = contact.get();
-        if(foot.isKicking()){
-            
+        if (foot.isKicking()) {
             boolean inFront = (ball.getX() - footCircle.getX()) * side.dir() >= -ball.getRadius();
-            if(inFront){
+            if (inFront) {
                 ball.getCircle().translate(side.dir() * c.getPenetration(), 0);
-                Vector2 vel = new Vector2(side.dir(), Physics.KICK_LIFT_FACTOR).normalized().scale(foot.getPowerKicking());
+                double lift = KICK_LIFT_HIGHEST + kickRandom.nextDouble() * (KICK_LIFT_LOWEST - KICK_LIFT_HIGHEST);
+                Vector2 vel = new Vector2(side.dir(), lift).normalized().scale(foot.getPowerKicking());
                 ball.setHorizontalSpeed(vel.getX());
                 ball.setVerticalSpeed(vel.getY());
-                if(power != null && power.isAuraActive()){
-                    power.executePowerShot(ball, side);
-                }
+                triggerPowerShot(ball, power);
                 return true;
             }
         }
         hitFoot = ball.bounceOff(footCircle, Physics.FOOT_RESTITUTION, 0.0);
-        if((hitFoot && Math.abs(this.lastHorizontalMove) > 0.01) && ball.getY() + ball.getRadius() >= Field.HEIGHT - 2.0 && (ball.getX()-footCircle.getX())*lastHorizontalMove > 0){
+        if ((hitFoot && Math.abs(this.lastHorizontalMove) > 0.01) && ball.getY() + ball.getRadius() >= Field.HEIGHT - 2.0 && (ball.getX() - footCircle.getX()) * lastHorizontalMove > 0) {
             double dir = Math.signum(lastHorizontalMove);
-            double dribbleSpeed = Math.abs(lastHorizontalMove)*DRIBBLE_SPEED_FACTOR;
+            double dribbleSpeed = Math.abs(lastHorizontalMove) * DRIBBLE_SPEED_FACTOR;
             if (ball.getHorizontalSpeed() * dir < dribbleSpeed) {
                 ball.setHorizontalSpeed(dir * dribbleSpeed);
             }
         }
-        if (hitFoot && power != null && power.isAuraActive()) {
-            power.executePowerShot(ball, side);
+        if (hitFoot) {
+            triggerPowerShot(ball, power);
         }
 
         return false;
@@ -319,12 +404,12 @@ public class PlayerBody implements Serializable {
     }
 
     /** @return Internal head entity */
-    public Head getHead() {
+    Head getHead() {
         return head;
     }
 
     /** @return Internal body entity */
-    public Body getBody() {
+    Body getBody() {
         return body;
     }
 
@@ -385,7 +470,7 @@ public class PlayerBody implements Serializable {
     }
 
     /** @return Internal foot entity */
-    public Foot getFoot() {
+    Foot getFoot() {
         return foot;
     }
 

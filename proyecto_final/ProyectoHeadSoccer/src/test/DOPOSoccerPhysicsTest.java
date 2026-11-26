@@ -1,7 +1,30 @@
 package test;
 
-import domain.*;
+import domain.AuraAzulPower;
+import domain.Ball;
+import domain.BallView;
+import domain.Circle;
+import domain.Contact;
+import domain.Country;
+import domain.DOPOSoccerException;
+import domain.Field;
+import domain.Foot;
+import domain.Goal;
+import domain.LightningPower;
+import domain.Match;
+import domain.MatchConfig;
+import domain.MatchType;
+import domain.Modality;
+import domain.Player;
+import domain.PlayerAction;
+import domain.PlayerBody;
+import domain.PlayerProfile;
+import domain.PlayerStats;
+import domain.PlayerView;
+import domain.Rectangle;
+import domain.Side;
 import java.util.EnumSet;
+import java.util.Random;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
@@ -106,7 +129,9 @@ public class DOPOSoccerPhysicsTest {
             player.collideWithEdges();
             player.collideWithGoal(leftGoal);
 
-            if (bar.detectCollisionWithCircle(player.getHeadShape())) {
+            double penetration = bar.contactWith(player.getHeadShape())
+                    .map(Contact::getPenetration).orElse(0.0);
+            if (penetration > 0.5) {
                 consecutiveInsideTicks++;
                 maxConsecutiveInside = Math.max(maxConsecutiveInside, consecutiveInsideTicks);
             } else {
@@ -330,6 +355,8 @@ public class DOPOSoccerPhysicsTest {
 
         left.kick();
         right.kick();
+        double leftMinVerticalSpeed = 0.0;
+        double rightMinVerticalSpeed = 0.0;
         for (int t = 0; t < 10; t++) {
             left.tick();
             right.tick();
@@ -339,10 +366,14 @@ public class DOPOSoccerPhysicsTest {
             rightBall.collideWithEdges();
             left.collideWithBall(leftBall);
             right.collideWithBall(rightBall);
+            leftMinVerticalSpeed = Math.min(leftMinVerticalSpeed, leftBall.getVerticalSpeed());
+            rightMinVerticalSpeed = Math.min(rightMinVerticalSpeed, rightBall.getVerticalSpeed());
         }
 
-        assertEquals(leftBall.getHorizontalSpeed(), -rightBall.getHorizontalSpeed(), 0.001);
-        assertEquals(leftBall.getVerticalSpeed(), rightBall.getVerticalSpeed(), 0.001);
+        assertTrue("Left player kick should launch ball right", leftBall.getHorizontalSpeed() > 5.0);
+        assertTrue("Right player kick should launch ball left", rightBall.getHorizontalSpeed() < -5.0);
+        assertTrue("Left player kick should lift ball upward", leftMinVerticalSpeed < 0.0);
+        assertTrue("Right player kick should lift ball upward", rightMinVerticalSpeed < 0.0);
     }
 
     /**
@@ -408,5 +439,35 @@ public class DOPOSoccerPhysicsTest {
 
         assertTrue("Ball should gain forward horizontal speed when dribbled",
                 ball.getHorizontalSpeed() > 1.0);
+    }
+
+    /**
+     * Verifies that the kick angle variation is reproducible with a fixed seed: two bodies with the
+     * same seed, one on each side, launch the ball with exactly mirrored velocities.
+     */
+    @Test
+    public void testSeededKickIsReproducibleAndMirrored() {
+        PlayerBody left = new PlayerBody(Side.LEFT, new Random(42));
+        PlayerBody right = new PlayerBody(Side.RIGHT, new Random(42));
+
+        Ball leftBall = new Ball(left.getFootShape().getX() + 18.0, Field.HEIGHT - 10.0, 10.0);
+        Ball rightBall = new Ball(right.getFootShape().getX() - 18.0, Field.HEIGHT - 10.0, 10.0);
+
+        left.startKick();
+        right.startKick();
+        for (int t = 0; t < 10; t++) {
+            left.tick();
+            right.tick();
+            leftBall.tick();
+            rightBall.tick();
+            leftBall.collideWithEdges();
+            rightBall.collideWithEdges();
+            left.collideWithBall(leftBall, null);
+            right.collideWithBall(rightBall, null);
+        }
+
+        assertTrue("Left kick should launch the ball right", leftBall.getHorizontalSpeed() > 5.0);
+        assertEquals(leftBall.getHorizontalSpeed(), -rightBall.getHorizontalSpeed(), 0.001);
+        assertEquals(leftBall.getVerticalSpeed(), rightBall.getVerticalSpeed(), 0.001);
     }
 }

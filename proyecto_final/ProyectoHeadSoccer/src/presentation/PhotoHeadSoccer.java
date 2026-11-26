@@ -1,6 +1,14 @@
 package presentation;
 
-import domain.*;
+import domain.Country;
+import domain.DOPOSoccer;
+import domain.DOPOSoccerException;
+import domain.GameStatus;
+import domain.MatchConfig;
+import domain.MatchListener;
+import domain.MatchView;
+import domain.PlayerView;
+import domain.Side;
 import persistence.Log;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -47,10 +55,24 @@ public class PhotoHeadSoccer extends JPanel implements MatchListener {
     }
 
     /**
-     * Toggles global match sound effects on or off.
+     * Toggles all sound on or off: match sound effects and the background soundtrack.
      */
     public void toggleMute() {
         soundPlayer.toggleMute();
+    }
+
+    /**
+     * Starts looping the background soundtrack.
+     */
+    public void startMusic() {
+        soundPlayer.startMusic();
+    }
+
+    /**
+     * Stops the background soundtrack.
+     */
+    public void stopMusic() {
+        soundPlayer.stopMusic();
     }
 
     /**

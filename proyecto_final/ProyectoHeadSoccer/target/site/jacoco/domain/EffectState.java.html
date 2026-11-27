@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EffectState.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">EffectState.java</span></div><h1>EffectState.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+
+/**
+ * Tracks the active power status effect on a player and its movement/action restrictions.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class EffectState implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private Effect currentEffect;
+    private int remainingTicks;
+    private int totalTicks;
+
+    /**
+     * Initializes an empty effect state with no active restriction.
+     */
+<span class="fc" id="L20">    public EffectState(){</span>
+<span class="fc" id="L21">        this.currentEffect = new NoneEffect();</span>
+<span class="fc" id="L22">        this.remainingTicks = 0;</span>
+<span class="fc" id="L23">        this.totalTicks = 0;</span>
+<span class="fc" id="L24">    }</span>
+
+    /**
+     * Applies a status effect, replacing any previous effect immediately.
+     *
+     * @param effect Status effect strategy to apply
+     * @param duration Duration in seconds
+     * @param body Player body receiving the effect
+     */
+    public void apply(Effect effect, double duration, PlayerBody body){
+<span class="pc bpc" id="L34" title="1 of 2 branches missed.">        this.currentEffect = (effect != null) ? effect : new NoneEffect();</span>
+<span class="fc" id="L35">        this.remainingTicks = Physics.seconds(duration);</span>
+<span class="fc" id="L36">        this.totalTicks = this.remainingTicks;</span>
+<span class="fc" id="L37">        this.currentEffect.onStart(body);</span>
+<span class="fc" id="L38">    }</span>
+
+    /**
+     * Advances the active effect timer and clears it upon expiration.
+     *
+     * @param body Player body affected
+     * @param side Pitch side of the affected player
+     */
+    public void tick(PlayerBody body, Side side){
+<span class="pc bpc" id="L47" title="1 of 4 branches missed.">        if(this.currentEffect.getType() != PlayerEffect.NONE &amp;&amp; remainingTicks &gt; 0){</span>
+<span class="fc" id="L48">            this.currentEffect.onTick(body, side);</span>
+<span class="fc" id="L49">            remainingTicks--;</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            if(remainingTicks &lt;= 0){</span>
+<span class="fc" id="L51">                clear();</span>
+            }
+        }
+<span class="fc" id="L54">    }</span>
+
+    /**
+     * Clears any active status effect immediately.
+     */
+    public void clear(){
+<span class="fc" id="L60">        this.currentEffect = new NoneEffect();</span>
+<span class="fc" id="L61">        this.remainingTicks = 0;</span>
+<span class="fc" id="L62">        this.totalTicks = 0;</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Returns the remaining fraction of the active status effect in the range [0.0, 1.0].
+     *
+     * @return Remaining effect progress
+     */
+    public double getProgress(){
+<span class="pc bpc" id="L71" title="2 of 6 branches missed.">        if (currentEffect.getType() == PlayerEffect.NONE || remainingTicks &lt;= 0 || totalTicks &lt;= 0) {</span>
+<span class="fc" id="L72">            return 0.0;</span>
+        }
+<span class="fc" id="L74">        return (double) remainingTicks / totalTicks;</span>
+    }
+
+    /** @return Movement speed multiplier */
+    public double speedFactor(){
+<span class="fc" id="L79">        return currentEffect.speedFactor();</span>
+    }
+
+    /** @return True if the player can move horizontally */
+    public boolean canMove(){
+<span class="fc" id="L84">        return currentEffect.canMove();</span>
+    }
+
+    /** @return True if the player can jump */
+    public boolean canJump(){
+<span class="fc" id="L89">        return currentEffect.canJump();</span>
+    }
+
+    /** @return True if the player can kick or activate power */
+    public boolean canKick(){
+<span class="fc" id="L94">        return currentEffect.canKick();</span>
+    }
+
+    /** @return True if horizontal controls are inverted */
+    public boolean isConfused(){
+<span class="fc" id="L99">        return currentEffect.isConfused();</span>
+    }
+
+    /** @return Active status effect type */
+    public PlayerEffect getCurrent(){
+<span class="fc" id="L104">        return currentEffect.getType();</span>
+    }
+
+    /** @return Remaining effect duration in ticks */
+    public int getTicksRemaining(){
+<span class="nc" id="L109">        return remainingTicks;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

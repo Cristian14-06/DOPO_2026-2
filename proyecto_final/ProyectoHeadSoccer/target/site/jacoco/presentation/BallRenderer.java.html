@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BallRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">BallRenderer.java</span></div><h1>BallRenderer.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.BallView;
+import domain.Circle;
+import domain.GameStatus;
+import domain.MatchView;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+
+/**
+ * Renders the soccer ball and its power-shot effects in scaled field coordinates.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class BallRenderer {
+    private final ImageAssets assets;
+    private double spinAngle;
+
+    /**
+     * Constructs a ball renderer using shared image assets.
+     *
+     * @param assets Loaded image assets
+     */
+<span class="nc" id="L29">    public BallRenderer(ImageAssets assets) {</span>
+<span class="nc" id="L30">        this.assets = assets;</span>
+<span class="nc" id="L31">    }</span>
+
+    /**
+     * Draws the soccer ball and its power-shot glow when active.
+     *
+     * @param g2d Scaled field graphics context
+     * @param match Read-only match view
+     */
+    public void draw(Graphics2D g2d, MatchView match) {
+<span class="nc bnc" id="L40" title="All 2 branches missed.">        if (match == null) return;</span>
+<span class="nc" id="L41">        BallView ball = match.getBall();</span>
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (ball == null) return;</span>
+
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        for(Circle fake : match.getFakeBalls()){</span>
+<span class="nc" id="L45">            drawBallSprite(g2d, (int) fake.getX(), (int) fake.getY(), (int) fake.getRadius(), false);</span>
+<span class="nc" id="L46">        }</span>
+
+        
+
+<span class="nc" id="L50">        GameStatus status = match.getStatus();</span>
+<span class="nc bnc" id="L51" title="All 6 branches missed.">        if ((status == GameStatus.PLAYING || status == GameStatus.SUDDEN_DEATH) &amp;&amp; ball.getRadius() &gt; 0) {</span>
+<span class="nc" id="L52">            spinAngle += ball.getHorizontalSpeed() / ball.getRadius();</span>
+        }
+
+<span class="nc" id="L55">        int bx = (int) ball.getX();</span>
+<span class="nc" id="L56">        int by = (int) ball.getY();</span>
+<span class="nc" id="L57">        int r = (int) ball.getRadius();</span>
+
+<span class="nc" id="L59">        boolean isPower = ball.hasPowerShot();</span>
+
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (isPower) {</span>
+<span class="nc" id="L62">            g2d.setColor(new Color(255, 200, 0, 120));</span>
+<span class="nc" id="L63">            g2d.fillOval(bx - r - 6, by - r - 6, (r + 6) * 2, (r + 6) * 2);</span>
+        }
+
+<span class="nc" id="L66">        drawChargingRing(g2d, ball, bx, by, r);</span>
+
+<span class="nc" id="L68">        AffineTransform prevTransform = g2d.getTransform();</span>
+<span class="nc" id="L69">        g2d.rotate(spinAngle, bx, by);</span>
+<span class="nc" id="L70">        drawBallSprite(g2d, bx, by, r, isPower);</span>
+<span class="nc" id="L71">        g2d.setTransform(prevTransform);</span>
+
+<span class="nc" id="L73">    }</span>
+
+    /*
+     * Draws a shrinking energy ring around the ball while a power shot is charging.
+     */
+    private void drawChargingRing(Graphics2D g2d, BallView ball, int bx, int by, int r) {
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (!ball.isPowerShotCharging()) return;</span>
+<span class="nc" id="L80">        double progress = Math.max(0.0, Math.min(1.0, ball.getPowerShotChargeProgress()));</span>
+<span class="nc" id="L81">        int ringRadius = (int) Math.round(r + 18.0 * (1.0 - progress) + 2.0);</span>
+<span class="nc" id="L82">        Color pc = Theme.powerColor(ball.getPowerShotCountry());</span>
+<span class="nc" id="L83">        g2d.setColor(new Color(pc.getRed(), pc.getGreen(), pc.getBlue(), 200));</span>
+<span class="nc" id="L84">        g2d.setStroke(new BasicStroke(2.2f));</span>
+<span class="nc" id="L85">        g2d.drawOval(bx - ringRadius, by - ringRadius, ringRadius * 2, ringRadius * 2);</span>
+<span class="nc" id="L86">    }</span>
+
+    /*
+     * Draws the ball sprite (or geometric fallback) centered at the given coordinates.
+     */
+    private void drawBallSprite(Graphics2D g2d, int bx, int by, int r, boolean isPower) {
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        BufferedImage ballImg = (assets != null) ? assets.getBall() : null;</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">        if (ballImg != null) {</span>
+<span class="nc" id="L94">            g2d.drawImage(ballImg, bx - r, by - r, r * 2, r * 2, null);</span>
+        } else {
+<span class="nc bnc" id="L96" title="All 2 branches missed.">            g2d.setColor(isPower ? new Color(255, 240, 200) : Color.WHITE);</span>
+<span class="nc" id="L97">            g2d.fillOval(bx - r, by - r, r * 2, r * 2);</span>
+<span class="nc bnc" id="L98" title="All 2 branches missed.">            g2d.setColor(isPower ? new Color(255, 120, 0) : Color.BLACK);</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">            g2d.setStroke(new BasicStroke(isPower ? 1.8f : 1.2f));</span>
+<span class="nc" id="L100">            g2d.drawOval(bx - r, by - r, r * 2, r * 2);</span>
+<span class="nc" id="L101">            g2d.drawLine(bx - r + 2, by, bx + r - 2, by);</span>
+<span class="nc" id="L102">            g2d.drawLine(bx, by - r + 2, bx, by + r - 2);</span>
+        }
+<span class="nc" id="L104">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

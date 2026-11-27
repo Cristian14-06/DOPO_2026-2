@@ -1,0 +1,404 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>DOPOSoccerMachineTest xref</title>
+<link type="text/css" rel="stylesheet" href="../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../testapidocs/test/DOPOSoccerMachineTest.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> test;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> domain.BallView;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> domain.Circle;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> domain.ClumsyMachine;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> domain.Country;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> domain.DOPOSoccerException;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> domain.DefensiveMachine;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> domain.ExpertMachine;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> domain.Field;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> domain.GameStatus;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  <strong class="jxr_keyword">import</strong> domain.MachineController;
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <strong class="jxr_keyword">import</strong> domain.MachineProfile;
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">import</strong> domain.Match;
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <strong class="jxr_keyword">import</strong> domain.MatchConfig;
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <strong class="jxr_keyword">import</strong> domain.MatchType;
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <strong class="jxr_keyword">import</strong> domain.MatchView;
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <strong class="jxr_keyword">import</strong> domain.Modality;
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">import</strong> domain.OffensiveMachine;
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>  <strong class="jxr_keyword">import</strong> domain.PlayerAction;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>  <strong class="jxr_keyword">import</strong> domain.PlayerEffect;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>  <strong class="jxr_keyword">import</strong> domain.PlayerView;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>  <strong class="jxr_keyword">import</strong> domain.Rectangle;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>  <strong class="jxr_keyword">import</strong> domain.Side;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>  <strong class="jxr_keyword">import</strong> domain.StatType;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  <strong class="jxr_keyword">import</strong> java.util.Collections;
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>  <strong class="jxr_keyword">import</strong> java.util.List;
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <strong class="jxr_keyword">import</strong> java.util.Optional;
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <strong class="jxr_keyword">import</strong> java.util.Random;
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <strong class="jxr_keyword">import</strong> java.util.Set;
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <strong class="jxr_keyword">import</strong> org.junit.Test;
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <strong class="jxr_keyword">import</strong> <strong class="jxr_keyword">static</strong> org.junit.Assert.*;
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>  
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>  <em class="jxr_javadoccomment"> * Unit tests verifying all autonomous machine profiles, MachineProfile factory methods,</em>
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>  <em class="jxr_javadoccomment"> * tactical branching, and crossbar roll-off recovery.</em>
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>  <em class="jxr_javadoccomment"> * @author Juan Espitia</em>
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>  <em class="jxr_javadoccomment"> * @author Cristian Salamanca</em>
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="DOPOSoccerMachineTest" href="../test/DOPOSoccerMachineTest.html#DOPOSoccerMachineTest">DOPOSoccerMachineTest</a> {
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>  
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>  <em class="jxr_javadoccomment">     * Verifies that MachineProfile.create returns the expected controller subclass for every profile.</em>
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>      @Test
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testMachineProfileCreatesExpectedControllerTypes() {
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>          assertTrue(MachineProfile.TORPE.create(Side.RIGHT) instanceof <a name="ClumsyMachine" href="../domain/ClumsyMachine.html#ClumsyMachine">ClumsyMachine</a>);
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>          assertTrue(MachineProfile.OFENSIVA.create(Side.RIGHT) instanceof <a name="OffensiveMachine" href="../domain/OffensiveMachine.html#OffensiveMachine">OffensiveMachine</a>);
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>          assertTrue(MachineProfile.DEFENSIVA.create(Side.RIGHT) instanceof <a name="DefensiveMachine" href="../domain/DefensiveMachine.html#DefensiveMachine">DefensiveMachine</a>);
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>          assertTrue(MachineProfile.EXPERTA.create(Side.RIGHT) instanceof <a name="ExpertMachine" href="../domain/ExpertMachine.html#ExpertMachine">ExpertMachine</a>);
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>  
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>          assertTrue(MachineProfile.TORPE.create(Side.LEFT, <strong class="jxr_keyword">new</strong> Random(7L)) instanceof <a name="ClumsyMachine" href="../domain/ClumsyMachine.html#ClumsyMachine">ClumsyMachine</a>);
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>          assertTrue(MachineProfile.EXPERTA.create(Side.LEFT, <strong class="jxr_keyword">new</strong> Random(7L)) instanceof <a name="ExpertMachine" href="../domain/ExpertMachine.html#ExpertMachine">ExpertMachine</a>);
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>          assertEquals(Side.LEFT, MachineProfile.DEFENSIVA.create(Side.LEFT).getSide());
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>      }
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>  
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>  <em class="jxr_javadoccomment">     * Verifies that DefensiveMachine returns to its home zone when the ball is far,</em>
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>  <em class="jxr_javadoccomment">     * and intercepts, jumps, and kicks when the ball enters its defensive half.</em>
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>      @Test
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testDefensiveMachineReturnsHomeWhenBallFarAndDefendsWhenNear() {
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>          <a name="DefensiveMachine" href="../domain/DefensiveMachine.html#DefensiveMachine">DefensiveMachine</a> machine = <strong class="jxr_keyword">new</strong> <a name="DefensiveMachine" href="../domain/DefensiveMachine.html#DefensiveMachine">DefensiveMachine</a>(Side.RIGHT);
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>  
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>          StubMatch farMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>                  .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 200, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>                  .withBall(<strong class="jxr_keyword">new</strong> StubBall(80, Field.HEIGHT - 8, 0, 0, false));
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>          Set&lt;PlayerAction&gt; farActions = machine.decide(farMatch);
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>          assertTrue(<span class="jxr_string">"Defensive machine should move right toward home position when ball is far"</span>,
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>                  farActions.contains(PlayerAction.RIGHT));
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>          assertFalse(farActions.contains(PlayerAction.KICK));
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>  
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>          StubMatch nearLowMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>                  .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 260, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>                  .withBall(<strong class="jxr_keyword">new</strong> StubBall(245, Field.HEIGHT - 12, -3, 0, false));
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>          Set&lt;PlayerAction&gt; nearLowActions = machine.decide(nearLowMatch);
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>          assertTrue(<span class="jxr_string">"Defensive machine should kick a low ball in front of it"</span>,
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>                  nearLowActions.contains(PlayerAction.KICK));
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>  
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>          StubMatch nearHighMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>                  .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 270, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>                  .withBall(<strong class="jxr_keyword">new</strong> StubBall(265, Field.HEIGHT - 60, -2, 0, false));
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>          Set&lt;PlayerAction&gt; nearHighActions = machine.decide(nearHighMatch);
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>          assertTrue(<span class="jxr_string">"Defensive machine should jump for a high ball in its zone"</span>,
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>                  nearHighActions.contains(PlayerAction.JUMP));
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>      }
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>  <em class="jxr_javadoccomment">     * Verifies that ClumsyMachine is deterministic with a fixed seed, holds each chosen action</em>
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>  <em class="jxr_javadoccomment">     * for at least 12 ticks, and activates power when the gauge is full.</em>
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>      @Test
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testClumsyMachineDeterministicAndHoldsActions() {
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>          <a name="MachineController" href="../domain/MachineController.html#MachineController">MachineController</a> m1 = MachineProfile.TORPE.create(Side.RIGHT, <strong class="jxr_keyword">new</strong> Random(42L));
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>          <a name="MachineController" href="../domain/MachineController.html#MachineController">MachineController</a> m2 = MachineProfile.TORPE.create(Side.RIGHT, <strong class="jxr_keyword">new</strong> Random(42L));
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>          StubPlayer me = <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 250, Field.HEIGHT - 38).withPower(100.0);
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>         StubMatch match = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>                 .withPlayer(Side.RIGHT, me)
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(175, Field.HEIGHT - 8, 0, 0, false));
+<a class="jxr_linenumber" name="L103" href="#L103">103</a> 
+<a class="jxr_linenumber" name="L104" href="#L104">104</a>         Set&lt;PlayerAction&gt; first = m1.decide(match);
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>         assertEquals(first, m2.decide(match));
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>         <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> t = 1; t &lt; 12; t++) {
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>             assertEquals(<span class="jxr_string">"ClumsyMachine must hold its buffered action for at least 12 ticks"</span>,
+<a class="jxr_linenumber" name="L108" href="#L108">108</a>                     first, m1.decide(match));
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>             m2.decide(match);
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>         }
+<a class="jxr_linenumber" name="L111" href="#L111">111</a> 
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>         <strong class="jxr_keyword">boolean</strong> sawPower = false;
+<a class="jxr_linenumber" name="L113" href="#L113">113</a>         <strong class="jxr_keyword">boolean</strong> sawMove = false;
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>         <strong class="jxr_keyword">for</strong> (<strong class="jxr_keyword">int</strong> t = 0; t &lt; 1000; t++) {
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>             Set&lt;PlayerAction&gt; actions = m1.decide(match);
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>             <strong class="jxr_keyword">if</strong> (actions.contains(PlayerAction.POWER)) sawPower = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>             <strong class="jxr_keyword">if</strong> (actions.contains(PlayerAction.LEFT) || actions.contains(PlayerAction.RIGHT)) sawMove = <strong class="jxr_keyword">true</strong>;
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>         }
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>         assertTrue(<span class="jxr_string">"ClumsyMachine should eventually activate full power"</span>, sawPower);
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>         assertTrue(<span class="jxr_string">"ClumsyMachine should explore movement choices"</span>, sawMove);
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>     }
+<a class="jxr_linenumber" name="L122" href="#L122">122</a> 
+<a class="jxr_linenumber" name="L123" href="#L123">123</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L124" href="#L124">124</a> <em class="jxr_javadoccomment">     * Verifies that OffensiveMachine chases the ball in front or behind, jumps, kicks,</em>
+<a class="jxr_linenumber" name="L125" href="#L125">125</a> <em class="jxr_javadoccomment">     * activates full power when close, and backs off when the ball rests on a crossbar.</em>
+<a class="jxr_linenumber" name="L126" href="#L126">126</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>     @Test
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testOffensiveMachineChasesKicksPowersAndBacksOffCrossBar() {
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>         <a name="OffensiveMachine" href="../domain/OffensiveMachine.html#OffensiveMachine">OffensiveMachine</a> machine = <strong class="jxr_keyword">new</strong> <a name="OffensiveMachine" href="../domain/OffensiveMachine.html#OffensiveMachine">OffensiveMachine</a>(Side.RIGHT);
+<a class="jxr_linenumber" name="L130" href="#L130">130</a> 
+<a class="jxr_linenumber" name="L131" href="#L131">131</a>         StubMatch chaseMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 270, Field.HEIGHT - 38).withPower(100.0))
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(245, Field.HEIGHT - 12, 0, 0, false));
+<a class="jxr_linenumber" name="L134" href="#L134">134</a>         Set&lt;PlayerAction&gt; attackActions = machine.decide(chaseMatch);
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>         assertTrue(attackActions.contains(PlayerAction.LEFT));
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>         assertTrue(attackActions.contains(PlayerAction.KICK));
+<a class="jxr_linenumber" name="L137" href="#L137">137</a>         assertTrue(attackActions.contains(PlayerAction.POWER));
+<a class="jxr_linenumber" name="L138" href="#L138">138</a> 
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>         StubMatch behindMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L140" href="#L140">140</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 200, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(240, Field.HEIGHT - 55, 0, 0, false));
+<a class="jxr_linenumber" name="L142" href="#L142">142</a>         Set&lt;PlayerAction&gt; behindActions = machine.decide(behindMatch);
+<a class="jxr_linenumber" name="L143" href="#L143">143</a>         assertTrue(<span class="jxr_string">"OffensiveMachine should backtrack behind a ball past it"</span>,
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>                 behindActions.contains(PlayerAction.RIGHT));
+<a class="jxr_linenumber" name="L145" href="#L145">145</a> 
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>         StubMatch crossbarMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 35, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(15, Field.HEIGHT - 96, 0, 0, false));
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>         Set&lt;PlayerAction&gt; backoffActions = machine.decide(crossbarMatch);
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>         assertTrue(<span class="jxr_string">"OffensiveMachine should step back when ball lies on a crossbar"</span>,
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>                 backoffActions.contains(PlayerAction.RIGHT));
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>         assertFalse(backoffActions.contains(PlayerAction.KICK));
+<a class="jxr_linenumber" name="L153" href="#L153">153</a>     }
+<a class="jxr_linenumber" name="L154" href="#L154">154</a> 
+<a class="jxr_linenumber" name="L155" href="#L155">155</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L156" href="#L156">156</a> <em class="jxr_javadoccomment">     * Verifies all tactical branches of ExpertMachine: power threat, rival aura, rival under effect,</em>
+<a class="jxr_linenumber" name="L157" href="#L157">157</a> <em class="jxr_javadoccomment">     * sudden death, winning, losing, and close-range power activation.</em>
+<a class="jxr_linenumber" name="L158" href="#L158">158</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L159" href="#L159">159</a>     @Test
+<a class="jxr_linenumber" name="L160" href="#L160">160</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testExpertMachineCoversAllTacticalBranches() {
+<a class="jxr_linenumber" name="L161" href="#L161">161</a>         <a name="ExpertMachine" href="../domain/ExpertMachine.html#ExpertMachine">ExpertMachine</a> expert = <strong class="jxr_keyword">new</strong> <a name="ExpertMachine" href="../domain/ExpertMachine.html#ExpertMachine">ExpertMachine</a>(Side.RIGHT);
+<a class="jxr_linenumber" name="L162" href="#L162">162</a> 
+<a class="jxr_linenumber" name="L163" href="#L163">163</a>         StubMatch losingMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L164" href="#L164">164</a>                 .withGoals(2, 1)
+<a class="jxr_linenumber" name="L165" href="#L165">165</a>                 .withPlayer(Side.LEFT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.LEFT, 80, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L166" href="#L166">166</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 270, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L167" href="#L167">167</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(100, Field.HEIGHT - 8, 0, 0, false));
+<a class="jxr_linenumber" name="L168" href="#L168">168</a>         assertTrue(<span class="jxr_string">"When losing, Expert should attack toward the ball on the left"</span>,
+<a class="jxr_linenumber" name="L169" href="#L169">169</a>                 expert.decide(losingMatch).contains(PlayerAction.LEFT));
+<a class="jxr_linenumber" name="L170" href="#L170">170</a> 
+<a class="jxr_linenumber" name="L171" href="#L171">171</a>         StubMatch winningMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L172" href="#L172">172</a>                 .withGoals(0, 2)
+<a class="jxr_linenumber" name="L173" href="#L173">173</a>                 .withPlayer(Side.LEFT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.LEFT, 80, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L174" href="#L174">174</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 200, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L175" href="#L175">175</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(80, Field.HEIGHT - 8, 0, 0, false));
+<a class="jxr_linenumber" name="L176" href="#L176">176</a>         assertTrue(<span class="jxr_string">"When winning and ball is far, Expert should retreat defensively"</span>,
+<a class="jxr_linenumber" name="L177" href="#L177">177</a>                 expert.decide(winningMatch).contains(PlayerAction.RIGHT));
+<a class="jxr_linenumber" name="L178" href="#L178">178</a> 
+<a class="jxr_linenumber" name="L179" href="#L179">179</a>         StubMatch rivalAuraMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L180" href="#L180">180</a>                 .withGoals(2, 1)
+<a class="jxr_linenumber" name="L181" href="#L181">181</a>                 .withPlayer(Side.LEFT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.LEFT, 80, Field.HEIGHT - 38).withAura(<strong class="jxr_keyword">true</strong>))
+<a class="jxr_linenumber" name="L182" href="#L182">182</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 200, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L183" href="#L183">183</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(80, Field.HEIGHT - 8, 0, 0, false));
+<a class="jxr_linenumber" name="L184" href="#L184">184</a>         assertTrue(<span class="jxr_string">"When rival has aura, Expert should switch to defense"</span>,
+<a class="jxr_linenumber" name="L185" href="#L185">185</a>                 expert.decide(rivalAuraMatch).contains(PlayerAction.RIGHT));
+<a class="jxr_linenumber" name="L186" href="#L186">186</a> 
+<a class="jxr_linenumber" name="L187" href="#L187">187</a>         StubMatch powerThreatMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L188" href="#L188">188</a>                 .withGoals(2, 1)
+<a class="jxr_linenumber" name="L189" href="#L189">189</a>                 .withPlayer(Side.LEFT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.LEFT, 80, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L190" href="#L190">190</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 200, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L191" href="#L191">191</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(120, Field.HEIGHT - 40, 15, 0, <strong class="jxr_keyword">true</strong>));
+<a class="jxr_linenumber" name="L192" href="#L192">192</a>         assertTrue(<span class="jxr_string">"When a power shot approaches its goal, Expert should defend"</span>,
+<a class="jxr_linenumber" name="L193" href="#L193">193</a>                 expert.decide(powerThreatMatch).contains(PlayerAction.RIGHT));
+<a class="jxr_linenumber" name="L194" href="#L194">194</a> 
+<a class="jxr_linenumber" name="L195" href="#L195">195</a>         StubMatch rivalEffectMatch = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L196" href="#L196">196</a>                 .withGoals(0, 2)
+<a class="jxr_linenumber" name="L197" href="#L197">197</a>                 .withPlayer(Side.LEFT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.LEFT, 80, Field.HEIGHT - 38).withEffect(PlayerEffect.ELECTROCUTED))
+<a class="jxr_linenumber" name="L198" href="#L198">198</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 270, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L199" href="#L199">199</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(100, Field.HEIGHT - 8, 0, 0, false));
+<a class="jxr_linenumber" name="L200" href="#L200">200</a>         assertTrue(<span class="jxr_string">"When rival is under a power effect, Expert should attack even while winning"</span>,
+<a class="jxr_linenumber" name="L201" href="#L201">201</a>                 expert.decide(rivalEffectMatch).contains(PlayerAction.LEFT));
+<a class="jxr_linenumber" name="L202" href="#L202">202</a> 
+<a class="jxr_linenumber" name="L203" href="#L203">203</a>         StubMatch suddenDeathOwnHalf = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L204" href="#L204">204</a>                 .withSuddenDeath(<strong class="jxr_keyword">true</strong>)
+<a class="jxr_linenumber" name="L205" href="#L205">205</a>                 .withPlayer(Side.LEFT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.LEFT, 80, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L206" href="#L206">206</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 240, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L207" href="#L207">207</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(260, Field.HEIGHT - 8, 0, 0, false));
+<a class="jxr_linenumber" name="L208" href="#L208">208</a>         assertTrue(<span class="jxr_string">"In sudden death with ball in own half, Expert should move behind ball to defend"</span>,
+<a class="jxr_linenumber" name="L209" href="#L209">209</a>                 expert.decide(suddenDeathOwnHalf).contains(PlayerAction.RIGHT));
+<a class="jxr_linenumber" name="L210" href="#L210">210</a> 
+<a class="jxr_linenumber" name="L211" href="#L211">211</a>         StubMatch powerReadyClose = <strong class="jxr_keyword">new</strong> StubMatch()
+<a class="jxr_linenumber" name="L212" href="#L212">212</a>                 .withGoals(1, 1)
+<a class="jxr_linenumber" name="L213" href="#L213">213</a>                 .withPlayer(Side.LEFT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.LEFT, 80, Field.HEIGHT - 38))
+<a class="jxr_linenumber" name="L214" href="#L214">214</a>                 .withPlayer(Side.RIGHT, <strong class="jxr_keyword">new</strong> StubPlayer(Side.RIGHT, 220, Field.HEIGHT - 38).withPower(100.0))
+<a class="jxr_linenumber" name="L215" href="#L215">215</a>                 .withBall(<strong class="jxr_keyword">new</strong> StubBall(195, Field.HEIGHT - 20, 0, 0, false));
+<a class="jxr_linenumber" name="L216" href="#L216">216</a>         assertTrue(<span class="jxr_string">"Expert should activate full power when ball is close and in front"</span>,
+<a class="jxr_linenumber" name="L217" href="#L217">217</a>                 expert.decide(powerReadyClose).contains(PlayerAction.POWER));
+<a class="jxr_linenumber" name="L218" href="#L218">218</a>     }
+<a class="jxr_linenumber" name="L219" href="#L219">219</a> 
+<a class="jxr_linenumber" name="L220" href="#L220">220</a>     <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L221" href="#L221">221</a> <em class="jxr_javadoccomment">     * Verifies that a ball resting on top of a goal crossbar rolls back toward the pitch.</em>
+<a class="jxr_linenumber" name="L222" href="#L222">222</a> <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L223" href="#L223">223</a> <em class="jxr_javadoccomment">     * @throws DOPOSoccerException if match configuration is invalid</em>
+<a class="jxr_linenumber" name="L224" href="#L224">224</a> <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L225" href="#L225">225</a>     @Test
+<a class="jxr_linenumber" name="L226" href="#L226">226</a>     <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> testBallRestingOnCrossBarRollsIntoPitch() <strong class="jxr_keyword">throws</strong> Exception {
+<a class="jxr_linenumber" name="L227" href="#L227">227</a>         <a name="MatchConfig" href="../domain/MatchConfig.html#MatchConfig">MatchConfig</a> config = MatchConfig.builder()
+<a class="jxr_linenumber" name="L228" href="#L228">228</a>                 .modality(Modality.PVP)
+<a class="jxr_linenumber" name="L229" href="#L229">229</a>                 .leftCountry(Country.SOUTH_KOREA)
+<a class="jxr_linenumber" name="L230" href="#L230">230</a>                 .rightCountry(Country.CAMEROON)
+<a class="jxr_linenumber" name="L231" href="#L231">231</a>                 .matchType(MatchType.TIME)
+<a class="jxr_linenumber" name="L232" href="#L232">232</a>                 .targetValue(1)
+<a class="jxr_linenumber" name="L233" href="#L233">233</a>                 .build();
+<a class="jxr_linenumber" name="L234" href="#L234">234</a>         <a name="Match" href="../domain/Match.html#Match">Match</a> match = <strong class="jxr_keyword">new</strong> <a name="Match" href="../domain/Match.html#Match">Match</a>(config);
+<a class="jxr_linenumber" name="L235" href="#L235">235</a>         <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a> leftBar = match.getCrossBar(Side.LEFT);
+<a class="jxr_linenumber" name="L236" href="#L236">236</a>         <strong class="jxr_keyword">double</strong> restX = leftBar.getX() + leftBar.getWidth() / 2.0;
+<a class="jxr_linenumber" name="L237" href="#L237">237</a>         <strong class="jxr_keyword">double</strong> restY = leftBar.getY() - match.getBall().getRadius();
+<a class="jxr_linenumber" name="L238" href="#L238">238</a> 
+<a class="jxr_linenumber" name="L239" href="#L239">239</a>         java.lang.reflect.Field ballField = Match.<strong class="jxr_keyword">class</strong>.getDeclaredField(<span class="jxr_string">"ball"</span>);
+<a class="jxr_linenumber" name="L240" href="#L240">240</a>         ballField.setAccessible(<strong class="jxr_keyword">true</strong>);
+<a class="jxr_linenumber" name="L241" href="#L241">241</a>         domain.Ball rawBall = (domain.Ball) ballField.get(match);
+<a class="jxr_linenumber" name="L242" href="#L242">242</a>         rawBall.reset(restX, restY);
+<a class="jxr_linenumber" name="L243" href="#L243">243</a> 
+<a class="jxr_linenumber" name="L244" href="#L244">244</a>         match.tick();
+<a class="jxr_linenumber" name="L245" href="#L245">245</a>         assertTrue(<span class="jxr_string">"Ball resting on left crossbar should gain positive speed toward pitch"</span>,
+<a class="jxr_linenumber" name="L246" href="#L246">246</a>                 match.getBall().getHorizontalSpeed() &gt; 0.0);
+<a class="jxr_linenumber" name="L247" href="#L247">247</a>     }
+<a class="jxr_linenumber" name="L248" href="#L248">248</a> 
+<a class="jxr_linenumber" name="L249" href="#L249">249</a>     <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L250" href="#L250">250</a> <em class="jxr_comment">     * Minimal read-only PlayerView stub for deterministic AI unit tests.</em>
+<a class="jxr_linenumber" name="L251" href="#L251">251</a> <em class="jxr_comment">     */</em>
+<a class="jxr_linenumber" name="L252" href="#L252">252</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> StubPlayer <strong class="jxr_keyword">implements</strong> <a name="PlayerView" href="../domain/PlayerView.html#PlayerView">PlayerView</a> {
+<a class="jxr_linenumber" name="L253" href="#L253">253</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a name="Side" href="../domain/Side.html#Side">Side</a> side;
+<a class="jxr_linenumber" name="L254" href="#L254">254</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> x;
+<a class="jxr_linenumber" name="L255" href="#L255">255</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> y;
+<a class="jxr_linenumber" name="L256" href="#L256">256</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">double</strong> powerProgress;
+<a class="jxr_linenumber" name="L257" href="#L257">257</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> aura;
+<a class="jxr_linenumber" name="L258" href="#L258">258</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> stunned;
+<a class="jxr_linenumber" name="L259" href="#L259">259</a>         <strong class="jxr_keyword">private</strong> <a name="PlayerEffect" href="../domain/PlayerEffect.html#PlayerEffect">PlayerEffect</a> effect = PlayerEffect.NONE;
+<a class="jxr_linenumber" name="L260" href="#L260">260</a> 
+<a class="jxr_linenumber" name="L261" href="#L261">261</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L262" href="#L262">262</a> <em class="jxr_comment">         * Creates a stub player centered at the specified head coordinates.</em>
+<a class="jxr_linenumber" name="L263" href="#L263">263</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L264" href="#L264">264</a>         StubPlayer(<a name="Side" href="../domain/Side.html#Side">Side</a> side, <strong class="jxr_keyword">double</strong> x, <strong class="jxr_keyword">double</strong> y) {
+<a class="jxr_linenumber" name="L265" href="#L265">265</a>             <strong class="jxr_keyword">this</strong>.side = side;
+<a class="jxr_linenumber" name="L266" href="#L266">266</a>             <strong class="jxr_keyword">this</strong>.x = x;
+<a class="jxr_linenumber" name="L267" href="#L267">267</a>             <strong class="jxr_keyword">this</strong>.y = y;
+<a class="jxr_linenumber" name="L268" href="#L268">268</a>         }
+<a class="jxr_linenumber" name="L269" href="#L269">269</a> 
+<a class="jxr_linenumber" name="L270" href="#L270">270</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L271" href="#L271">271</a> <em class="jxr_comment">         * Sets the power gauge charge percentage.</em>
+<a class="jxr_linenumber" name="L272" href="#L272">272</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L273" href="#L273">273</a>         <strong class="jxr_keyword">private</strong> StubPlayer withPower(<strong class="jxr_keyword">double</strong> p) { <strong class="jxr_keyword">this</strong>.powerProgress = p; <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>; }
+<a class="jxr_linenumber" name="L274" href="#L274">274</a> 
+<a class="jxr_linenumber" name="L275" href="#L275">275</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L276" href="#L276">276</a> <em class="jxr_comment">         * Sets whether the power aura is active.</em>
+<a class="jxr_linenumber" name="L277" href="#L277">277</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L278" href="#L278">278</a>         <strong class="jxr_keyword">private</strong> StubPlayer withAura(<strong class="jxr_keyword">boolean</strong> a) { <strong class="jxr_keyword">this</strong>.aura = a; <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>; }
+<a class="jxr_linenumber" name="L279" href="#L279">279</a> 
+<a class="jxr_linenumber" name="L280" href="#L280">280</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L281" href="#L281">281</a> <em class="jxr_comment">         * Sets the active status effect enum.</em>
+<a class="jxr_linenumber" name="L282" href="#L282">282</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L283" href="#L283">283</a>         <strong class="jxr_keyword">private</strong> StubPlayer withEffect(<a name="PlayerEffect" href="../domain/PlayerEffect.html#PlayerEffect">PlayerEffect</a> e) { <strong class="jxr_keyword">this</strong>.effect = e; <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>; }
+<a class="jxr_linenumber" name="L284" href="#L284">284</a> 
+<a class="jxr_linenumber" name="L285" href="#L285">285</a>         @Override <strong class="jxr_keyword">public</strong> String getName() { <strong class="jxr_keyword">return</strong> <span class="jxr_string">"Stub"</span>; }
+<a class="jxr_linenumber" name="L286" href="#L286">286</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Country" href="../domain/Country.html#Country">Country</a> getCountry() { <strong class="jxr_keyword">return</strong> Country.SOUTH_KOREA; }
+<a class="jxr_linenumber" name="L287" href="#L287">287</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Side" href="../domain/Side.html#Side">Side</a> getSide() { <strong class="jxr_keyword">return</strong> side; }
+<a class="jxr_linenumber" name="L288" href="#L288">288</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getLife() { <strong class="jxr_keyword">return</strong> 100; }
+<a class="jxr_linenumber" name="L289" href="#L289">289</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getMaxLife() { <strong class="jxr_keyword">return</strong> 100; }
+<a class="jxr_linenumber" name="L290" href="#L290">290</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getPowerProgress() { <strong class="jxr_keyword">return</strong> powerProgress; }
+<a class="jxr_linenumber" name="L291" href="#L291">291</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> hasAura() { <strong class="jxr_keyword">return</strong> aura; }
+<a class="jxr_linenumber" name="L292" href="#L292">292</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isStunned() { <strong class="jxr_keyword">return</strong> stunned; }
+<a class="jxr_linenumber" name="L293" href="#L293">293</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isKicking() { <strong class="jxr_keyword">return</strong> false; }
+<a class="jxr_linenumber" name="L294" href="#L294">294</a>         @Override <strong class="jxr_keyword">public</strong> String getActiveEffectName() { <strong class="jxr_keyword">return</strong> effect == PlayerEffect.NONE ? <span class="jxr_string">""</span> : effect.name(); }
+<a class="jxr_linenumber" name="L295" href="#L295">295</a>         @Override <strong class="jxr_keyword">public</strong> <a name="PlayerEffect" href="../domain/PlayerEffect.html#PlayerEffect">PlayerEffect</a> getActiveEffect() { <strong class="jxr_keyword">return</strong> effect; }
+<a class="jxr_linenumber" name="L296" href="#L296">296</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getEffectProgress() { <strong class="jxr_keyword">return</strong> effect == PlayerEffect.NONE ? 0.0 : 0.5; }
+<a class="jxr_linenumber" name="L297" href="#L297">297</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Circle" href="../domain/Circle.html#Circle">Circle</a> getHeadShape() { <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="Circle" href="../domain/Circle.html#Circle">Circle</a>(x, y, 14); }
+<a class="jxr_linenumber" name="L298" href="#L298">298</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a> getBodyShape() { <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a>(x - 9, y + 12, 18, 16); }
+<a class="jxr_linenumber" name="L299" href="#L299">299</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Circle" href="../domain/Circle.html#Circle">Circle</a> getFootShape() { <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">new</strong> <a name="Circle" href="../domain/Circle.html#Circle">Circle</a>(x + side.dir() * 6, Field.HEIGHT - 8, 8); }
+<a class="jxr_linenumber" name="L300" href="#L300">300</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> getStat(<a name="StatType" href="../domain/StatType.html#StatType">StatType</a> type) { <strong class="jxr_keyword">return</strong> 1; }
+<a class="jxr_linenumber" name="L301" href="#L301">301</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> getPoints() { <strong class="jxr_keyword">return</strong> 0; }
+<a class="jxr_linenumber" name="L302" href="#L302">302</a>     }
+<a class="jxr_linenumber" name="L303" href="#L303">303</a> 
+<a class="jxr_linenumber" name="L304" href="#L304">304</a>     <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L305" href="#L305">305</a> <em class="jxr_comment">     * Minimal read-only BallView stub for deterministic AI unit tests.</em>
+<a class="jxr_linenumber" name="L306" href="#L306">306</a> <em class="jxr_comment">     */</em>
+<a class="jxr_linenumber" name="L307" href="#L307">307</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> StubBall <strong class="jxr_keyword">implements</strong> <a name="BallView" href="../domain/BallView.html#BallView">BallView</a> {
+<a class="jxr_linenumber" name="L308" href="#L308">308</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> x;
+<a class="jxr_linenumber" name="L309" href="#L309">309</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> y;
+<a class="jxr_linenumber" name="L310" href="#L310">310</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> vx;
+<a class="jxr_linenumber" name="L311" href="#L311">311</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">double</strong> vy;
+<a class="jxr_linenumber" name="L312" href="#L312">312</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <strong class="jxr_keyword">boolean</strong> powerShot;
+<a class="jxr_linenumber" name="L313" href="#L313">313</a> 
+<a class="jxr_linenumber" name="L314" href="#L314">314</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L315" href="#L315">315</a> <em class="jxr_comment">         * Creates a stub ball with the given position, velocity, and power-shot flag.</em>
+<a class="jxr_linenumber" name="L316" href="#L316">316</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L317" href="#L317">317</a>         StubBall(<strong class="jxr_keyword">double</strong> x, <strong class="jxr_keyword">double</strong> y, <strong class="jxr_keyword">double</strong> vx, <strong class="jxr_keyword">double</strong> vy, <strong class="jxr_keyword">boolean</strong> powerShot) {
+<a class="jxr_linenumber" name="L318" href="#L318">318</a>             <strong class="jxr_keyword">this</strong>.x = x;
+<a class="jxr_linenumber" name="L319" href="#L319">319</a>             <strong class="jxr_keyword">this</strong>.y = y;
+<a class="jxr_linenumber" name="L320" href="#L320">320</a>             <strong class="jxr_keyword">this</strong>.vx = vx;
+<a class="jxr_linenumber" name="L321" href="#L321">321</a>             <strong class="jxr_keyword">this</strong>.vy = vy;
+<a class="jxr_linenumber" name="L322" href="#L322">322</a>             <strong class="jxr_keyword">this</strong>.powerShot = powerShot;
+<a class="jxr_linenumber" name="L323" href="#L323">323</a>         }
+<a class="jxr_linenumber" name="L324" href="#L324">324</a> 
+<a class="jxr_linenumber" name="L325" href="#L325">325</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getX() { <strong class="jxr_keyword">return</strong> x; }
+<a class="jxr_linenumber" name="L326" href="#L326">326</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getY() { <strong class="jxr_keyword">return</strong> y; }
+<a class="jxr_linenumber" name="L327" href="#L327">327</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getRadius() { <strong class="jxr_keyword">return</strong> 8.0; }
+<a class="jxr_linenumber" name="L328" href="#L328">328</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> hasPowerShot() { <strong class="jxr_keyword">return</strong> powerShot; }
+<a class="jxr_linenumber" name="L329" href="#L329">329</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getHorizontalSpeed() { <strong class="jxr_keyword">return</strong> vx; }
+<a class="jxr_linenumber" name="L330" href="#L330">330</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getVerticalSpeed() { <strong class="jxr_keyword">return</strong> vy; }
+<a class="jxr_linenumber" name="L331" href="#L331">331</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Country" href="../domain/Country.html#Country">Country</a> getPowerShotCountry() { <strong class="jxr_keyword">return</strong> powerShot ? Country.SOUTH_KOREA : <strong class="jxr_keyword">null</strong>; }
+<a class="jxr_linenumber" name="L332" href="#L332">332</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isPowerShotCharging() { <strong class="jxr_keyword">return</strong> false; }
+<a class="jxr_linenumber" name="L333" href="#L333">333</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">double</strong> getPowerShotChargeProgress() { <strong class="jxr_keyword">return</strong> 0.0; }
+<a class="jxr_linenumber" name="L334" href="#L334">334</a>     }
+<a class="jxr_linenumber" name="L335" href="#L335">335</a> 
+<a class="jxr_linenumber" name="L336" href="#L336">336</a>     <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L337" href="#L337">337</a> <em class="jxr_comment">     * Minimal read-only MatchView stub for deterministic AI unit tests.</em>
+<a class="jxr_linenumber" name="L338" href="#L338">338</a> <em class="jxr_comment">     */</em>
+<a class="jxr_linenumber" name="L339" href="#L339">339</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">static</strong> <strong class="jxr_keyword">class</strong> StubMatch <strong class="jxr_keyword">implements</strong> <a name="MatchView" href="../domain/MatchView.html#MatchView">MatchView</a> {
+<a class="jxr_linenumber" name="L340" href="#L340">340</a>         <strong class="jxr_keyword">private</strong> <a name="PlayerView" href="../domain/PlayerView.html#PlayerView">PlayerView</a> left;
+<a class="jxr_linenumber" name="L341" href="#L341">341</a>         <strong class="jxr_keyword">private</strong> <a name="PlayerView" href="../domain/PlayerView.html#PlayerView">PlayerView</a> right;
+<a class="jxr_linenumber" name="L342" href="#L342">342</a>         <strong class="jxr_keyword">private</strong> <a name="BallView" href="../domain/BallView.html#BallView">BallView</a> ball;
+<a class="jxr_linenumber" name="L343" href="#L343">343</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> leftGoals;
+<a class="jxr_linenumber" name="L344" href="#L344">344</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> rightGoals;
+<a class="jxr_linenumber" name="L345" href="#L345">345</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">boolean</strong> suddenDeath;
+<a class="jxr_linenumber" name="L346" href="#L346">346</a>         <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">int</strong> remainingSeconds = 60;
+<a class="jxr_linenumber" name="L347" href="#L347">347</a> 
+<a class="jxr_linenumber" name="L348" href="#L348">348</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L349" href="#L349">349</a> <em class="jxr_comment">         * Assigns a stub player to the given side.</em>
+<a class="jxr_linenumber" name="L350" href="#L350">350</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L351" href="#L351">351</a>         <strong class="jxr_keyword">private</strong> StubMatch withPlayer(<a name="Side" href="../domain/Side.html#Side">Side</a> side, <a name="PlayerView" href="../domain/PlayerView.html#PlayerView">PlayerView</a> p) {
+<a class="jxr_linenumber" name="L352" href="#L352">352</a>             <strong class="jxr_keyword">if</strong> (side == Side.LEFT) left = p; <strong class="jxr_keyword">else</strong> right = p;
+<a class="jxr_linenumber" name="L353" href="#L353">353</a>             <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>;
+<a class="jxr_linenumber" name="L354" href="#L354">354</a>         }
+<a class="jxr_linenumber" name="L355" href="#L355">355</a> 
+<a class="jxr_linenumber" name="L356" href="#L356">356</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L357" href="#L357">357</a> <em class="jxr_comment">         * Assigns a stub ball to this match view.</em>
+<a class="jxr_linenumber" name="L358" href="#L358">358</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L359" href="#L359">359</a>         <strong class="jxr_keyword">private</strong> StubMatch withBall(<a name="BallView" href="../domain/BallView.html#BallView">BallView</a> b) { <strong class="jxr_keyword">this</strong>.ball = b; <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>; }
+<a class="jxr_linenumber" name="L360" href="#L360">360</a> 
+<a class="jxr_linenumber" name="L361" href="#L361">361</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L362" href="#L362">362</a> <em class="jxr_comment">         * Sets scoreboard goals for left and right sides.</em>
+<a class="jxr_linenumber" name="L363" href="#L363">363</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L364" href="#L364">364</a>         <strong class="jxr_keyword">private</strong> StubMatch withGoals(<strong class="jxr_keyword">int</strong> l, <strong class="jxr_keyword">int</strong> r) { <strong class="jxr_keyword">this</strong>.leftGoals = l; <strong class="jxr_keyword">this</strong>.rightGoals = r; <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>; }
+<a class="jxr_linenumber" name="L365" href="#L365">365</a> 
+<a class="jxr_linenumber" name="L366" href="#L366">366</a>         <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L367" href="#L367">367</a> <em class="jxr_comment">         * Configures whether sudden death is active.</em>
+<a class="jxr_linenumber" name="L368" href="#L368">368</a> <em class="jxr_comment">         */</em>
+<a class="jxr_linenumber" name="L369" href="#L369">369</a>         <strong class="jxr_keyword">private</strong> StubMatch withSuddenDeath(<strong class="jxr_keyword">boolean</strong> sd) { <strong class="jxr_keyword">this</strong>.suddenDeath = sd; <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">this</strong>; }
+<a class="jxr_linenumber" name="L370" href="#L370">370</a> 
+<a class="jxr_linenumber" name="L371" href="#L371">371</a>         @Override <strong class="jxr_keyword">public</strong> <a name="GameStatus" href="../domain/GameStatus.html#GameStatus">GameStatus</a> getStatus() { <strong class="jxr_keyword">return</strong> suddenDeath ? GameStatus.SUDDEN_DEATH : GameStatus.PLAYING; }
+<a class="jxr_linenumber" name="L372" href="#L372">372</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> getRemainingSeconds() { <strong class="jxr_keyword">return</strong> remainingSeconds; }
+<a class="jxr_linenumber" name="L373" href="#L373">373</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">boolean</strong> isSuddenDeath() { <strong class="jxr_keyword">return</strong> suddenDeath; }
+<a class="jxr_linenumber" name="L374" href="#L374">374</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> getGoals(<a name="Side" href="../domain/Side.html#Side">Side</a> side) { <strong class="jxr_keyword">return</strong> side == Side.LEFT ? leftGoals : rightGoals; }
+<a class="jxr_linenumber" name="L375" href="#L375">375</a>         @Override <strong class="jxr_keyword">public</strong> <a name="PlayerView" href="../domain/PlayerView.html#PlayerView">PlayerView</a> getPlayer(<a name="Side" href="../domain/Side.html#Side">Side</a> side) { <strong class="jxr_keyword">return</strong> side == Side.LEFT ? left : right; }
+<a class="jxr_linenumber" name="L376" href="#L376">376</a>         @Override <strong class="jxr_keyword">public</strong> <a name="BallView" href="../domain/BallView.html#BallView">BallView</a> getBall() { <strong class="jxr_keyword">return</strong> ball; }
+<a class="jxr_linenumber" name="L377" href="#L377">377</a>         @Override <strong class="jxr_keyword">public</strong> Optional&lt;Side&gt; getWinner() { <strong class="jxr_keyword">return</strong> Optional.empty(); }
+<a class="jxr_linenumber" name="L378" href="#L378">378</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> getFieldWidth() { <strong class="jxr_keyword">return</strong> Field.WIDTH; }
+<a class="jxr_linenumber" name="L379" href="#L379">379</a>         @Override <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">int</strong> getFieldHeight() { <strong class="jxr_keyword">return</strong> Field.HEIGHT; }
+<a class="jxr_linenumber" name="L380" href="#L380">380</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a> getGoalArea(<a name="Side" href="../domain/Side.html#Side">Side</a> side) {
+<a class="jxr_linenumber" name="L381" href="#L381">381</a>             <strong class="jxr_keyword">return</strong> side == Side.LEFT ? <strong class="jxr_keyword">new</strong> <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a>(0, Field.HEIGHT - 85, 30, 85)
+<a class="jxr_linenumber" name="L382" href="#L382">382</a>                     : <strong class="jxr_keyword">new</strong> <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a>(Field.WIDTH - 30, Field.HEIGHT - 85, 30, 85);
+<a class="jxr_linenumber" name="L383" href="#L383">383</a>         }
+<a class="jxr_linenumber" name="L384" href="#L384">384</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a> getCrossBar(<a name="Side" href="../domain/Side.html#Side">Side</a> side) {
+<a class="jxr_linenumber" name="L385" href="#L385">385</a>             <strong class="jxr_keyword">return</strong> side == Side.LEFT ? <strong class="jxr_keyword">new</strong> <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a>(0, Field.HEIGHT - 90, 30, 5)
+<a class="jxr_linenumber" name="L386" href="#L386">386</a>                     : <strong class="jxr_keyword">new</strong> <a name="Rectangle" href="../domain/Rectangle.html#Rectangle">Rectangle</a>(Field.WIDTH - 30, Field.HEIGHT - 90, 30, 5);
+<a class="jxr_linenumber" name="L387" href="#L387">387</a>         }
+<a class="jxr_linenumber" name="L388" href="#L388">388</a>         @Override <strong class="jxr_keyword">public</strong> <a name="Modality" href="../domain/Modality.html#Modality">Modality</a> getModality() { <strong class="jxr_keyword">return</strong> Modality.PVC; }
+<a class="jxr_linenumber" name="L389" href="#L389">389</a>         @Override <strong class="jxr_keyword">public</strong> List&lt;Circle&gt; getFakeBalls() { <strong class="jxr_keyword">return</strong> Collections.emptyList(); }
+<a class="jxr_linenumber" name="L390" href="#L390">390</a>     }
+<a class="jxr_linenumber" name="L391" href="#L391">391</a> }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2026. All rights reserved.</div>
+</body>
+</html>

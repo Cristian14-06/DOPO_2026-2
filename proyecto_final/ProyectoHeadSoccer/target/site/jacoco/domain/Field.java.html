@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Field.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Field.java</span></div><h1>Field.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+
+/**
+ * Represents the 2D soccer field containing boundaries and goal areas.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Field implements Serializable {
+	private static final long serialVersionUID = 1L;
+	public static final int WIDTH = 350;
+	public static final int HEIGHT = 200;
+
+	private Goal leftGoal;
+	private Goal rightGoal;
+
+	/**
+	 * Default constructor initializing field with left and right goals.
+	 */
+<span class="fc" id="L22">	public Field() {</span>
+<span class="fc" id="L23">		this.leftGoal = new Goal(Side.LEFT);</span>
+<span class="fc" id="L24">		this.rightGoal = new Goal(Side.RIGHT);</span>
+<span class="fc" id="L25">	}</span>
+
+	/**
+	 * Gets the left goal entity.
+	 * 
+	 * @return Left goal
+	 */
+	public Goal getLeftGoal() {
+<span class="fc" id="L33">		return leftGoal;</span>
+	}
+
+	/**
+	 * Gets the right goal entity.
+	 * 
+	 * @return Right goal
+	 */
+	public Goal getRightGoal() {
+<span class="fc" id="L42">		return rightGoal;</span>
+	}
+
+	/**
+	 * Gets the goal associated with a specific field side.
+	 * 
+	 * @param side Side of the field
+	 * @return Corresponding goal entity
+	 */
+	public Goal getGoal(Side side) {
+<span class="fc bfc" id="L52" title="All 2 branches covered.">		return (side == Side.LEFT) ? leftGoal : rightGoal;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

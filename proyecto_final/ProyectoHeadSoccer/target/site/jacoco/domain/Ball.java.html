@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Ball.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Ball.java</span></div><h1>Ball.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+import java.util.Optional;
+
+/**
+ * Represents the soccer ball with physics simulation including gravity, bouncing, and collision detection.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Ball implements BallView, Serializable {
+	private static final long serialVersionUID = 1L;
+	private Circle circle;
+	private double verticalSpeed;
+	private double horizontalSpeed;
+	private boolean powerShot;
+	private Country powerShotCountry;
+	private boolean powerShotCharging;
+	private double powerShotChargeProgress;
+	
+	/**
+	 * Default constructor initializing ball at origin with default radius.
+	 */
+<span class="fc" id="L25">	public Ball() {</span>
+<span class="fc" id="L26">		this.circle = new Circle(0, 0, 8);</span>
+<span class="fc" id="L27">	}</span>
+
+	/**
+	 * Constructs a ball at specified coordinates with given radius.
+	 * 
+	 * @param x Initial horizontal center position
+	 * @param y Initial vertical center position
+	 * @param radius Radius of the ball
+	 */
+<span class="fc" id="L36">	public Ball(double x, double y, double radius) {</span>
+<span class="fc" id="L37">		this.circle = new Circle(x, y, radius);</span>
+<span class="fc" id="L38">	}</span>
+
+	/**
+	 * Gets the current vertical velocity.
+	 * 
+	 * @return Vertical speed in pixels per tick
+	 */
+	public double getVerticalSpeed() {
+<span class="fc" id="L46">		return verticalSpeed;</span>
+	}
+	
+	/**
+	 * Sets the vertical velocity.
+	 * 
+	 * @param verticalSpeed New vertical speed
+	 */
+	public void setVerticalSpeed(double verticalSpeed) {
+<span class="fc" id="L55">		this.verticalSpeed = verticalSpeed;</span>
+<span class="fc" id="L56">	}</span>
+	
+	/**
+	 * Gets the current horizontal velocity.
+	 * 
+	 * @return Horizontal speed in pixels per tick
+	 */
+	public double getHorizontalSpeed() {
+<span class="fc" id="L64">		return horizontalSpeed;</span>
+	}
+	
+	/**
+	 * Sets the horizontal velocity.
+	 * 
+	 * @param horizontalSpeed New horizontal speed
+	 */
+	public void setHorizontalSpeed(double horizontalSpeed) {
+<span class="fc" id="L73">		this.horizontalSpeed = horizontalSpeed;</span>
+<span class="fc" id="L74">	}</span>
+	
+	/**
+	 * Gets the circle geometric representation of the ball for domain physics.
+	 *
+	 * @return Circle geometry
+	 */
+	Circle getCircle() {
+<span class="fc" id="L82">		return circle;</span>
+	}
+
+	/**
+	 * Sets the circle geometry of the ball.
+	 * 
+	 * @param circle New circle geometry
+	 */
+	public void setCircle(Circle circle) {
+<span class="nc" id="L91">		this.circle = circle;</span>
+<span class="nc" id="L92">	}</span>
+
+	/**
+	 * Resolves bounces against field boundary edges (floor, ceiling, walls).
+	 */
+	public void collideWithEdges() {
+<span class="fc bfc" id="L98" title="All 2 branches covered.">		if (this.circle.getX() - this.circle.getRadius() &lt;= 0) {</span>
+<span class="fc" id="L99">			this.circle.setX(this.circle.getRadius());</span>
+<span class="fc" id="L100">			setHorizontalSpeed(Math.abs(horizontalSpeed) * Physics.RESTITUTION);</span>
+		}
+<span class="fc bfc" id="L102" title="All 2 branches covered.">		if (this.circle.getX() + this.circle.getRadius() &gt;= Field.WIDTH) {</span>
+<span class="fc" id="L103">			this.circle.setX(Field.WIDTH - this.circle.getRadius());</span>
+<span class="fc" id="L104">			setHorizontalSpeed(-Math.abs(horizontalSpeed) * Physics.RESTITUTION);</span>
+		}
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">		if (this.circle.getY() - this.circle.getRadius() &lt;= 0) {</span>
+<span class="nc" id="L107">			this.circle.setY(this.circle.getRadius());</span>
+<span class="nc" id="L108">			setVerticalSpeed(Math.abs(verticalSpeed) * Physics.RESTITUTION);</span>
+		}
+<span class="fc bfc" id="L110" title="All 2 branches covered.">		if (this.circle.getY() + this.circle.getRadius() &gt;= Field.HEIGHT) {</span>
+<span class="fc" id="L111">			this.circle.setY(Field.HEIGHT - this.circle.getRadius());</span>
+<span class="fc bfc" id="L112" title="All 2 branches covered.">			if(verticalSpeed &gt;= 5){</span>
+<span class="fc" id="L113">				setVerticalSpeed(-Math.abs(verticalSpeed) * Physics.RESTITUTION);</span>
+			}else{
+<span class="fc" id="L115">				setVerticalSpeed(0.0);</span>
+			}
+				
+		}
+<span class="fc" id="L119">	}</span>
+
+	/**
+	 * Resolves bounce against a geometric obstacle using restitution and optional impulse.
+	 *
+	 * @param obstacle Colliding geometric figure
+	 * @param restitution Bounce restitution coefficient
+	 * @param impulse Optional outward impulse added along the contact normal
+	 * @return True if contact occurred and was resolved
+	 */
+	public boolean bounceOff(Figure obstacle, double restitution, double impulse) {
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">		if (obstacle == null) return false;</span>
+<span class="fc" id="L131">		Optional&lt;Contact&gt; opt = obstacle.contactWith(this.circle);</span>
+<span class="fc bfc" id="L132" title="All 2 branches covered.">		if(opt.isEmpty()) return false;</span>
+<span class="fc" id="L133">		Contact c = opt.get();</span>
+<span class="fc" id="L134">		Vector2 normal = c.getNormal();</span>
+
+<span class="fc bfc" id="L136" title="All 2 branches covered.">		boolean onFloor = this.getCircle().getY() + this. getCircle().getRadius() &gt;= Field.HEIGHT - 0.5;</span>
+<span class="pc bpc" id="L137" title="1 of 4 branches missed.">		if(onFloor &amp;&amp; normal.getY() &gt; 0){</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">			if(Math.abs(normal.getX()) &gt; 0.01){</span>
+<span class="nc" id="L139">				normal = new Vector2(Math.signum(normal.getX()), 0);</span>
+			}else{
+<span class="nc" id="L141">				normal = new Vector2(0, -1);</span>
+			}
+		}
+<span class="fc" id="L144">		this.circle.translate(normal.getX() * c.getPenetration(), normal.getY() * c.getPenetration());</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">		if (this.circle.getY() + this.circle.getRadius() &gt; Field.HEIGHT) {</span>
+<span class="fc" id="L146">            this.circle.setY(Field.HEIGHT - this.circle.getRadius());</span>
+		}
+
+<span class="fc" id="L149">		Vector2 v = new Vector2(horizontalSpeed, verticalSpeed);</span>
+<span class="fc" id="L150">		double vn = v.dot(normal);</span>
+<span class="fc bfc" id="L151" title="All 2 branches covered.">		if (vn &lt; 0) v = v.sub(normal.scale((1.0 + restitution) * vn));</span>
+<span class="fc bfc" id="L152" title="All 2 branches covered.">		if(impulse &gt; 0) v = v.add(normal.scale(impulse));</span>
+<span class="fc" id="L153">		this.horizontalSpeed = v.getX();</span>
+<span class="fc" id="L154">		this.verticalSpeed = v.getY();</span>
+<span class="fc" id="L155">		return true;</span>
+	}
+	
+	/**
+	 * Advances ball physics simulation by one frame, applying gravity and ground friction.
+	 */
+	public void tick() {
+<span class="fc" id="L162">		circle.translate(horizontalSpeed, verticalSpeed);</span>
+		
+<span class="fc bfc" id="L164" title="All 2 branches covered.">		if (this.circle.getY() + this.circle.getRadius() &lt; Field.HEIGHT) { </span>
+<span class="fc" id="L165">			verticalSpeed += Physics.GRAVITY;</span>
+		} else {
+<span class="fc" id="L167">			this.circle.setY(Field.HEIGHT - this.circle.getRadius());</span>
+<span class="fc" id="L168">			horizontalSpeed = horizontalSpeed * Physics.FRICTION;</span>
+<span class="fc bfc" id="L169" title="All 2 branches covered.">			if (Math.abs(horizontalSpeed) &lt; 0.05) {</span>
+<span class="fc" id="L170">				horizontalSpeed = 0;</span>
+			}
+		}
+<span class="fc" id="L173">	}</span>
+
+	/**
+	 * Resets ball position and zeroes velocities.
+	 * 
+	 * @param x Target center horizontal position
+	 * @param y Target center vertical position
+	 */
+	public void reset(double x, double y) {
+<span class="fc" id="L182">		getCircle().setX(x);</span>
+<span class="fc" id="L183">		getCircle().setY(y);</span>
+<span class="fc" id="L184">		setHorizontalSpeed(0);</span>
+<span class="fc" id="L185">		setVerticalSpeed(0);</span>
+<span class="fc" id="L186">	}</span>
+
+	@Override
+	public double getX() {
+<span class="fc" id="L190">		return circle.getX();</span>
+	}
+
+	@Override
+	public double getY() {
+<span class="fc" id="L195">		return circle.getY();</span>
+	}
+
+	@Override
+	public double getRadius() {
+<span class="fc" id="L200">		return circle.getRadius();</span>
+	}
+
+	@Override
+	public boolean hasPowerShot() {
+<span class="fc" id="L205">		return powerShot;</span>
+	}
+
+	/**
+	 * Returns the country that launched the active power shot, or null if none.
+	 *
+	 * @return Shooting country or null
+	 */
+	public Country getPowerShotCountry() {
+<span class="fc" id="L214">		return powerShotCountry;</span>
+	}
+
+	/**
+	 * Indicates whether the ball is currently suspended while charging a power shot.
+	 *
+	 * @return True if charging a power shot
+	 */
+	public boolean isPowerShotCharging() {
+<span class="fc" id="L223">		return powerShotCharging;</span>
+	}
+
+	/**
+	 * Returns the normalized charge progress [0.0, 1.0] while suspended for a power shot.
+	 *
+	 * @return Charge progress in [0.0, 1.0]
+	 */
+	public double getPowerShotChargeProgress() {
+<span class="fc" id="L232">		return powerShotChargeProgress;</span>
+	}
+
+	/**
+	 * Marks whether the ball currently carries a power shot, clearing power visual state when false.
+	 *
+	 * @param powerShot True when a power shot starts, false to clear
+	 */
+	public void setPowerShot(boolean powerShot) {
+<span class="fc" id="L241">		this.powerShot = powerShot;</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">		if (!powerShot) {</span>
+<span class="fc" id="L243">			this.powerShotCountry = null;</span>
+<span class="fc" id="L244">			this.powerShotCharging = false;</span>
+<span class="fc" id="L245">			this.powerShotChargeProgress = 0.0;</span>
+		}
+<span class="fc" id="L247">	}</span>
+
+	/**
+	 * Sets the country associated with the current power shot.
+	 *
+	 * @param country Country that fired the power shot
+	 */
+	public void setPowerShotCountry(Country country) {
+<span class="fc" id="L255">		this.powerShotCountry = country;</span>
+<span class="fc" id="L256">	}</span>
+
+	/**
+	 * Updates the power shot charging state and normalized progress [0.0, 1.0].
+	 *
+	 * @param charging True while suspended in windup
+	 * @param progress Charge progress clamped to [0.0, 1.0]
+	 */
+	public void setPowerShotCharging(boolean charging, double progress) {
+<span class="fc" id="L265">		this.powerShotCharging = charging;</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">		this.powerShotChargeProgress = charging ? Math.max(0.0, Math.min(1.0, progress)) : 0.0;</span>
+<span class="fc" id="L267">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

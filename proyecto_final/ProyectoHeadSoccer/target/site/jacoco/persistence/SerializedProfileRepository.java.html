@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SerializedProfileRepository.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">persistence</a> &gt; <span class="el_source">SerializedProfileRepository.java</span></div><h1>SerializedProfileRepository.java</h1><pre class="source lang-java linenums">package persistence;
+
+import domain.DOPOSoccerException;
+import domain.PlayerProfile;
+import domain.ProfileRepository;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Persistence implementation of {@link ProfileRepository} storing player profiles
+ * in a serialized map file.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class SerializedProfileRepository implements ProfileRepository {
+    private final File storageFile;
+
+    /**
+     * Constructs a profile repository backed by the specified storage file.
+     *
+     * @param storageFile File where serialized profiles are stored (defaults to profiles.dat if null)
+     */
+<span class="fc" id="L31">    public SerializedProfileRepository(File storageFile) {</span>
+<span class="pc bpc" id="L32" title="1 of 2 branches missed.">        this.storageFile = (storageFile != null) ? storageFile : new File(&quot;profiles.dat&quot;);</span>
+<span class="fc" id="L33">    }</span>
+
+    /**
+     * Constructs a profile repository backed by the default {@code profiles.dat} file.
+     */
+    public SerializedProfileRepository() {
+<span class="nc" id="L39">        this(new File(&quot;profiles.dat&quot;));</span>
+<span class="nc" id="L40">    }</span>
+
+    /**
+     * Loads the profile for the given player name, or returns a fresh level-1 profile if absent.
+     *
+     * @param name Player display name
+     * @return Loaded or newly initialized PlayerProfile
+     * @throws DOPOSoccerException if the name is null/blank or reading fails
+     */
+    @Override
+    public PlayerProfile load(String name) throws DOPOSoccerException {
+<span class="pc bpc" id="L51" title="1 of 4 branches missed.">        if (name == null || name.isBlank()) {</span>
+<span class="fc" id="L52">            throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);</span>
+        }
+<span class="fc" id="L54">        Map&lt;String, PlayerProfile&gt; profiles = loadAll();</span>
+<span class="fc" id="L55">        return profiles.getOrDefault(name, new PlayerProfile(name));</span>
+    }
+
+    /**
+     * Saves or updates the given player profile in the repository file.
+     *
+     * @param profile Player profile to persist
+     * @throws DOPOSoccerException if the profile is null or writing fails
+     */
+    @Override
+    public void save(PlayerProfile profile) throws DOPOSoccerException {
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (profile == null) {</span>
+<span class="fc" id="L67">            throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);</span>
+        }
+<span class="fc" id="L69">        Map&lt;String, PlayerProfile&gt; profiles = loadAll();</span>
+<span class="fc" id="L70">        profiles.put(profile.getName(), profile);</span>
+<span class="fc" id="L71">        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(storageFile))) {</span>
+<span class="fc" id="L72">            out.writeObject(profiles);</span>
+<span class="nc" id="L73">        } catch (IOException e) {</span>
+<span class="nc" id="L74">            Log.record(e);</span>
+<span class="nc" id="L75">            throw new DOPOSoccerException(DOPOSoccerException.SAVE_ERROR);</span>
+<span class="fc" id="L76">        }</span>
+<span class="fc" id="L77">    }</span>
+
+    /*
+     * Reads all stored profiles from disk, returning an empty map if the file does not exist yet.
+     */
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private Map&lt;String, PlayerProfile&gt; loadAll() throws DOPOSoccerException {
+<span class="fc bfc" id="L84" title="All 2 branches covered.">        if (!storageFile.exists()) {</span>
+<span class="fc" id="L85">            return new HashMap&lt;&gt;();</span>
+        }
+<span class="fc" id="L87">        try (ObjectInputStream in = new ObjectInputStream(new FileInputStream(storageFile))) {</span>
+<span class="fc" id="L88">            return (Map&lt;String, PlayerProfile&gt;) in.readObject();</span>
+<span class="fc" id="L89">        } catch (IOException | ClassNotFoundException e) {</span>
+<span class="fc" id="L90">            Log.record(e);</span>
+<span class="fc" id="L91">            throw new DOPOSoccerException(DOPOSoccerException.OPEN_ERROR);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExpertMachine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">ExpertMachine.java</span></div><h1>ExpertMachine.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+/**
+ * Machine controller implementing the Experta (expert) profile adapting tactics to match state.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class ExpertMachine extends MachineController {
+    private static final long serialVersionUID = 1L;
+    private static final int LOW_TIME_SECONDS = 15;
+    private static final double POWER_BALL_DISTANCE = 45.0;
+    private static final double FULL_POWER = 100.0;
+    private static final double OWN_HALF_FACTOR = 0.45;
+
+    private final OffensiveMachine offensive;
+    private final DefensiveMachine defensive;
+
+    /**
+     * Constructs an expert machine controller for the given pitch side.
+     *
+     * @param side Pitch side controlled by this AI
+     */
+    public ExpertMachine(Side side) {
+<span class="fc" id="L28">        super(side);</span>
+<span class="fc" id="L29">        this.defensive = new DefensiveMachine(side);</span>
+<span class="fc" id="L30">        this.offensive = new OffensiveMachine(side);</span>
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * Chooses between the defensive and the offensive behavior, in this order:
+     * &lt;ul&gt;
+     *   &lt;li&gt;Defends if a power shot is coming toward its goal or the rival has the aura.&lt;/li&gt;
+     *   &lt;li&gt;Attacks if the rival is stunned or affected by any power status effect.&lt;/li&gt;
+     *   &lt;li&gt;In sudden death, defends while the ball is in its own half and attacks otherwise.&lt;/li&gt;
+     *   &lt;li&gt;Defends while winning, unless the score is tied with little time left.&lt;/li&gt;
+     *   &lt;li&gt;Attacks in any other case.&lt;/li&gt;
+     * &lt;/ul&gt;
+     * It also activates the power when the bar is full and the ball is close and in front.
+     *
+     * @param match Read-only match view
+     * @param me Read-only view of the controlled player
+     * @param ball Read-only ball view
+     * @param rival Read-only view of the opponent
+     * @return Actions to perform during this tick
+     */
+    @Override
+    protected Set&lt;PlayerAction&gt; chooseActions(MatchView match, PlayerView me, BallView ball, PlayerView rival) {
+<span class="fc" id="L52">        int myGoals = match.getGoals(side);</span>
+<span class="fc" id="L53">        int rivalGoals = match.getGoals(side.opposite());</span>
+<span class="fc" id="L54">        int remaining = match.getRemainingSeconds();</span>
+<span class="pc bpc" id="L55" title="2 of 6 branches missed.">        boolean lowTimeTie = (myGoals == rivalGoals) &amp;&amp; remaining &gt;= 0 &amp;&amp; remaining &lt;= LOW_TIME_SECONDS;</span>
+
+        MachineController chosen;
+<span class="pc bpc" id="L58" title="1 of 4 branches missed.">        boolean ballPowerThreat = ball.hasPowerShot() &amp;&amp; (ball.getHorizontalSpeed() * side.dir() &lt; 0);</span>
+<span class="pc bpc" id="L59" title="2 of 4 branches missed.">        boolean rivalUnderEffect = rival != null &amp;&amp; (rival.isStunned()</span>
+<span class="pc bpc" id="L60" title="1 of 4 branches missed.">                || (rival.getActiveEffect() != null &amp;&amp; rival.getActiveEffect() != PlayerEffect.NONE));</span>
+
+<span class="pc bpc" id="L62" title="1 of 6 branches missed.">        if (ballPowerThreat || (rival != null &amp;&amp; rival.hasAura())) {</span>
+<span class="fc" id="L63">            chosen = defensive;</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        } else if (rivalUnderEffect) {</span>
+<span class="fc" id="L65">            chosen = offensive;</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        } else if (match.isSuddenDeath()) {</span>
+<span class="fc" id="L67">            double distToGoal = Math.abs(ball.getX() - ownGoalX(match));</span>
+<span class="pc bpc" id="L68" title="1 of 2 branches missed.">            chosen = (distToGoal &lt; match.getFieldWidth() * OWN_HALF_FACTOR) ? defensive : offensive;</span>
+<span class="pc bpc" id="L69" title="1 of 4 branches missed.">        } else if (myGoals &gt; rivalGoals &amp;&amp; !lowTimeTie) {</span>
+<span class="fc" id="L70">            chosen = defensive;</span>
+        } else {
+<span class="fc" id="L72">            chosen = offensive;</span>
+        }
+
+<span class="fc" id="L75">        Set&lt;PlayerAction&gt; actions = EnumSet.noneOf(PlayerAction.class);</span>
+<span class="fc" id="L76">        actions.addAll(chosen.chooseActions(match, me, ball, rival));</span>
+
+<span class="fc bfc" id="L78" title="All 2 branches covered.">        if (me.getPowerProgress() &gt;= FULL_POWER) {</span>
+<span class="fc" id="L79">            double myX = me.getHeadShape().getX();</span>
+<span class="fc" id="L80">            double distBall = Math.hypot(myX - ball.getX(), me.getHeadShape().getY() - ball.getY());</span>
+<span class="pc bpc" id="L81" title="2 of 4 branches missed.">            if (distBall &lt;= POWER_BALL_DISTANCE &amp;&amp; (ball.getX() - myX) * side.dir() &gt;= 0) {</span>
+<span class="fc" id="L82">                actions.add(PlayerAction.POWER);</span>
+            }
+        }
+<span class="fc" id="L85">        return actions;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

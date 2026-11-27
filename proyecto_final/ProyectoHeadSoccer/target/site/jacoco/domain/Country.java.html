@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Country.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Country.java</span></div><h1>Country.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.function.Supplier;
+
+/**
+ * Available playable countries, each providing a display name, power name, and power factory.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+<span class="fc" id="L11">public enum Country {</span>
+<span class="fc" id="L12">	SOUTH_KOREA(&quot;Corea del Sur&quot;, &quot;Aura Azul&quot;, AuraAzulPower::new ),</span>
+<span class="fc" id="L13">	CAMEROON(&quot;Camerún&quot;, &quot;Rayo&quot;, LightningPower::new),</span>
+<span class="fc" id="L14">	NIGERIA(&quot;Nigeria&quot;, &quot;Tornado&quot;, TornadoPower::new ),</span>
+<span class="fc" id="L15">	USA(&quot;Estados Unidos&quot;, &quot;Ilusión&quot;, IllusionPower::new);</span>
+
+	private final String displayName;
+	private final String powerName;
+	private final Supplier&lt;Power&gt; powerFactory;
+
+<span class="fc" id="L21">	Country(String displayName, String powerName, Supplier&lt;Power&gt; powerFactory) {</span>
+<span class="fc" id="L22">		this.displayName = displayName;</span>
+<span class="fc" id="L23">		this.powerName = powerName;</span>
+<span class="fc" id="L24">		this.powerFactory = powerFactory;</span>
+<span class="fc" id="L25">	}</span>
+
+	/**
+	 * Returns the localized display name of the country.
+	 *
+	 * @return Country display name
+	 */
+	public String getDisplayName() {
+<span class="nc" id="L33">		return displayName;</span>
+	}
+
+	/**
+	 * Returns the display name of the country's special power.
+	 *
+	 * @return Power name
+	 */
+	public String getPowerName() {
+<span class="nc" id="L42">		return powerName;</span>
+	}
+
+	/**
+	 * Instantiates a fresh special power instance for this country.
+	 *
+	 * @return New Power instance
+	 */
+	public Power getPower(){
+<span class="fc" id="L51">		return powerFactory.get();</span>
+	}
+
+	/**
+	 * Returns the country display name.
+	 *
+	 * @return Country display name
+	 */
+	@Override
+	public String toString() {
+<span class="nc" id="L61">		return displayName;</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

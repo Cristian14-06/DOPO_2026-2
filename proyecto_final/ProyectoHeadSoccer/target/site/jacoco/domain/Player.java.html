@@ -1,0 +1,494 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Player.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Player.java</span></div><h1>Player.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Represents a soccer player entity composed of head, body, and foot limbs, with health, stats, power, and status effects.
+ * Complies with DOPOSoccer specifications for damage, powers, health, and stun mechanics.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Player implements PlayerView, Serializable {
+	private static final long serialVersionUID = 1L;
+	private final PlayerProfile profile;
+	private final Country country;
+	private final Side side;
+	private final Power power;
+	private final PlayerBody playerBody;
+	private final Life life;
+	private final EffectState effect;
+<span class="fc" id="L24">	private boolean wasKicking = false;</span>
+<span class="fc" id="L25">	private boolean wasPowerPressed = false;</span>
+<span class="fc" id="L26">	private boolean kickDealtDamage = false;</span>
+
+	/**
+	 * Constructs a match player backed by a persistent player profile, resolving power from the country.
+	 *
+	 * @param profile Persistent player profile
+	 * @param country Country representation
+	 * @param side Pitch side assigned
+	 */
+	public Player(PlayerProfile profile, Country country, Side side) {
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">		this(profile, country, side, (country != null) ? country.getPower() : null);</span>
+<span class="fc" id="L37">	}</span>
+
+	/**
+	 * Constructs a match player backed by a persistent player profile.
+	 *
+	 * @param profile Persistent player profile
+	 * @param country Country representation
+	 * @param side Pitch side assigned
+	 * @param power Special power ability
+	 */
+<span class="fc" id="L47">	public Player(PlayerProfile profile, Country country, Side side, Power power) {</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">		this.profile = (profile != null) ? profile : new PlayerProfile(&quot;Player&quot;);</span>
+<span class="fc" id="L49">		this.country = country;</span>
+<span class="fc" id="L50">		this.side = side;</span>
+<span class="fc" id="L51">		this.power = power;</span>
+<span class="fc" id="L52">		this.playerBody = new PlayerBody(side);</span>
+<span class="fc" id="L53">		this.playerBody.getFoot().setPowerKicking((int) this.profile.getStats().kickBallForce());</span>
+<span class="fc" id="L54">		this.life = new Life(this.profile.getStats().getMaxLife());</span>
+<span class="fc" id="L55">		this.effect = new EffectState();</span>
+<span class="fc" id="L56">	}</span>
+
+	/**
+	 * Constructs a player with specified profile attributes, pitch side, special power, and stats.
+	 * 
+	 * @param name Name of the player
+	 * @param country Country representation
+	 * @param side Pitch side assigned
+	 * @param power Special power ability
+	 * @param stats Player performance stats
+	 */
+	public Player(String name, Country country, Side side, Power power, PlayerStats stats) {
+<span class="fc" id="L68">		this(new PlayerProfile(name, stats), country, side, power);</span>
+<span class="fc" id="L69">	}</span>
+
+	/**
+	 * Resets player position and vertical state to kickoff coordinates.
+	 */
+	public void resetPosition() {
+<span class="fc" id="L75">		this.playerBody.resetPosition();</span>
+<span class="fc" id="L76">		this.playerBody.getFoot().setPowerKicking((int) profile.getStats().kickBallForce());</span>
+<span class="fc" id="L77">		clearEffect();</span>
+<span class="fc" id="L78">	}</span>
+
+	/**
+	 * Translates all limbs of the player along Cartesian axes.
+	 * 
+	 * @param dx Horizontal offset in pixels
+	 * @param dy Vertical offset in pixels
+	 */
+	public void translate(double dx, double dy) {
+<span class="fc" id="L87">		this.playerBody.translate(dx, dy);</span>
+<span class="fc" id="L88">	}</span>
+
+	/**
+	 * Indicates if player is currently disabled from moving, jumping or kicking.
+	 * 
+	 * @return True if disabled
+	 */
+	public boolean isDisabled() {
+<span class="pc bpc" id="L96" title="1 of 6 branches missed.">		return life.isStunned() || !effect.canMove()</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">				|| (power != null &amp;&amp; power.isChargingShot());</span>
+	}
+
+	/**
+	 * Moves player horizontally to the left according to speed stat and status effects.
+	 */
+	public void moveLeft() {
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">		if (isDisabled()) return;</span>
+<span class="pc bpc" id="L105" title="1 of 2 branches missed.">		if (effect.isConfused()) {</span>
+<span class="nc" id="L106">			moveRightInternal();</span>
+<span class="nc" id="L107">			return;</span>
+		}
+<span class="fc" id="L109">		moveLeftInternal();</span>
+<span class="fc" id="L110">	}</span>
+
+	/**
+	 * Moves player horizontally to the right according to speed stat and status effects.
+	 */
+	public void moveRight() {
+<span class="fc bfc" id="L116" title="All 2 branches covered.">		if (isDisabled()) return;</span>
+<span class="fc bfc" id="L117" title="All 2 branches covered.">		if (effect.isConfused()) {</span>
+<span class="fc" id="L118">			moveLeftInternal();</span>
+<span class="fc" id="L119">			return;</span>
+		}
+<span class="fc" id="L121">		moveRightInternal();</span>
+<span class="fc" id="L122">	}</span>
+
+	private void moveLeftInternal() {
+<span class="fc" id="L125">		double spd = profile.getStats().speedPx() * effect.speedFactor();</span>
+<span class="fc" id="L126">		playerBody.moveHorizontally(-spd);</span>
+<span class="fc" id="L127">		playerBody.collideWithEdges();</span>
+<span class="fc" id="L128">	}</span>
+
+	private void moveRightInternal() {
+<span class="fc" id="L131">		double spd = profile.getStats().speedPx() * effect.speedFactor();</span>
+<span class="fc" id="L132">		playerBody.moveHorizontally(spd);</span>
+<span class="fc" id="L133">		playerBody.collideWithEdges();</span>
+<span class="fc" id="L134">	}</span>
+	
+	/**
+	 * Applies an upward jump impulse if player is on the ground or atop another surface.
+	 */
+	public void jump() {
+<span class="fc bfc" id="L140" title="All 4 branches covered.">		if (isDisabled() || !effect.canJump()) return;</span>
+<span class="fc" id="L141">		playerBody.jump(profile.getStats().jumpPx());</span>
+<span class="fc" id="L142">	}</span>
+	
+	/**
+	 * Updates vertical position, gravity, status effect timers, and ground landing contact.
+	 */
+	public void moveVertical() {
+<span class="fc" id="L148">		life.tick();</span>
+<span class="fc" id="L149">		effect.tick(playerBody, side);</span>
+<span class="fc" id="L150">		playerBody.tick();</span>
+<span class="fc" id="L151">	}</span>
+
+	/**
+	 * Frame tick updating power charge and physics.
+	 */
+	public void tick() {
+<span class="pc bpc" id="L157" title="1 of 2 branches missed.">		if (power != null) {</span>
+<span class="fc" id="L158">			power.tickCharge();</span>
+		}
+<span class="fc" id="L160">		moveVertical();</span>
+<span class="fc" id="L161">	}</span>
+	
+	/**
+	 * Initiates the kick animation and foot displacement.
+	 */
+	public void kick() {
+<span class="pc bpc" id="L167" title="1 of 4 branches missed.">		if (isDisabled() || !effect.canKick()) return;</span>
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">		if (!playerBody.isKicking()) {</span>
+<span class="fc" id="L169">			kickDealtDamage = false;</span>
+		}
+<span class="fc" id="L171">		playerBody.startKick();</span>
+<span class="fc" id="L172">	}</span>
+
+	/**
+	 * Stops the kick animation and returns the foot to idle position.
+	 */
+	public void stopKick() {
+<span class="nc" id="L178">		playerBody.stopKick();</span>
+<span class="nc" id="L179">	}</span>
+
+	/**
+	 * Activates the player's special power aura when power gauge is full.
+	 */
+	public void activatePower() {
+<span class="pc bpc" id="L185" title="2 of 4 branches missed.">		if (power != null &amp;&amp; !isDisabled()) {</span>
+<span class="fc" id="L186">			power.activateAura();</span>
+		}
+<span class="fc" id="L188">	}</span>
+
+	/**
+	 * Receives goal notification, adding 25% to the power gauge according to rules.
+	 */
+	public void onGoalReceived() {
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">		if (power != null) {</span>
+<span class="fc" id="L195">			power.addQuarterOnGoalReceived();</span>
+		}
+<span class="fc" id="L197">	}</span>
+
+	/**
+	 * Applies damage to player health, triggering a 3-second stun at zero health.
+	 * 
+	 * @param damage Damage amount to deduct
+	 */
+	public void takeDamage(double damage) {
+<span class="fc" id="L205">		life.takeDamage(damage);</span>
+<span class="fc" id="L206">	}</span>
+
+	/**
+	 * Applies a status effect from an opponent power, replacing any active effect.
+	 * 
+	 * @param statusEffect Status effect to apply
+	 * @param durationSeconds Duration in seconds
+	 */
+	public void applyEffect(PlayerEffect statusEffect, double durationSeconds) {
+<span class="pc bpc" id="L215" title="1 of 2 branches missed.">		Effect next = (statusEffect != null) ? statusEffect.createEffect() : new NoneEffect();</span>
+<span class="fc" id="L216">		effect.apply(next, durationSeconds, playerBody);</span>
+<span class="fc" id="L217">	}</span>
+
+	/**
+	 * Clears active status effect.
+	 */
+	public void clearEffect() {
+<span class="fc" id="L223">		effect.clear();</span>
+<span class="fc" id="L224">	}</span>
+
+	/**
+	 * Applies a set of intended input actions onto the player.
+	 * 
+	 * @param actions Set of requested player actions
+	 * @param ball Ball reference for shooting actions
+	 * @param rival Opponent player reference for power effects
+	 */
+	public void applyInput(Set&lt;PlayerAction&gt; actions, Ball ball, Player rival) {
+<span class="pc bpc" id="L234" title="1 of 2 branches missed.">		if (actions == null) {</span>
+<span class="nc" id="L235">			wasKicking = false;</span>
+<span class="nc" id="L236">			wasPowerPressed = false;</span>
+<span class="nc" id="L237">			return;</span>
+		}
+
+<span class="fc" id="L240">		boolean kickingNow = actions.contains(PlayerAction.KICK);</span>
+<span class="fc" id="L241">		boolean powerNow = actions.contains(PlayerAction.POWER);</span>
+
+<span class="fc bfc" id="L243" title="All 2 branches covered.">		for (PlayerAction action : actions) {</span>
+<span class="pc bpc" id="L244" title="1 of 6 branches missed.">			switch (action) {</span>
+				case LEFT:
+<span class="fc" id="L246">					moveLeft();</span>
+<span class="fc" id="L247">					break;</span>
+				case RIGHT:
+<span class="fc" id="L249">					moveRight();</span>
+<span class="fc" id="L250">					break;</span>
+				case JUMP:
+<span class="fc" id="L252">					jump();</span>
+<span class="fc" id="L253">					break;</span>
+				case KICK:
+<span class="fc bfc" id="L255" title="All 2 branches covered.">					if (!wasKicking) {</span>
+<span class="fc" id="L256">						kick();</span>
+					}
+					break;
+				case POWER:
+<span class="fc bfc" id="L260" title="All 2 branches covered.">					if (!wasPowerPressed) {</span>
+<span class="fc" id="L261">						activatePower();</span>
+					}
+					break;
+			}
+<span class="fc" id="L265">		}</span>
+
+<span class="fc" id="L267">		wasKicking = kickingNow;</span>
+<span class="fc" id="L268">		wasPowerPressed = powerNow;</span>
+<span class="fc" id="L269">	}</span>
+
+	/**
+	 * Applies a set of basic input actions without ball or rival interaction.
+	 * 
+	 * @param actions Set of requested player actions
+	 */
+	public void applyInput(Set&lt;PlayerAction&gt; actions) {
+<span class="nc" id="L277">		applyInput(actions, null, null);</span>
+<span class="nc" id="L278">	}</span>
+	
+	/**
+	 * Clears support state before collision resolution on each tick.
+	 */
+	public void clearSupport() {
+<span class="fc" id="L284">		playerBody.clearSupport();</span>
+<span class="fc" id="L285">	}</span>
+
+	/**
+	 * Resolves collision, stacking, and push mechanics between this player and an opponent.
+	 * 
+	 * @param player Opponent player to collide with
+	 */
+	public void collideWithPlayer(Player player) {
+<span class="pc bpc" id="L293" title="1 of 2 branches missed.">		if (player == null) return;</span>
+<span class="fc" id="L294">		playerBody.collideWithPlayer(player.playerBody, player.profile.getStats().speedPx());</span>
+
+<span class="pc bpc" id="L296" title="2 of 6 branches missed.">		if (!kickDealtDamage &amp;&amp; !isDisabled() &amp;&amp; playerBody.isKickHitting(player.playerBody)) {</span>
+<span class="nc" id="L297">			player.takeDamage(profile.getStats().getKickDamage());</span>
+<span class="nc" id="L298">			kickDealtDamage = true;</span>
+		}
+<span class="fc" id="L300">	}</span>
+
+	/**
+	 * Restricts player movement to remain within horizontal pitch boundaries.
+	 */
+	public void collideWithEdges() {
+<span class="fc" id="L306">		playerBody.collideWithEdges();</span>
+<span class="fc" id="L307">	}</span>
+	
+	/**
+	 * Resolves physical collision with soccer goal crossbar and net structures.
+	 * 
+	 * @param goal Goal entity to collide against
+	 */
+	public void collideWithGoal(Goal goal) {
+<span class="fc" id="L315">		playerBody.collideWithGoal(goal);</span>
+<span class="fc" id="L316">	}</span>
+
+	/**
+	 * Resolves ball collisions against this player's body, head, and foot.
+	 *
+	 * @param ball Ball in play
+	 */
+	public boolean collideWithBall(Ball ball) {
+<span class="fc" id="L324">		boolean hadArua = hasAura();</span>
+<span class="fc" id="L325">		boolean collide = playerBody.collideWithBall(ball, power);</span>
+<span class="fc bfc" id="L326" title="All 4 branches covered.">		if(hadArua &amp;&amp; !hasAura()){</span>
+<span class="fc" id="L327">			ball.setPowerShotCountry(country);</span>
+		}
+<span class="fc" id="L329">		return collide;</span>
+	}
+
+	/**
+	 * Returns this player's kick damage multiplier from stats.
+	 *
+	 * @return Kick multiplier
+	 */
+	public double getKickMultiplier() {
+<span class="fc" id="L338">		return profile.getStats().getKickMultiplier();</span>
+	}
+
+	/**
+	 * Applies damage and status effect from an opponent power hit.
+	 *
+	 * @param hit Power hit payload to apply
+	 */
+	public void receiveHit(PowerHit hit) {
+<span class="pc bpc" id="L347" title="1 of 4 branches missed.">		if (hit == null || hasAura()) return;</span>
+<span class="pc bpc" id="L348" title="1 of 2 branches missed.">		if (hit.getDamage() &gt; 0) {</span>
+<span class="fc" id="L349">			takeDamage(hit.getDamage());</span>
+		}
+<span class="pc bpc" id="L351" title="2 of 4 branches missed.">		if (hit.getEffect() != null &amp;&amp; hit.getEffect().getType() != PlayerEffect.NONE) {</span>
+<span class="fc" id="L352">			effect.apply(hit.getEffect(), hit.getDurationSeconds(), playerBody);</span>
+		}
+<span class="fc" id="L354">	}</span>
+
+	/**
+	 * Checks whether the ball overlaps any part of this player (head, body, or foot).
+	 *
+	 * @param ball Ball in play
+	 * @return True if any limb overlaps the ball
+	 */
+	public boolean isHitByBall(Ball ball) {
+<span class="fc" id="L363">		return playerBody.isHitByBall(ball);</span>
+	}
+
+	/**
+	 * Ends any active power shot state for this player.
+	 */
+	public void finishPowerShot() {
+<span class="pc bpc" id="L370" title="1 of 2 branches missed.">		if (power != null) {</span>
+<span class="fc" id="L371">			power.finishPowerShot();</span>
+		}
+<span class="fc" id="L373">	}</span>
+
+	/**
+	 * Advances per-frame power shot effects such as illusion clones.
+	 *
+	 * @param ball Ball in play
+	 */
+	public void updatePowerShot(Ball ball) {
+<span class="pc bpc" id="L381" title="1 of 2 branches missed.">		if (power != null) {</span>
+<span class="fc" id="L382">			power.updateShot(ball);</span>
+		}
+<span class="fc" id="L384">	}</span>
+
+	/**
+	 * Evaluates whether this player's active power shot hits the opponent and returns the hit payload.
+	 *
+	 * @param rival Opponent player
+	 * @param ball Ball in play
+	 * @return PowerHit payload if hit, or null otherwise
+	 */
+	public PowerHit powerHitOn(Player rival, Ball ball) {
+<span class="pc bpc" id="L394" title="2 of 8 branches missed.">		if (power == null || rival == null || !power.isPowerShotActive() || !rival.isHitByBall(ball)) {</span>
+<span class="fc" id="L395">			return null;</span>
+		}
+<span class="fc" id="L397">		return power.onHitRival(getKickMultiplier());</span>
+	}
+
+<span class="nc" id="L400">	public String getName() { return profile.getName(); }</span>
+<span class="fc" id="L401">	public Country getCountry() { return country; }</span>
+<span class="fc" id="L402">	public Side getSide() { return side; }</span>
+<span class="nc" id="L403">	public double getVerticalSpeed() { return playerBody.getVerticalSpeed(); }</span>
+<span class="fc" id="L404">	public int getPoints() { return profile.getPoints(); }</span>
+<span class="fc" id="L405">	public void addPoints(int amount) { profile.addPoints(amount); }</span>
+<span class="nc" id="L406">	public int getStunTicksRemaining() { return life.getStunTicksRemaining(); }</span>
+
+	/**
+	 * Returns the underlying player profile for domain persistence coordination.
+	 *
+	 * @return Player profile
+	 */
+	PlayerProfile getProfile() {
+<span class="fc" id="L414">		return profile;</span>
+	}
+
+	@Override
+	public double getLife() {
+<span class="fc" id="L419">		return life.getCurrent();</span>
+	}
+
+	@Override
+	public double getMaxLife() {
+<span class="fc" id="L424">		return life.getMax();</span>
+	}
+
+	@Override
+	public double getPowerProgress() {
+<span class="pc bpc" id="L429" title="1 of 2 branches missed.">		return (power != null) ? power.getCharge() : 0.0;</span>
+	}
+
+	@Override
+	public boolean hasAura() {
+<span class="pc bpc" id="L434" title="1 of 4 branches missed.">		return power != null &amp;&amp; power.isAuraActive();</span>
+	}
+
+	@Override
+	public boolean isStunned() {
+<span class="fc" id="L439">		return life.isStunned();</span>
+	}
+
+	@Override
+	public boolean isKicking() {
+<span class="nc" id="L444">		return playerBody.isKicking();</span>
+	}
+
+	@Override
+	public String getActiveEffectName() {
+<span class="pc bpc" id="L449" title="1 of 2 branches missed.">		return (effect.getCurrent() != PlayerEffect.NONE) ? effect.getCurrent().name() : &quot;&quot;;</span>
+	}
+
+	@Override
+	public PlayerEffect getActiveEffect() {
+<span class="fc" id="L454">		return effect.getCurrent();</span>
+	}
+
+	@Override
+	public double getEffectProgress() {
+<span class="fc" id="L459">		return effect.getProgress();</span>
+	}
+
+	@Override
+	public Circle getHeadShape() {
+<span class="fc" id="L464">		return playerBody.getHeadShape();</span>
+	}
+
+	@Override
+	public Rectangle getBodyShape() {
+<span class="fc" id="L469">		return playerBody.getBodyShape();</span>
+	}
+
+	@Override
+	public Circle getFootShape() {
+<span class="fc" id="L474">		return playerBody.getFootShape();</span>
+	}
+
+	@Override
+	public int getStat(StatType type) {
+<span class="nc" id="L479">		return profile.getStat(type);</span>
+	}
+
+	/**
+	 * Decoy balls currently created by this player's power (Illusion).
+	 *
+	 * @return Copies of the decoy balls, or an empty list
+	 */
+	public List&lt;Circle&gt; getDecoyBalls() {
+<span class="nc bnc" id="L488" title="All 2 branches missed.">		if (power == null) {</span>
+<span class="nc" id="L489">			return Collections.emptyList();</span>
+		}
+<span class="nc" id="L491">		return power.getDecoyBalls();</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

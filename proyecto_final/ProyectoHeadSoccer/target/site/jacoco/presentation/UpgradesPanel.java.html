@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UpgradesPanel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">UpgradesPanel.java</span></div><h1>UpgradesPanel.java</h1><pre class="source lang-java linenums">package presentation;
+
+import java.awt.*;
+import javax.swing.*;
+
+import domain.DOPOSoccer;
+import domain.DOPOSoccerException;
+import domain.Modality;
+import domain.ProfileView;
+import domain.StatType;
+import persistence.Log;
+
+/**
+ * Screen allowing players to spend accumulated points to upgrade their statistics.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class UpgradesPanel extends JPanel {
+    private final DOPOSoccer game;
+    private final MatchSetup setup;
+    private final Runnable onBack;
+    private final JLabel title;
+    private final JPanel playersContainer;
+    private final JButton btnBack;
+
+    /**
+     * Constructs the upgrades panel layout and back navigation button.
+     *
+     * @param game Domain facade instance
+     * @param photo Match panel holding configured player names and modality
+     * @param onBack Callback executed when the user clicks Back
+     */
+<span class="nc" id="L34">    public UpgradesPanel(DOPOSoccer game, MatchSetup setup, Runnable onBack) {</span>
+<span class="nc" id="L35">        this.game = game;</span>
+<span class="nc" id="L36">        this.setup = setup;</span>
+<span class="nc" id="L37">        this.onBack = onBack;</span>
+
+<span class="nc" id="L39">        setLayout(new GridBagLayout());</span>
+<span class="nc" id="L40">        setBackground(new Color(22, 34, 52));</span>
+
+<span class="nc" id="L42">        this.title = new JLabel(&quot;MEJORAR ESTADÍSTICAS&quot;);</span>
+<span class="nc" id="L43">        this.title.setFont(new Font(&quot;Impact&quot;, Font.BOLD, 34));</span>
+<span class="nc" id="L44">        this.title.setForeground(Color.YELLOW);</span>
+<span class="nc" id="L45">        this.title.setAlignmentX(CENTER_ALIGNMENT);</span>
+
+<span class="nc" id="L47">        this.playersContainer = new JPanel(new GridLayout(1, 0, 20, 0));</span>
+<span class="nc" id="L48">        this.playersContainer.setOpaque(false);</span>
+
+<span class="nc" id="L50">        this.btnBack = new JButton(&quot;← VOLVER&quot;);</span>
+<span class="nc" id="L51">        this.btnBack.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 15));</span>
+<span class="nc" id="L52">        this.btnBack.setBackground(new Color(80, 90, 105));</span>
+<span class="nc" id="L53">        this.btnBack.setForeground(Color.WHITE);</span>
+<span class="nc" id="L54">        this.btnBack.setFocusPainted(false);</span>
+<span class="nc" id="L55">        this.btnBack.setAlignmentX(CENTER_ALIGNMENT);</span>
+<span class="nc" id="L56">        this.btnBack.addActionListener(e -&gt; this.onBack.run());</span>
+
+<span class="nc" id="L58">        JPanel card = new JPanel();</span>
+<span class="nc" id="L59">        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L60">        card.setBackground(new Color(25, 30, 42, 235));</span>
+<span class="nc" id="L61">        card.setBorder(BorderFactory.createCompoundBorder(</span>
+<span class="nc" id="L62">                BorderFactory.createLineBorder(new Color(255, 200, 50), 2),</span>
+<span class="nc" id="L63">                BorderFactory.createEmptyBorder(20, 28, 20, 28)</span>
+        ));
+<span class="nc" id="L65">        card.add(title);</span>
+<span class="nc" id="L66">        card.add(Box.createVerticalStrut(16));</span>
+<span class="nc" id="L67">        card.add(playersContainer);</span>
+<span class="nc" id="L68">        card.add(Box.createVerticalStrut(20));</span>
+<span class="nc" id="L69">        card.add(btnBack);</span>
+
+<span class="nc" id="L71">        add(card);</span>
+<span class="nc" id="L72">    }</span>
+
+    /**
+     * Rebuilds the player upgrade cards with the latest profiles and points.
+     */
+    public void refreshView() {
+<span class="nc" id="L78">        playersContainer.removeAll();</span>
+<span class="nc" id="L79">        playersContainer.add(buildPlayerCard(setup.getLeftPlayerName()));</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (setup.getModality() == Modality.PVP) {</span>
+<span class="nc" id="L81">            playersContainer.add(buildPlayerCard(setup.getRightPlayerName()));</span>
+        }
+<span class="nc" id="L83">        playersContainer.revalidate();</span>
+<span class="nc" id="L84">        playersContainer.repaint();</span>
+<span class="nc" id="L85">    }</span>
+
+    /*
+     * Builds an upgrade card showing the player's points and stat upgrade controls.
+     */
+    private JPanel buildPlayerCard(String playerName) {
+<span class="nc" id="L91">        JPanel card = new JPanel();</span>
+<span class="nc" id="L92">        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L93">        card.setBackground(new Color(40, 46, 62));</span>
+<span class="nc" id="L94">        card.setBorder(BorderFactory.createCompoundBorder(</span>
+<span class="nc" id="L95">                BorderFactory.createLineBorder(new Color(100, 150, 255), 2),</span>
+<span class="nc" id="L96">                BorderFactory.createEmptyBorder(14, 18, 14, 18)</span>
+        ));
+
+        try {
+<span class="nc" id="L100">            ProfileView profile = game.getProfile(playerName);</span>
+<span class="nc" id="L101">            JLabel lblName = new JLabel(profile.getName());</span>
+<span class="nc" id="L102">            lblName.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 18));</span>
+<span class="nc" id="L103">            lblName.setForeground(Color.WHITE);</span>
+
+<span class="nc" id="L105">            JLabel lblPoints = new JLabel(&quot;Puntos: &quot; + profile.getPoints());</span>
+<span class="nc" id="L106">            lblPoints.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 15));</span>
+<span class="nc" id="L107">            lblPoints.setForeground(new Color(255, 220, 80));</span>
+
+<span class="nc" id="L109">            card.add(lblName);</span>
+<span class="nc" id="L110">            card.add(Box.createVerticalStrut(6));</span>
+<span class="nc" id="L111">            card.add(lblPoints);</span>
+<span class="nc" id="L112">            card.add(Box.createVerticalStrut(12));</span>
+
+<span class="nc bnc" id="L114" title="All 2 branches missed.">            for (StatType type : StatType.values()) {</span>
+<span class="nc" id="L115">                JPanel row = new JPanel(new BorderLayout(12, 0));</span>
+<span class="nc" id="L116">                row.setOpaque(false);</span>
+<span class="nc" id="L117">                JLabel statName = new JLabel(type.name() + &quot;: &quot; + profile.getStat(type) + &quot;/10&quot;);</span>
+<span class="nc" id="L118">                statName.setForeground(Color.WHITE);</span>
+<span class="nc" id="L119">                statName.setFont(new Font(&quot;Arial&quot;, Font.PLAIN, 14));</span>
+<span class="nc" id="L120">                int cost = profile.upgradeCost(type);</span>
+<span class="nc bnc" id="L121" title="All 2 branches missed.">                JButton upgrade = new JButton((cost &gt; 0) ? &quot;+ (&quot; + cost + &quot; pts)&quot; : &quot;MÁX&quot;);</span>
+<span class="nc" id="L122">                upgrade.setFocusPainted(false);</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">                if (cost == 0) {</span>
+<span class="nc" id="L124">                    upgrade.setEnabled(false);</span>
+                } else {
+<span class="nc" id="L126">                    upgrade.addActionListener(e -&gt; handleUpgrade(playerName, type));</span>
+                }
+<span class="nc" id="L128">                row.add(statName, BorderLayout.WEST);</span>
+<span class="nc" id="L129">                row.add(upgrade, BorderLayout.EAST);</span>
+<span class="nc" id="L130">                card.add(row);</span>
+<span class="nc" id="L131">                card.add(Box.createVerticalStrut(8));</span>
+            }
+<span class="nc" id="L133">        } catch (DOPOSoccerException e) {</span>
+<span class="nc" id="L134">            Log.record(e);</span>
+<span class="nc" id="L135">            JOptionPane.showMessageDialog(this, e.getMessage(), &quot;Error de perfil&quot;, JOptionPane.ERROR_MESSAGE);</span>
+<span class="nc" id="L136">        }</span>
+
+<span class="nc" id="L138">        return card;</span>
+    }
+
+    /*
+     * Requests a stat upgrade through the domain facade and refreshes the panel on success.
+     */
+    private void handleUpgrade(String playerName, StatType stat) {
+        try {
+<span class="nc" id="L146">            game.upgrade(playerName, stat);</span>
+<span class="nc" id="L147">            refreshView();</span>
+<span class="nc" id="L148">        } catch (DOPOSoccerException ex) {</span>
+<span class="nc" id="L149">            Log.record(ex);</span>
+<span class="nc" id="L150">            JOptionPane.showMessageDialog(this, ex.getMessage(), &quot;Mejora&quot;, JOptionPane.WARNING_MESSAGE);</span>
+<span class="nc" id="L151">        }</span>
+<span class="nc" id="L152">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

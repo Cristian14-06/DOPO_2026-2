@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MachineProfile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">MachineProfile.java</span></div><h1>MachineProfile.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.Random;
+import java.util.function.Function;
+
+/**
+ * Enumerates machine difficulty and tactical profiles as defined in the DOPOSoccer specification:
+ * 1. TORPE: chooses movements randomly.
+ * 2. OFENSIVA: prioritizes scoring goals.
+ * 3. DEFENSIVA: prioritizes defending its goal area.
+ * 4. EXPERTA: selects actions dynamically based on match context and score difference.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+<span class="fc" id="L16">public enum MachineProfile {</span>
+<span class="fc" id="L17">    TORPE(&quot;Torpe&quot;, ClumsyMachine::new),</span>
+<span class="fc" id="L18">    OFENSIVA(&quot;Ofensiva&quot;, OffensiveMachine::new),</span>
+<span class="fc" id="L19">    DEFENSIVA(&quot;Defensiva&quot;, DefensiveMachine::new),</span>
+<span class="fc" id="L20">    EXPERTA(&quot;Experta&quot;, ExpertMachine::new);</span>
+
+    private final String displayName;
+    private final Function&lt;Side, MachineController&gt; factory;
+
+    /*
+     * Constructs a machine profile with its localized display label and controller factory.
+     */
+<span class="fc" id="L28">    MachineProfile(String displayName, Function&lt;Side, MachineController&gt; factory) {</span>
+<span class="fc" id="L29">        this.displayName = displayName;</span>
+<span class="fc" id="L30">        this.factory = factory;</span>
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * Returns the localized display name of this machine profile.
+     *
+     * @return Profile display name
+     */
+    public String getDisplayName() {
+<span class="fc" id="L39">        return displayName;</span>
+    }
+
+    /**
+     * Creates a new machine controller instance for the given pitch side.
+     *
+     * @param side Pitch side controlled by the AI
+     * @return New MachineController instance
+     */
+    public MachineController create(Side side) {
+<span class="fc" id="L49">        return factory.apply(side);</span>
+    }
+
+    /**
+     * Creates a new machine controller instance using an injectable random generator
+     * for deterministic testing of the TORPE profile.
+     *
+     * @param side Pitch side controlled by the AI
+     * @param random Random generator instance
+     * @return New MachineController instance
+     */
+    public MachineController create(Side side, Random random) {
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        if (this == TORPE) {</span>
+<span class="fc" id="L62">            return new ClumsyMachine(side, random);</span>
+        }
+<span class="fc" id="L64">        return create(side);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

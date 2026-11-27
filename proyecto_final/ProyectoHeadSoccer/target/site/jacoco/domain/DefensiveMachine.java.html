@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DefensiveMachine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">DefensiveMachine.java</span></div><h1>DefensiveMachine.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+/**
+ * Machine controller implementing the Defensiva (defensive) profile prioritizing goal protection.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class DefensiveMachine extends MachineController {
+    private static final long serialVersionUID = 1L;
+    private static final double HOME_GOAL_OFFSET = 70.0;
+    private static final double DEFEND_ZONE_RADIUS = 170.0;
+    private static final double BEHIND_BALL_OFFSET = 12.0;
+    private static final double MOVE_TOLERANCE = 10.0;
+    private static final double JUMP_MAX_DX = 30.0;
+    private static final double JUMP_HEAD_MARGIN_Y = 10.0;
+    private static final double KICK_MAX_DX = 28.0;
+    private static final double KICK_MAX_HEIGHT = 70.0;
+
+    /**
+     * Constructs a defensive machine controller for the given pitch side.
+     *
+     * @param side Pitch side controlled by this AI
+     */
+    public DefensiveMachine(Side side) {
+<span class="fc" id="L29">        super(side);</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    protected Set&lt;PlayerAction&gt; chooseActions(MatchView match, PlayerView me, BallView ball, PlayerView rival) {
+<span class="fc" id="L37">        Set&lt;PlayerAction&gt; actions = EnumSet.noneOf(PlayerAction.class);</span>
+<span class="fc" id="L38">        double myX = me.getHeadShape().getX();</span>
+<span class="fc" id="L39">        double goalX = ownGoalX(match);</span>
+<span class="fc" id="L40">        double homeX = goalX + side.dir() * HOME_GOAL_OFFSET;</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        if(Math.abs(ball.getX() - goalX) &gt; DEFEND_ZONE_RADIUS){</span>
+<span class="fc" id="L42">            moveToward(myX, homeX, MOVE_TOLERANCE, actions);</span>
+        }else{
+<span class="fc" id="L44">            double defendX = ball.getX() - side.dir()*BEHIND_BALL_OFFSET;</span>
+<span class="fc" id="L45">            moveToward(myX, defendX, 4.0, actions);</span>
+<span class="fc bfc" id="L46" title="All 2 branches covered.">            if(shouldJumpForBall(me, ball, JUMP_MAX_DX, JUMP_HEAD_MARGIN_Y)) actions.add(PlayerAction.JUMP);</span>
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">            if(shouldKickBall(match, me, ball, KICK_MAX_DX, KICK_MAX_HEIGHT)</span>
+<span class="fc bfc" id="L48" title="All 2 branches covered.">                    &amp;&amp; (ball.getX() - myX) * side.dir() &gt; -10){</span>
+<span class="fc" id="L49">                actions.add(PlayerAction.KICK);</span>
+            }
+        }
+<span class="fc" id="L52">        return actions;</span>
+        
+        
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

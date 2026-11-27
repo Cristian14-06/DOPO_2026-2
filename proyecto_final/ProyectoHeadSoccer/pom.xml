@@ -24,7 +24,52 @@
   </dependencies>
 
   <build>
+    <!-- Estructura de Eclipse: el codigo esta en src/domain, src/persistence y src/presentation,
+         las pruebas en src/test y las imagenes y sonidos en src/presentation/resources. -->
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>src</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>src</directory>
+        <includes>
+          <include>presentation/resources/**</include>
+        </includes>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>src</directory>
+        <includes>
+          <include>presentation/resources/**</include>
+        </includes>
+      </testResource>
+    </testResources>
     <plugins>
+
+      <!-- Compilacion: el codigo principal no incluye las pruebas; las pruebas si. -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.13.0</version>
+        <executions>
+          <execution>
+            <id>default-compile</id>
+            <configuration>
+              <excludes>
+                <exclude>test/**</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          <execution>
+            <id>default-testCompile</id>
+            <configuration>
+              <testIncludes>
+                <testInclude>test/**</testInclude>
+              </testIncludes>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
 
       <!-- Pruebas dinámicas -->
       <plugin>
@@ -33,6 +78,9 @@
         <version>3.2.5</version>
         <configuration>
           <argLine>@{argLine} -Djava.awt.headless=true</argLine>
+          <includes>
+            <include>test/**/*Test.java</include>
+          </includes>
         </configuration>
       </plugin>
 
@@ -61,12 +109,18 @@
         <version>3.4.0</version>
         <configuration>
           <configLocation>google_checks.xml</configLocation>
+          <excludes>test/**</excludes>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
         <version>3.25.0</version>
+        <configuration>
+          <excludes>
+            <exclude>test/**</exclude>
+          </excludes>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>com.github.spotbugs</groupId>
@@ -109,12 +163,18 @@
         <version>3.4.0</version>
         <configuration>
           <configLocation>google_checks.xml</configLocation>
+          <excludes>test/**</excludes>
         </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-pmd-plugin</artifactId>
         <version>3.25.0</version>
+        <configuration>
+          <excludes>
+            <exclude>test/**</exclude>
+          </excludes>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>com.github.spotbugs</groupId>

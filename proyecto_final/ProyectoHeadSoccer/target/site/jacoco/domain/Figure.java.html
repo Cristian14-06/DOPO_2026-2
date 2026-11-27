@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Figure.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Figure.java</span></div><h1>Figure.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+import java.util.Optional;
+
+/**
+ * Abstract base class for 2D geometric shapes with Cartesian position and collision detection.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public abstract class Figure implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private double x;
+	private double y;
+	
+	/**
+	 * Default constructor initializing figure at origin.
+	 */
+<span class="nc" id="L20">	public Figure() {</span>
+<span class="nc" id="L21">	}</span>
+
+	/**
+	 * Constructs a figure at specified coordinates.
+	 * 
+	 * @param x Horizontal coordinate
+	 * @param y Vertical coordinate
+	 */
+<span class="fc" id="L29">	public Figure(double x, double y) {</span>
+<span class="fc" id="L30">		this.x = x;</span>
+<span class="fc" id="L31">		this.y = y;</span>
+<span class="fc" id="L32">	}</span>
+	
+	/**
+	 * Gets the horizontal coordinate.
+	 * 
+	 * @return Horizontal position
+	 */
+	public double getX() {
+<span class="fc" id="L40">		return x;</span>
+	}
+	
+	/**
+	 * Sets the horizontal coordinate.
+	 * 
+	 * @param x New horizontal position
+	 */
+	public void setX(double x) {
+<span class="fc" id="L49">		this.x = x;</span>
+<span class="fc" id="L50">	}</span>
+	
+	/**
+	 * Gets the vertical coordinate.
+	 * 
+	 * @return Vertical position
+	 */
+	public double getY() {
+<span class="fc" id="L58">		return y;</span>
+	}
+	
+	/**
+	 * Sets the vertical coordinate.
+	 * 
+	 * @param y New vertical position
+	 */
+	public void setY(double y) {
+<span class="fc" id="L67">		this.y = y;</span>
+<span class="fc" id="L68">	}</span>
+	
+	/**
+	 * Translates figure coordinates by given displacements.
+	 * 
+	 * @param dx Horizontal displacement
+	 * @param dy Vertical displacement
+	 */
+	public void translate(double dx, double dy) {
+<span class="fc" id="L77">		this.x += dx;</span>
+<span class="fc" id="L78">		this.y += dy;</span>
+<span class="fc" id="L79">	}</span>
+	
+	/**
+	 * Detects collision against a circle figure.
+	 * 
+	 * @param circle Target circle
+	 * @return True if colliding, false otherwise
+	 */
+	public abstract boolean detectCollisionWithCircle(Circle circle);
+
+	/**
+	 * Detects collision against a rectangle figure.
+	 * 
+	 * @param rectangle Target rectangle
+	 * @return True if colliding, false otherwise
+	 */
+	public abstract boolean detectCollisionWithRectangle(Rectangle rectangle);
+
+	/**
+	 * Computes contact information (outward normal and penetration depth) if the given ball circle overlaps this figure.
+	 *
+	 * @param ball Ball circle to test against
+	 * @return Contact details if overlapping, empty otherwise
+	 */
+	public abstract Optional&lt;Contact&gt; contactWith(Circle ball);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

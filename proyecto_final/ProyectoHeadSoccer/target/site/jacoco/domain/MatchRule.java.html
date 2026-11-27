@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MatchRule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">MatchRule.java</span></div><h1>MatchRule.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+import java.util.Optional;
+
+/**
+ * Strategy interface defining victory and time/goal progression rules for a match.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public interface MatchRule extends Serializable {
+    /**
+     * Updates rule state on each simulation tick.
+     *
+     * @param match Active match
+     */
+    void onTick(Match match);
+
+    /**
+     * Checks whether the match has reached its end condition.
+     *
+     * @param match Active match
+     * @return True if the match is over
+     */
+    boolean isOver(Match match);
+
+    /**
+     * Returns the winning side if the match is over.
+     *
+     * @param match Active match
+     * @return Optional containing the winning side, or empty if not over or tied
+     */
+    default Optional&lt;Side&gt; winner(Match match){
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (!isOver(match)) {</span>
+<span class="fc" id="L36">            return Optional.empty();</span>
+        }
+<span class="fc" id="L38">        return match.getScoreBoard().getLeader();</span>
+    }
+
+    /**
+     * Returns remaining match time in seconds, or negative if not time-based.
+     *
+     * @param match Active match
+     * @return Remaining seconds, or -1 if not applicable
+     */
+    int remainingSeconds(Match match);
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

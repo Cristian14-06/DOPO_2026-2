@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Foot.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Foot.java</span></div><h1>Foot.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+
+/**
+ * Represents the player's foot entity for kicking and ball collisions.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Foot implements Serializable {
+    private static final long serialVersionUID = 1L;
+    public static final double KICK_REACH_X = 20.0;
+    public static final double KICK_LIFT_Y = 6.0;
+    public static final int KICK_SWEEP_TICKS = 4;
+    public static final int KICK_HOLD_TICKS = 8;
+
+    private Circle circle;
+    private boolean isKicking;
+    private int powerKicking;
+    private int kickElapsedTicks;
+
+    /**
+     * Constructs a foot aligned to the ground and oriented based on player side.
+     * 
+     * @param playerX Player horizontal center position
+     * @param side Player field side
+     */
+<span class="fc" id="L29">    public Foot(double playerX, Side side) {</span>
+<span class="fc" id="L30">        double radius = 8;</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">        double footX = (side == Side.LEFT) ? (playerX + 6) : (playerX - 6);</span>
+<span class="fc" id="L32">        double footY = Field.HEIGHT - radius;</span>
+<span class="fc" id="L33">        this.circle = new Circle(footX, footY, radius);</span>
+<span class="fc" id="L34">        this.powerKicking = 22;</span>
+<span class="fc" id="L35">    }</span>
+
+    /**
+     * Gets the circle geometry of the foot for domain physics.
+     *
+     * @return Foot circle geometry
+     */
+    Circle getCircle() {
+<span class="fc" id="L43">        return circle;</span>
+    }
+
+    /**
+     * Sets the circle geometry of the foot.
+     * 
+     * @param circle New circle geometry
+     */
+    public void setCircle(Circle circle) {
+<span class="nc" id="L52">        this.circle = circle;</span>
+<span class="nc" id="L53">    }</span>
+
+    /**
+     * Checks if the foot is currently executing an active kick.
+     * 
+     * @return True if kicking, false otherwise
+     */
+    public boolean isKicking() {
+<span class="fc" id="L61">        return isKicking;</span>
+    }
+
+    /**
+     * Gets the effective impact power of the kick.
+     * 
+     * @return Kick power impulse
+     */
+    public int getPowerKicking() {
+<span class="pc bpc" id="L70" title="1 of 2 branches missed.">        if (isKicking) {</span>
+<span class="fc" id="L71">            return powerKicking;</span>
+        } else {
+<span class="nc" id="L73">            return (int) (powerKicking * 0.4);</span>
+        }
+    }
+
+    /**
+     * Sets the base kick power impulse.
+     * 
+     * @param powerKicking New base kick power
+     */
+    public void setPowerKicking(int powerKicking) {
+<span class="fc" id="L83">        this.powerKicking = powerKicking;</span>
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Sets the kicking state of the foot.
+     * 
+     * @param isKicking New kicking state
+     */
+    public void setKicking(boolean isKicking) {
+<span class="fc" id="L92">        this.isKicking = isKicking;</span>
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Initiates kicking motion oriented according to player side.
+     * 
+     * @param side Player field side
+     */
+    public void kicking(Side side) {
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">        if (!isKicking) {</span>
+<span class="fc" id="L102">            setKicking(true);</span>
+<span class="fc" id="L103">            kickElapsedTicks = 1;</span>
+        }
+<span class="fc" id="L105">    }</span>
+
+    /**
+     * Stops the kicking motion and restores the foot to resting position.
+     * 
+     * @param side Player field side
+     */
+    public void stopKicking(Side side) {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        if (isKicking) {</span>
+<span class="fc" id="L114">            setKicking(false);</span>
+<span class="fc" id="L115">            kickElapsedTicks = 0;</span>
+        }
+<span class="fc" id="L117">    }</span>
+
+    /**
+     * Updates the kick timer on each frame.
+     * 
+     * @param side Player field side
+     */
+    public void tick(Side side) {
+<span class="fc bfc" id="L125" title="All 2 branches covered.">        if (isKicking) {</span>
+<span class="fc" id="L126">            kickElapsedTicks++;</span>
+<span class="fc bfc" id="L127" title="All 2 branches covered.">            if (kickElapsedTicks &gt; KICK_SWEEP_TICKS + KICK_HOLD_TICKS) {</span>
+<span class="fc" id="L128">                stopKicking(side);</span>
+            }
+        }
+<span class="fc" id="L131">    }</span>
+
+    /**
+     * Returns normalized sweep progress in [0.0, 1.0].
+     * 
+     * @return Current kick sweep ratio
+     */
+    public double getSweepRatio() {
+<span class="pc bpc" id="L139" title="1 of 4 branches missed.">        if (!isKicking || kickElapsedTicks &lt;= 0) return 0.0;</span>
+<span class="fc" id="L140">        return Math.min(1.0, (double) kickElapsedTicks / KICK_SWEEP_TICKS);</span>
+    }
+
+    /**
+     * Returns horizontal kick offset relative to resting foot position.
+     * 
+     * @param side Player field side
+     * @return Horizontal offset in pixels
+     */
+    public double getKickOffsetX(Side side) {
+<span class="fc" id="L150">        return side.dir() * KICK_REACH_X * getSweepRatio();</span>
+    }
+
+    /**
+     * Returns vertical kick offset relative to resting foot position.
+     * 
+     * @return Vertical offset in pixels
+     */
+    public double getKickOffsetY() {
+<span class="fc" id="L159">        return -KICK_LIFT_Y * getSweepRatio();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

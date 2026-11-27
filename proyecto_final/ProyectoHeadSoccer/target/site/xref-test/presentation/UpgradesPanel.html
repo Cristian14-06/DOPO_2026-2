@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>UpgradesPanel xref</title>
+<link type="text/css" rel="stylesheet" href="../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../testapidocs/presentation/UpgradesPanel.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   <strong class="jxr_keyword">package</strong> presentation;
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   <strong class="jxr_keyword">import</strong> java.awt.*;
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> javax.swing.*;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> domain.DOPOSoccer;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> domain.DOPOSoccerException;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> domain.Modality;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> domain.ProfileView;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> domain.StatType;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> persistence.Log;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <em class="jxr_javadoccomment"> * Screen allowing players to spend accumulated points to upgrade their statistics.</em>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>  <em class="jxr_javadoccomment"> *</em>
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  <em class="jxr_javadoccomment"> * @author Juan Espitia</em>
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  <em class="jxr_javadoccomment"> * @author Cristian Salamanca</em>
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  <em class="jxr_javadoccomment"> */</em>
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a name="UpgradesPanel" href="../presentation/UpgradesPanel.html#UpgradesPanel">UpgradesPanel</a> <strong class="jxr_keyword">extends</strong> JPanel {
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a name="DOPOSoccer" href="../domain/DOPOSoccer.html#DOPOSoccer">DOPOSoccer</a> game;
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> <a name="MatchSetup" href="../presentation/MatchSetup.html#MatchSetup">MatchSetup</a> setup;
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> Runnable onBack;
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> JLabel title;
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> JPanel playersContainer;
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>      <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">final</strong> JButton btnBack;
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>  <em class="jxr_javadoccomment">     * Constructs the upgrades panel layout and back navigation button.</em>
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>  <em class="jxr_javadoccomment">     *</em>
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  <em class="jxr_javadoccomment">     * @param game Domain facade instance</em>
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  <em class="jxr_javadoccomment">     * @param photo Match panel holding configured player names and modality</em>
+<a class="jxr_linenumber" name="L32" href="#L32">32</a>  <em class="jxr_javadoccomment">     * @param onBack Callback executed when the user clicks Back</em>
+<a class="jxr_linenumber" name="L33" href="#L33">33</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L34" href="#L34">34</a>      <strong class="jxr_keyword">public</strong> <a name="UpgradesPanel" href="../presentation/UpgradesPanel.html#UpgradesPanel">UpgradesPanel</a>(<a name="DOPOSoccer" href="../domain/DOPOSoccer.html#DOPOSoccer">DOPOSoccer</a> game, <a name="MatchSetup" href="../presentation/MatchSetup.html#MatchSetup">MatchSetup</a> setup, Runnable onBack) {
+<a class="jxr_linenumber" name="L35" href="#L35">35</a>          <strong class="jxr_keyword">this</strong>.game = game;
+<a class="jxr_linenumber" name="L36" href="#L36">36</a>          <strong class="jxr_keyword">this</strong>.setup = setup;
+<a class="jxr_linenumber" name="L37" href="#L37">37</a>          <strong class="jxr_keyword">this</strong>.onBack = onBack;
+<a class="jxr_linenumber" name="L38" href="#L38">38</a>  
+<a class="jxr_linenumber" name="L39" href="#L39">39</a>          setLayout(<strong class="jxr_keyword">new</strong> GridBagLayout());
+<a class="jxr_linenumber" name="L40" href="#L40">40</a>          setBackground(<strong class="jxr_keyword">new</strong> Color(22, 34, 52));
+<a class="jxr_linenumber" name="L41" href="#L41">41</a>  
+<a class="jxr_linenumber" name="L42" href="#L42">42</a>          <strong class="jxr_keyword">this</strong>.title = <strong class="jxr_keyword">new</strong> JLabel(<span class="jxr_string">"MEJORAR ESTADÍSTICAS"</span>);
+<a class="jxr_linenumber" name="L43" href="#L43">43</a>          <strong class="jxr_keyword">this</strong>.title.setFont(<strong class="jxr_keyword">new</strong> Font(<span class="jxr_string">"Impact"</span>, Font.BOLD, 34));
+<a class="jxr_linenumber" name="L44" href="#L44">44</a>          <strong class="jxr_keyword">this</strong>.title.setForeground(Color.YELLOW);
+<a class="jxr_linenumber" name="L45" href="#L45">45</a>          <strong class="jxr_keyword">this</strong>.title.setAlignmentX(CENTER_ALIGNMENT);
+<a class="jxr_linenumber" name="L46" href="#L46">46</a>  
+<a class="jxr_linenumber" name="L47" href="#L47">47</a>          <strong class="jxr_keyword">this</strong>.playersContainer = <strong class="jxr_keyword">new</strong> JPanel(<strong class="jxr_keyword">new</strong> GridLayout(1, 0, 20, 0));
+<a class="jxr_linenumber" name="L48" href="#L48">48</a>          <strong class="jxr_keyword">this</strong>.playersContainer.setOpaque(false);
+<a class="jxr_linenumber" name="L49" href="#L49">49</a>  
+<a class="jxr_linenumber" name="L50" href="#L50">50</a>          <strong class="jxr_keyword">this</strong>.btnBack = <strong class="jxr_keyword">new</strong> JButton(<span class="jxr_string">"← VOLVER"</span>);
+<a class="jxr_linenumber" name="L51" href="#L51">51</a>          <strong class="jxr_keyword">this</strong>.btnBack.setFont(<strong class="jxr_keyword">new</strong> Font(<span class="jxr_string">"Arial"</span>, Font.BOLD, 15));
+<a class="jxr_linenumber" name="L52" href="#L52">52</a>          <strong class="jxr_keyword">this</strong>.btnBack.setBackground(<strong class="jxr_keyword">new</strong> Color(80, 90, 105));
+<a class="jxr_linenumber" name="L53" href="#L53">53</a>          <strong class="jxr_keyword">this</strong>.btnBack.setForeground(Color.WHITE);
+<a class="jxr_linenumber" name="L54" href="#L54">54</a>          <strong class="jxr_keyword">this</strong>.btnBack.setFocusPainted(false);
+<a class="jxr_linenumber" name="L55" href="#L55">55</a>          <strong class="jxr_keyword">this</strong>.btnBack.setAlignmentX(CENTER_ALIGNMENT);
+<a class="jxr_linenumber" name="L56" href="#L56">56</a>          <strong class="jxr_keyword">this</strong>.btnBack.addActionListener(e -&gt; <strong class="jxr_keyword">this</strong>.onBack.run());
+<a class="jxr_linenumber" name="L57" href="#L57">57</a>  
+<a class="jxr_linenumber" name="L58" href="#L58">58</a>          JPanel card = <strong class="jxr_keyword">new</strong> JPanel();
+<a class="jxr_linenumber" name="L59" href="#L59">59</a>          card.setLayout(<strong class="jxr_keyword">new</strong> BoxLayout(card, BoxLayout.Y_AXIS));
+<a class="jxr_linenumber" name="L60" href="#L60">60</a>          card.setBackground(<strong class="jxr_keyword">new</strong> Color(25, 30, 42, 235));
+<a class="jxr_linenumber" name="L61" href="#L61">61</a>          card.setBorder(BorderFactory.createCompoundBorder(
+<a class="jxr_linenumber" name="L62" href="#L62">62</a>                  BorderFactory.createLineBorder(<strong class="jxr_keyword">new</strong> Color(255, 200, 50), 2),
+<a class="jxr_linenumber" name="L63" href="#L63">63</a>                  BorderFactory.createEmptyBorder(20, 28, 20, 28)
+<a class="jxr_linenumber" name="L64" href="#L64">64</a>          ));
+<a class="jxr_linenumber" name="L65" href="#L65">65</a>          card.add(title);
+<a class="jxr_linenumber" name="L66" href="#L66">66</a>          card.add(Box.createVerticalStrut(16));
+<a class="jxr_linenumber" name="L67" href="#L67">67</a>          card.add(playersContainer);
+<a class="jxr_linenumber" name="L68" href="#L68">68</a>          card.add(Box.createVerticalStrut(20));
+<a class="jxr_linenumber" name="L69" href="#L69">69</a>          card.add(btnBack);
+<a class="jxr_linenumber" name="L70" href="#L70">70</a>  
+<a class="jxr_linenumber" name="L71" href="#L71">71</a>          add(card);
+<a class="jxr_linenumber" name="L72" href="#L72">72</a>      }
+<a class="jxr_linenumber" name="L73" href="#L73">73</a>  
+<a class="jxr_linenumber" name="L74" href="#L74">74</a>      <em class="jxr_javadoccomment">/**</em>
+<a class="jxr_linenumber" name="L75" href="#L75">75</a>  <em class="jxr_javadoccomment">     * Rebuilds the player upgrade cards with the latest profiles and points.</em>
+<a class="jxr_linenumber" name="L76" href="#L76">76</a>  <em class="jxr_javadoccomment">     */</em>
+<a class="jxr_linenumber" name="L77" href="#L77">77</a>      <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">void</strong> refreshView() {
+<a class="jxr_linenumber" name="L78" href="#L78">78</a>          playersContainer.removeAll();
+<a class="jxr_linenumber" name="L79" href="#L79">79</a>          playersContainer.add(buildPlayerCard(setup.getLeftPlayerName()));
+<a class="jxr_linenumber" name="L80" href="#L80">80</a>          <strong class="jxr_keyword">if</strong> (setup.getModality() == Modality.PVP) {
+<a class="jxr_linenumber" name="L81" href="#L81">81</a>              playersContainer.add(buildPlayerCard(setup.getRightPlayerName()));
+<a class="jxr_linenumber" name="L82" href="#L82">82</a>          }
+<a class="jxr_linenumber" name="L83" href="#L83">83</a>          playersContainer.revalidate();
+<a class="jxr_linenumber" name="L84" href="#L84">84</a>          playersContainer.repaint();
+<a class="jxr_linenumber" name="L85" href="#L85">85</a>      }
+<a class="jxr_linenumber" name="L86" href="#L86">86</a>  
+<a class="jxr_linenumber" name="L87" href="#L87">87</a>      <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L88" href="#L88">88</a>  <em class="jxr_comment">     * Builds an upgrade card showing the player's points and stat upgrade controls.</em>
+<a class="jxr_linenumber" name="L89" href="#L89">89</a>  <em class="jxr_comment">     */</em>
+<a class="jxr_linenumber" name="L90" href="#L90">90</a>      <strong class="jxr_keyword">private</strong> JPanel buildPlayerCard(String playerName) {
+<a class="jxr_linenumber" name="L91" href="#L91">91</a>          JPanel card = <strong class="jxr_keyword">new</strong> JPanel();
+<a class="jxr_linenumber" name="L92" href="#L92">92</a>          card.setLayout(<strong class="jxr_keyword">new</strong> BoxLayout(card, BoxLayout.Y_AXIS));
+<a class="jxr_linenumber" name="L93" href="#L93">93</a>          card.setBackground(<strong class="jxr_keyword">new</strong> Color(40, 46, 62));
+<a class="jxr_linenumber" name="L94" href="#L94">94</a>          card.setBorder(BorderFactory.createCompoundBorder(
+<a class="jxr_linenumber" name="L95" href="#L95">95</a>                  BorderFactory.createLineBorder(<strong class="jxr_keyword">new</strong> Color(100, 150, 255), 2),
+<a class="jxr_linenumber" name="L96" href="#L96">96</a>                  BorderFactory.createEmptyBorder(14, 18, 14, 18)
+<a class="jxr_linenumber" name="L97" href="#L97">97</a>          ));
+<a class="jxr_linenumber" name="L98" href="#L98">98</a>  
+<a class="jxr_linenumber" name="L99" href="#L99">99</a>          <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L100" href="#L100">100</a>             <a name="ProfileView" href="../domain/ProfileView.html#ProfileView">ProfileView</a> profile = game.getProfile(playerName);
+<a class="jxr_linenumber" name="L101" href="#L101">101</a>             JLabel lblName = <strong class="jxr_keyword">new</strong> JLabel(profile.getName());
+<a class="jxr_linenumber" name="L102" href="#L102">102</a>             lblName.setFont(<strong class="jxr_keyword">new</strong> Font(<span class="jxr_string">"Arial"</span>, Font.BOLD, 18));
+<a class="jxr_linenumber" name="L103" href="#L103">103</a>             lblName.setForeground(Color.WHITE);
+<a class="jxr_linenumber" name="L104" href="#L104">104</a> 
+<a class="jxr_linenumber" name="L105" href="#L105">105</a>             JLabel lblPoints = <strong class="jxr_keyword">new</strong> JLabel(<span class="jxr_string">"Puntos: "</span> + profile.getPoints());
+<a class="jxr_linenumber" name="L106" href="#L106">106</a>             lblPoints.setFont(<strong class="jxr_keyword">new</strong> Font(<span class="jxr_string">"Arial"</span>, Font.BOLD, 15));
+<a class="jxr_linenumber" name="L107" href="#L107">107</a>             lblPoints.setForeground(<strong class="jxr_keyword">new</strong> Color(255, 220, 80));
+<a class="jxr_linenumber" name="L108" href="#L108">108</a> 
+<a class="jxr_linenumber" name="L109" href="#L109">109</a>             card.add(lblName);
+<a class="jxr_linenumber" name="L110" href="#L110">110</a>             card.add(Box.createVerticalStrut(6));
+<a class="jxr_linenumber" name="L111" href="#L111">111</a>             card.add(lblPoints);
+<a class="jxr_linenumber" name="L112" href="#L112">112</a>             card.add(Box.createVerticalStrut(12));
+<a class="jxr_linenumber" name="L113" href="#L113">113</a> 
+<a class="jxr_linenumber" name="L114" href="#L114">114</a>             <strong class="jxr_keyword">for</strong> (<a name="StatType" href="../domain/StatType.html#StatType">StatType</a> type : StatType.values()) {
+<a class="jxr_linenumber" name="L115" href="#L115">115</a>                 JPanel row = <strong class="jxr_keyword">new</strong> JPanel(<strong class="jxr_keyword">new</strong> BorderLayout(12, 0));
+<a class="jxr_linenumber" name="L116" href="#L116">116</a>                 row.setOpaque(false);
+<a class="jxr_linenumber" name="L117" href="#L117">117</a>                 JLabel statName = <strong class="jxr_keyword">new</strong> JLabel(type.name() + <span class="jxr_string">": "</span> + profile.getStat(type) + <span class="jxr_string">"/10"</span>);
+<a class="jxr_linenumber" name="L118" href="#L118">118</a>                 statName.setForeground(Color.WHITE);
+<a class="jxr_linenumber" name="L119" href="#L119">119</a>                 statName.setFont(<strong class="jxr_keyword">new</strong> Font(<span class="jxr_string">"Arial"</span>, Font.PLAIN, 14));
+<a class="jxr_linenumber" name="L120" href="#L120">120</a>                 <strong class="jxr_keyword">int</strong> cost = profile.upgradeCost(type);
+<a class="jxr_linenumber" name="L121" href="#L121">121</a>                 JButton upgrade = <strong class="jxr_keyword">new</strong> JButton((cost &gt; 0) ? <span class="jxr_string">"+ ("</span> + cost + <span class="jxr_string">" pts)"</span> : <span class="jxr_string">"MÁX"</span>);
+<a class="jxr_linenumber" name="L122" href="#L122">122</a>                 upgrade.setFocusPainted(false);
+<a class="jxr_linenumber" name="L123" href="#L123">123</a>                 <strong class="jxr_keyword">if</strong> (cost == 0) {
+<a class="jxr_linenumber" name="L124" href="#L124">124</a>                     upgrade.setEnabled(false);
+<a class="jxr_linenumber" name="L125" href="#L125">125</a>                 } <strong class="jxr_keyword">else</strong> {
+<a class="jxr_linenumber" name="L126" href="#L126">126</a>                     upgrade.addActionListener(e -&gt; handleUpgrade(playerName, type));
+<a class="jxr_linenumber" name="L127" href="#L127">127</a>                 }
+<a class="jxr_linenumber" name="L128" href="#L128">128</a>                 row.add(statName, BorderLayout.WEST);
+<a class="jxr_linenumber" name="L129" href="#L129">129</a>                 row.add(upgrade, BorderLayout.EAST);
+<a class="jxr_linenumber" name="L130" href="#L130">130</a>                 card.add(row);
+<a class="jxr_linenumber" name="L131" href="#L131">131</a>                 card.add(Box.createVerticalStrut(8));
+<a class="jxr_linenumber" name="L132" href="#L132">132</a>             }
+<a class="jxr_linenumber" name="L133" href="#L133">133</a>         } <strong class="jxr_keyword">catch</strong> (<a name="DOPOSoccerException" href="../domain/DOPOSoccerException.html#DOPOSoccerException">DOPOSoccerException</a> e) {
+<a class="jxr_linenumber" name="L134" href="#L134">134</a>             Log.record(e);
+<a class="jxr_linenumber" name="L135" href="#L135">135</a>             JOptionPane.showMessageDialog(<strong class="jxr_keyword">this</strong>, e.getMessage(), <span class="jxr_string">"Error de perfil"</span>, JOptionPane.ERROR_MESSAGE);
+<a class="jxr_linenumber" name="L136" href="#L136">136</a>         }
+<a class="jxr_linenumber" name="L137" href="#L137">137</a> 
+<a class="jxr_linenumber" name="L138" href="#L138">138</a>         <strong class="jxr_keyword">return</strong> card;
+<a class="jxr_linenumber" name="L139" href="#L139">139</a>     }
+<a class="jxr_linenumber" name="L140" href="#L140">140</a> 
+<a class="jxr_linenumber" name="L141" href="#L141">141</a>     <em class="jxr_comment">/*</em>
+<a class="jxr_linenumber" name="L142" href="#L142">142</a> <em class="jxr_comment">     * Requests a stat upgrade through the domain facade and refreshes the panel on success.</em>
+<a class="jxr_linenumber" name="L143" href="#L143">143</a> <em class="jxr_comment">     */</em>
+<a class="jxr_linenumber" name="L144" href="#L144">144</a>     <strong class="jxr_keyword">private</strong> <strong class="jxr_keyword">void</strong> handleUpgrade(String playerName, <a name="StatType" href="../domain/StatType.html#StatType">StatType</a> stat) {
+<a class="jxr_linenumber" name="L145" href="#L145">145</a>         <strong class="jxr_keyword">try</strong> {
+<a class="jxr_linenumber" name="L146" href="#L146">146</a>             game.upgrade(playerName, stat);
+<a class="jxr_linenumber" name="L147" href="#L147">147</a>             refreshView();
+<a class="jxr_linenumber" name="L148" href="#L148">148</a>         } <strong class="jxr_keyword">catch</strong> (<a name="DOPOSoccerException" href="../domain/DOPOSoccerException.html#DOPOSoccerException">DOPOSoccerException</a> ex) {
+<a class="jxr_linenumber" name="L149" href="#L149">149</a>             Log.record(ex);
+<a class="jxr_linenumber" name="L150" href="#L150">150</a>             JOptionPane.showMessageDialog(<strong class="jxr_keyword">this</strong>, ex.getMessage(), <span class="jxr_string">"Mejora"</span>, JOptionPane.WARNING_MESSAGE);
+<a class="jxr_linenumber" name="L151" href="#L151">151</a>         }
+<a class="jxr_linenumber" name="L152" href="#L152">152</a>     }
+<a class="jxr_linenumber" name="L153" href="#L153">153</a> }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2026. All rights reserved.</div>
+</body>
+</html>

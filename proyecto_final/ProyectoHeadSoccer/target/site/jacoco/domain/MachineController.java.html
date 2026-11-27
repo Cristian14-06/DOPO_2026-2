@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MachineController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">MachineController.java</span></div><h1>MachineController.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+/**
+ * Abstract Template Method base controller for autonomous machine players.
+ * Validates match context before delegating tactical action selection to each profile subclass.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public abstract class MachineController implements Controller {
+    private static final long serialVersionUID = 1L;
+    protected final Side side;
+
+    /**
+     * Constructs a machine controller assigned to the given pitch side.
+     *
+     * @param side Pitch side controlled by this AI (defaults to RIGHT if null)
+     */
+<span class="fc" id="L22">    protected MachineController(Side side) {</span>
+<span class="pc bpc" id="L23" title="1 of 2 branches missed.">        this.side = (side != null) ? side : Side.RIGHT;</span>
+<span class="fc" id="L24">    }</span>
+
+    /**
+     * Returns the pitch side controlled by this machine.
+     *
+     * @return Assigned pitch side
+     */
+    public Side getSide() {
+<span class="fc" id="L32">        return side;</span>
+    }
+
+    /**
+     * Template Method validating match state and delegating action selection to {@link #chooseActions}.
+     *
+     * @param match Read-only match view
+     * @return Set of actions to execute on the current frame
+     */
+    @Override
+    public final Set&lt;PlayerAction&gt; decide(MatchView match) {
+<span class="pc bpc" id="L43" title="1 of 4 branches missed.">        if (match == null || match.getBall() == null) {</span>
+<span class="fc" id="L44">            return EnumSet.noneOf(PlayerAction.class);</span>
+        }
+<span class="fc" id="L46">        PlayerView me = match.getPlayer(side);</span>
+<span class="fc" id="L47">        PlayerView rival = match.getPlayer(side.opposite());</span>
+<span class="pc bpc" id="L48" title="3 of 6 branches missed.">        if (me == null || me.getHeadShape() == null || me.getFootShape() == null) {</span>
+<span class="nc" id="L49">            return EnumSet.noneOf(PlayerAction.class);</span>
+        }
+<span class="fc" id="L51">        return chooseActions(match, me, match.getBall(), rival);</span>
+    }
+
+    /**
+     * Adds LEFT or RIGHT movement toward targetX when outside the tolerance margin.
+     *
+     * @param meX Current horizontal coordinate of the controlled player
+     * @param targetX Desired horizontal target coordinate
+     * @param tolerance Deadband margin around targetX
+     * @param actions Mutable action set to populate
+     */
+    protected void moveToward(double meX, double targetX, double tolerance, Set&lt;PlayerAction&gt; actions) {
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        if (meX &gt; targetX + tolerance) {</span>
+<span class="fc" id="L64">            actions.add(PlayerAction.LEFT);</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        } else if (meX &lt; targetX - tolerance) {</span>
+<span class="fc" id="L66">            actions.add(PlayerAction.RIGHT);</span>
+        }
+<span class="fc" id="L68">    }</span>
+
+    /**
+     * Determines whether the ball is horizontally close and at or above head height plus margin.
+     *
+     * @param me Controlled player view
+     * @param ball Ball view
+     * @param maxDx Maximum horizontal distance to trigger a jump
+     * @param headMarginY Vertical margin below the head center
+     * @return True if the machine should jump for the ball
+     */
+    protected boolean shouldJumpForBall(PlayerView me, BallView ball, double maxDx, double headMarginY) {
+<span class="fc bfc" id="L80" title="All 2 branches covered.">        return Math.abs(me.getHeadShape().getX() - ball.getX()) &lt;= maxDx</span>
+<span class="fc bfc" id="L81" title="All 2 branches covered.">                &amp;&amp; ball.getY() &lt;= me.getHeadShape().getY() + headMarginY;</span>
+    }
+
+    /**
+     * Determines whether the ball is within horizontal kicking reach and near ground height.
+     *
+     * @param match Read-only match view
+     * @param me Controlled player view
+     * @param ball Ball view
+     * @param maxFootDx Maximum horizontal distance from the foot
+     * @param maxHeightAboveFloor Maximum height above the floor to kick
+     * @return True if the machine should execute a kick
+     */
+    protected boolean shouldKickBall(MatchView match, PlayerView me, BallView ball, double maxFootDx, double maxHeightAboveFloor) {
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        return Math.abs(me.getFootShape().getX() - ball.getX()) &lt;= maxFootDx</span>
+<span class="pc bpc" id="L96" title="1 of 2 branches missed.">                &amp;&amp; ball.getY() &gt;= match.getFieldHeight() - maxHeightAboveFloor;</span>
+    }
+
+    /**
+     * Returns the horizontal X coordinate of this machine's own goal line.
+     *
+     * @param match Read-only match view
+     * @return Own goal line X coordinate
+     */
+    protected double ownGoalX(MatchView match) {
+<span class="pc bpc" id="L106" title="1 of 2 branches missed.">        return (side == Side.RIGHT) ? match.getFieldWidth() : 0.0;</span>
+    }
+
+    /**
+     * Selects the intended actions for this frame based on the specific machine profile strategy.
+     *
+     * @param match Read-only match view
+     * @param me Controlled player view
+     * @param ball Ball view
+     * @param rival Opponent player view (may be null)
+     * @return Set of actions to perform
+     */
+    protected abstract Set&lt;PlayerAction&gt; chooseActions(MatchView match, PlayerView me, BallView ball, PlayerView rival);
+
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

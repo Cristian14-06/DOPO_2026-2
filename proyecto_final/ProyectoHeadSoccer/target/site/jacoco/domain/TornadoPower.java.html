@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TornadoPower.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">TornadoPower.java</span></div><h1>TornadoPower.java</h1><pre class="source lang-java linenums">package domain;
+
+/**
+ * Nigeria signature power shot: Tornado.
+ * Launches a rapid ground-bouncing vortex shot that inflicts the Knocked Out
+ * status effect for 3.0 seconds and deals 40 base power damage.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class TornadoPower extends Power {
+
+    /**
+     * Constructs Nigeria's Tornado power.
+     */
+    public TornadoPower() {
+<span class="fc" id="L17">        super(&quot;Tornado&quot;, 3.0);</span>
+<span class="fc" id="L18">    }</span>
+
+    /**
+     * Launches the ball forward with strong downward bounce velocity.
+     *
+     * @param ball Ball in play
+     * @param side Side of the shooting player
+     */
+    @Override
+    protected void shapeShot(Ball ball, Side side) {
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if (ball == null) return;</span>
+<span class="pc bpc" id="L29" title="1 of 2 branches missed.">        double dir = (side == Side.LEFT) ? 1.0 : -1.0;</span>
+<span class="fc" id="L30">        ball.setHorizontalSpeed(17.0 * dir);</span>
+<span class="fc" id="L31">        ball.setVerticalSpeed(14.0);</span>
+<span class="fc" id="L32">    }</span>
+
+    /**
+     * Returns the base power damage for Tornado.
+     *
+     * @return 40.0
+     */
+    @Override
+    public double getBaseDamage() {
+<span class="fc" id="L41">        return 40.0;</span>
+    }
+
+    /**
+     * Creates the KNOCKED_OUT effect applied on impact.
+     *
+     * @return KnockedOutEffect instance
+     */
+    @Override
+    public Effect createEffect() {
+<span class="fc" id="L51">        return new KnockedOutEffect();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Goal.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Goal.java</span></div><h1>Goal.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+
+/**
+ * Represents a soccer goal consisting of a physical crossbar and an interior goal area.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Goal implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private Rectangle crossBar;
+	private Rectangle goalArea;
+	private Side side;
+
+	/**
+	 * Constructs a goal for specified side of the field.
+	 * 
+	 * @param side Side of the field (LEFT or RIGHT)
+	 */
+<span class="fc" id="L22">	public Goal(Side side) {</span>
+<span class="fc" id="L23">		this.side = side;</span>
+<span class="fc" id="L24">		double goalWidth = 30.0;</span>
+<span class="fc bfc" id="L25" title="All 2 branches covered.">		double initialX = (side == Side.LEFT) ? 0 : Field.WIDTH - goalWidth;</span>
+<span class="fc" id="L26">		this.crossBar = new Rectangle(initialX, (double)(Field.HEIGHT - 90), goalWidth, 5.0);</span>
+<span class="fc" id="L27">		this.goalArea = new Rectangle(initialX, (double)(Field.HEIGHT - 85), goalWidth, 85.0);</span>
+<span class="fc" id="L28">	}</span>
+
+	/**
+	 * Gets the physical crossbar rectangle.
+	 * 
+	 * @return Crossbar rectangle
+	 */
+	public Rectangle getCrossBar() {
+<span class="fc" id="L36">		return crossBar;</span>
+	}
+
+	/**
+	 * Gets the interior goal area rectangle.
+	 * 
+	 * @return Goal area rectangle
+	 */
+	public Rectangle getGoalArea() {
+<span class="fc" id="L45">		return goalArea;</span>
+	}
+
+	/**
+	 * Gets the rectangle representing the goal area for domain physics.
+	 *
+	 * @return Rectangle geometry of goal area
+	 */
+	Rectangle getRectangle() {
+<span class="nc" id="L54">		return goalArea;</span>
+	}
+
+	/**
+	 * Gets the field side of the goal.
+	 * 
+	 * @return Field side
+	 */
+	public Side getSide() {
+<span class="nc" id="L63">		return side;</span>
+	}
+
+	/**
+	 * Detects whether the ball has fully entered the goal area.
+	 * 
+	 * @param ball Ball in play
+	 * @return True if a goal is scored, false otherwise
+	 */
+	public boolean detectGoal(Ball ball) {
+<span class="fc" id="L73">		return goalArea.containsCircle(ball.getCircle());</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

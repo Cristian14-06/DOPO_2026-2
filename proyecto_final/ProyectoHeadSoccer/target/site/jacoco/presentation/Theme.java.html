@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Theme.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">Theme.java</span></div><h1>Theme.java</h1><pre class="source lang-java linenums">package presentation;
+
+import javax.swing.JButton;
+
+import domain.Country;
+import domain.PlayerEffect;
+
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.util.EnumMap;
+import java.util.Map;
+
+/**
+ * Shared visual constants and Swing component styling helpers for presentation panels.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public final class Theme {
+<span class="fc" id="L22">    public static final Color ACCENT_GOLD = new Color(245, 175, 25);</span>
+<span class="fc" id="L23">    public static final Color TOGGLE_UNSELECTED = new Color(55, 62, 76);</span>
+<span class="fc" id="L24">    public static final Color ACTION_BLUE = new Color(70, 150, 220);</span>
+<span class="fc" id="L25">    private static final Map&lt;Country, Color&gt; COUNTRY_COLORS = new EnumMap&lt;&gt;(Country.class);</span>
+<span class="fc" id="L26">    private static final Map&lt;Country, Color&gt; POWER_COLORS = new EnumMap&lt;&gt;(Country.class);</span>
+<span class="fc" id="L27">    private static final Map&lt;PlayerEffect, Color&gt; EFFECT_COLORS = new EnumMap&lt;&gt;(PlayerEffect.class);</span>
+<span class="fc" id="L28">    private static final Color DEFAULT_POWER_COLOR = new Color(255, 200, 50);</span>
+
+    /*
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private Theme() {
+    }
+
+    static {
+<span class="fc" id="L37">        COUNTRY_COLORS.put(Country.SOUTH_KOREA, new Color(230, 60, 60));</span>
+<span class="fc" id="L38">        COUNTRY_COLORS.put(Country.CAMEROON, new Color(30, 160, 80));</span>
+<span class="fc" id="L39">        COUNTRY_COLORS.put(Country.NIGERIA, new Color(20, 130, 60));</span>
+<span class="fc" id="L40">        COUNTRY_COLORS.put(Country.USA, new Color(60, 100, 220));</span>
+
+<span class="fc" id="L42">        POWER_COLORS.put(Country.SOUTH_KOREA, new Color(60, 170, 255));</span>
+<span class="fc" id="L43">        POWER_COLORS.put(Country.CAMEROON, new Color(255, 220, 40));</span>
+<span class="fc" id="L44">        POWER_COLORS.put(Country.NIGERIA, new Color(50, 210, 110));</span>
+<span class="fc" id="L45">        POWER_COLORS.put(Country.USA, new Color(230, 80, 110));</span>
+
+<span class="fc" id="L47">        EFFECT_COLORS.put(PlayerEffect.PUSHED, new Color(80, 190, 255));</span>
+<span class="fc" id="L48">        EFFECT_COLORS.put(PlayerEffect.ELECTROCUTED, new Color(255, 230, 50));</span>
+<span class="fc" id="L49">        EFFECT_COLORS.put(PlayerEffect.KNOCKED_OUT, new Color(175, 110, 240));</span>
+<span class="fc" id="L50">        EFFECT_COLORS.put(PlayerEffect.CONFUSED, new Color(245, 110, 195));</span>
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Resolves the base display color associated with a playable country.
+     *
+     * @param c Playable country
+     * @return Country base color
+     */
+    public static Color countryColor(Country c) {
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (c == null) return Color.RED;</span>
+<span class="fc" id="L61">        return COUNTRY_COLORS.getOrDefault(c, Color.ORANGE);</span>
+    }
+
+    /**
+     * Resolves the power aura and charging ring color associated with a country.
+     *
+     * @param c Playable country
+     * @return Power accent color
+     */
+    public static Color powerColor(Country c) {
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        if (c == null) return DEFAULT_POWER_COLOR;</span>
+<span class="fc" id="L72">        return POWER_COLORS.getOrDefault(c, DEFAULT_POWER_COLOR);</span>
+    }
+
+    /**
+     * Resolves the indicator color for an active player status effect.
+     *
+     * @param effect Active status effect
+     * @return Effect indicator color, defaulting to white for stun or none
+     */
+    public static Color effectColor(PlayerEffect effect) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (effect == null) return Color.WHITE;</span>
+<span class="fc" id="L83">        return EFFECT_COLORS.getOrDefault(effect, Color.WHITE);</span>
+    }
+
+    /**
+     * Creates a styled primary button with consistent typography and hand cursor.
+     *
+     * @param text Button label
+     * @param bg Background color
+     * @param fg Foreground color
+     * @param fontSize Bold Arial font size
+     * @return Styled Swing button
+     */
+    public static JButton createStyledButton(String text, Color bg, Color fg, int fontSize) {
+<span class="fc" id="L96">        JButton btn = new JButton(text);</span>
+<span class="fc" id="L97">        btn.setFont(new Font(&quot;Arial&quot;, Font.BOLD, fontSize));</span>
+<span class="fc" id="L98">        btn.setBackground(bg);</span>
+<span class="fc" id="L99">        btn.setForeground(fg);</span>
+<span class="fc" id="L100">        btn.setFocusPainted(false);</span>
+<span class="fc" id="L101">        btn.setPreferredSize(new Dimension(230, 52));</span>
+<span class="fc" id="L102">        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));</span>
+<span class="fc" id="L103">        return btn;</span>
+    }
+
+    /**
+     * Applies selected or unselected visual styling to a toggle button.
+     *
+     * @param btn Target button
+     * @param selected Whether the option is currently active
+     */
+    public static void styleToggle(JButton btn, boolean selected) {
+<span class="fc bfc" id="L113" title="All 2 branches covered.">        btn.setBackground(selected ? ACCENT_GOLD : TOGGLE_UNSELECTED);</span>
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        btn.setForeground(selected ? Color.BLACK : Color.WHITE);</span>
+<span class="fc" id="L115">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

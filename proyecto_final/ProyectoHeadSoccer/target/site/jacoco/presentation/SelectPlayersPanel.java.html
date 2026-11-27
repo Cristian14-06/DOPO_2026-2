@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SelectPlayersPanel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">SelectPlayersPanel.java</span></div><h1>SelectPlayersPanel.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.Country;
+import domain.MachineProfile;
+import domain.MatchType;
+import domain.Modality;
+
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * Match and player configuration screen built with Swing buttons and selectors.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class SelectPlayersPanel extends JPanel {
+    private final MatchSetup setup;
+
+    private final JButton btnPvP;
+    private final JButton btnPvM;
+    private final JLabel lblProfileTitle;
+    private final JButton btnNextProfile;
+
+    private final JLabel lblP1Country;
+    private final JLabel lblP1Power;
+    private final JLabel lblP2Title;
+    private final JLabel lblP2Country;
+    private final JLabel lblP2Power;
+
+    private final JButton btnTypeTime;
+    private final JButton btnTypeGoals;
+
+    private final JTextField txtP1Name;
+    private final JTextField txtP2Name;
+
+
+    /**
+     * Constructs the player selection screen backed by the configuration state in {@link PhotoHeadSoccer}.
+     *
+     * @param photo Match panel holding the selected match options
+     * @param onBack Action invoked to return to the main menu
+     * @param onContinue Action invoked to proceed to field resolution selection
+     */
+<span class="nc" id="L45">    public SelectPlayersPanel(MatchSetup setup, Runnable onBack, Runnable onContinue, Runnable onUpgrades) {</span>
+<span class="nc" id="L46">        this.setup = setup;</span>
+<span class="nc" id="L47">        setLayout(new GridBagLayout());</span>
+<span class="nc" id="L48">        setBackground(new Color(22, 34, 52));</span>
+
+<span class="nc" id="L50">        JPanel card = new JPanel();</span>
+<span class="nc" id="L51">        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L52">        card.setBackground(new Color(25, 30, 42, 235));</span>
+<span class="nc" id="L53">        card.setBorder(BorderFactory.createCompoundBorder(</span>
+<span class="nc" id="L54">                BorderFactory.createLineBorder(new Color(255, 200, 50), 2),</span>
+<span class="nc" id="L55">                BorderFactory.createEmptyBorder(20, 28, 20, 28)</span>
+        ));
+
+<span class="nc" id="L58">        JLabel title = new JLabel(&quot;SELECT PLAYERS&quot;);</span>
+<span class="nc" id="L59">        title.setFont(new Font(&quot;Impact&quot;, Font.BOLD, 38));</span>
+<span class="nc" id="L60">        title.setForeground(Color.YELLOW);</span>
+<span class="nc" id="L61">        title.setAlignmentX(CENTER_ALIGNMENT);</span>
+
+<span class="nc" id="L63">        JPanel modeRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 12, 4));</span>
+<span class="nc" id="L64">        modeRow.setOpaque(false);</span>
+<span class="nc" id="L65">        JLabel lblMode = createLabel(&quot;Modalidad:&quot;, 15, true, Color.WHITE);</span>
+<span class="nc" id="L66">        btnPvP = createOptionButton(&quot;Jugador vs Jugador&quot;);</span>
+<span class="nc" id="L67">        btnPvM = createOptionButton(&quot;Jugador vs Máquina&quot;);</span>
+<span class="nc" id="L68">        lblProfileTitle = createLabel(&quot;Perfil IA:&quot;, 15, true, Color.LIGHT_GRAY);</span>
+<span class="nc" id="L69">        btnNextProfile = createOptionButton(&quot;&quot;);</span>
+
+<span class="nc" id="L71">        btnPvP.addActionListener(e -&gt; {</span>
+<span class="nc" id="L72">            setup.setModality(Modality.PVP);</span>
+<span class="nc" id="L73">            refreshView();</span>
+<span class="nc" id="L74">        });</span>
+<span class="nc" id="L75">        btnPvM.addActionListener(e -&gt; {</span>
+<span class="nc" id="L76">            setup.setModality(Modality.PVC);</span>
+<span class="nc" id="L77">            refreshView();</span>
+<span class="nc" id="L78">        });</span>
+<span class="nc" id="L79">        btnNextProfile.addActionListener(e -&gt; {</span>
+<span class="nc" id="L80">            setup.cycleMachineProfile();</span>
+<span class="nc" id="L81">            refreshView();</span>
+<span class="nc" id="L82">        });</span>
+
+<span class="nc" id="L84">        modeRow.add(lblMode);</span>
+<span class="nc" id="L85">        modeRow.add(btnPvP);</span>
+<span class="nc" id="L86">        modeRow.add(btnPvM);</span>
+<span class="nc" id="L87">        modeRow.add(lblProfileTitle);</span>
+<span class="nc" id="L88">        modeRow.add(btnNextProfile);</span>
+
+<span class="nc" id="L90">        JPanel playersRow = new JPanel(new GridLayout(1, 2, 20, 0));</span>
+<span class="nc" id="L91">        playersRow.setOpaque(false);</span>
+
+<span class="nc" id="L93">        JPanel p1Box = createPlayerCard(new Color(255, 100, 100));</span>
+<span class="nc" id="L94">        JLabel lblP1Title = createLabel(&quot;JUGADOR 1 (Izquierda)&quot;, 16, true, Color.WHITE);</span>
+<span class="nc" id="L95">        lblP1Country = createLabel(&quot;&quot;, 14, false, Color.WHITE);</span>
+<span class="nc" id="L96">        lblP1Power = createLabel(&quot;&quot;, 14, false, new Color(255, 220, 120));</span>
+<span class="nc" id="L97">        JButton btnP1Country = createActionButton(&quot;Cambiar Personaje ↻&quot;, new Color(70, 130, 180), Color.WHITE);</span>
+<span class="nc" id="L98">        btnP1Country.addActionListener(e -&gt; {</span>
+<span class="nc" id="L99">            setup.cycleLeftCountry();</span>
+<span class="nc" id="L100">            refreshView();</span>
+<span class="nc" id="L101">        });</span>
+<span class="nc" id="L102">        p1Box.add(lblP1Title);</span>
+<span class="nc" id="L103">        txtP1Name = new JTextField(setup.getLeftPlayerName(), 14);</span>
+<span class="nc" id="L104">        txtP1Name.setMaximumSize(new Dimension(220, 28));</span>
+<span class="nc" id="L105">        p1Box.add(Box.createVerticalStrut(8));</span>
+<span class="nc" id="L106">        p1Box.add(txtP1Name);</span>
+<span class="nc" id="L107">        p1Box.add(Box.createVerticalStrut(10));</span>
+<span class="nc" id="L108">        p1Box.add(lblP1Country);</span>
+<span class="nc" id="L109">        p1Box.add(Box.createVerticalStrut(6));</span>
+<span class="nc" id="L110">        p1Box.add(lblP1Power);</span>
+<span class="nc" id="L111">        p1Box.add(Box.createVerticalStrut(14));</span>
+<span class="nc" id="L112">        p1Box.add(btnP1Country);</span>
+
+<span class="nc" id="L114">        JPanel p2Box = createPlayerCard(new Color(100, 150, 255));</span>
+<span class="nc" id="L115">        lblP2Title = createLabel(&quot;JUGADOR 2 (Derecha)&quot;, 16, true, Color.WHITE);</span>
+<span class="nc" id="L116">        lblP2Country = createLabel(&quot;&quot;, 14, false, Color.WHITE);</span>
+<span class="nc" id="L117">        lblP2Power = createLabel(&quot;&quot;, 14, false, new Color(255, 220, 120));</span>
+<span class="nc" id="L118">        JButton btnP2Country = createActionButton(&quot;Cambiar Personaje ↻&quot;, new Color(70, 130, 180), Color.WHITE);</span>
+<span class="nc" id="L119">        btnP2Country.addActionListener(e -&gt; {</span>
+<span class="nc" id="L120">            setup.cycleRightCountry();</span>
+<span class="nc" id="L121">            refreshView();</span>
+<span class="nc" id="L122">        });</span>
+<span class="nc" id="L123">        p2Box.add(lblP2Title);</span>
+<span class="nc" id="L124">        txtP2Name = new JTextField(setup.getRightPlayerName(), 14);</span>
+<span class="nc" id="L125">        txtP2Name.setMaximumSize(new Dimension(220, 28));</span>
+<span class="nc" id="L126">        p2Box.add(Box.createVerticalStrut(8));</span>
+<span class="nc" id="L127">        p2Box.add(txtP2Name);</span>
+<span class="nc" id="L128">        p2Box.add(Box.createVerticalStrut(10));</span>
+<span class="nc" id="L129">        p2Box.add(lblP2Country);</span>
+<span class="nc" id="L130">        p2Box.add(Box.createVerticalStrut(6));</span>
+<span class="nc" id="L131">        p2Box.add(lblP2Power);</span>
+<span class="nc" id="L132">        p2Box.add(Box.createVerticalStrut(14));</span>
+<span class="nc" id="L133">        p2Box.add(btnP2Country);</span>
+
+<span class="nc" id="L135">        playersRow.add(p1Box);</span>
+<span class="nc" id="L136">        playersRow.add(p2Box);</span>
+
+<span class="nc" id="L138">        JPanel typeRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 4));</span>
+<span class="nc" id="L139">        typeRow.setOpaque(false);</span>
+<span class="nc" id="L140">        JLabel lblType = createLabel(&quot;Tipo de Partido:&quot;, 15, true, Color.WHITE);</span>
+<span class="nc" id="L141">        btnTypeTime = createOptionButton(&quot;&quot;);</span>
+<span class="nc" id="L142">        btnTypeGoals = createOptionButton(&quot;&quot;);</span>
+
+<span class="nc" id="L144">        btnTypeTime.addActionListener(e -&gt; {</span>
+<span class="nc" id="L145">            setup.selectOrCycleTimeMatch();</span>
+<span class="nc" id="L146">            refreshView();</span>
+<span class="nc" id="L147">        });</span>
+<span class="nc" id="L148">        btnTypeGoals.addActionListener(e -&gt; {</span>
+<span class="nc" id="L149">            setup.selectOrCycleGoalsMatch();</span>
+<span class="nc" id="L150">            refreshView();</span>
+<span class="nc" id="L151">        });</span>
+
+<span class="nc" id="L153">        typeRow.add(lblType);</span>
+<span class="nc" id="L154">        typeRow.add(btnTypeTime);</span>
+<span class="nc" id="L155">        typeRow.add(btnTypeGoals);</span>
+
+<span class="nc" id="L157">        JPanel navRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 18, 0));</span>
+<span class="nc" id="L158">        navRow.setOpaque(false);</span>
+<span class="nc" id="L159">        JButton btnBack = createActionButton(&quot;← MENÚ&quot;, new Color(80, 90, 105), Color.WHITE);</span>
+<span class="nc" id="L160">        btnBack.setPreferredSize(new Dimension(150, 44));</span>
+<span class="nc" id="L161">        btnBack.addActionListener(e -&gt; onBack.run());</span>
+
+<span class="nc" id="L163">        JButton btnContinue = createActionButton(&quot;CONTINUE ➔&quot;, new Color(245, 175, 25), Color.BLACK);</span>
+<span class="nc" id="L164">        btnContinue.setPreferredSize(new Dimension(210, 44));</span>
+<span class="nc" id="L165">        btnContinue.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 18));</span>
+<span class="nc" id="L166">        btnContinue.addActionListener(e -&gt; {</span>
+<span class="nc" id="L167">            savePlayerNames();</span>
+<span class="nc" id="L168">            onContinue.run();</span>
+<span class="nc" id="L169">        });</span>
+
+<span class="nc" id="L171">        JButton btnStats = createActionButton(&quot;MEJORAR STATS&quot;, new Color(70, 150, 220), Color.WHITE);</span>
+<span class="nc" id="L172">        btnStats.setPreferredSize(new Dimension(170, 44));</span>
+<span class="nc" id="L173">        btnStats.addActionListener(e -&gt; {</span>
+<span class="nc" id="L174">            savePlayerNames();</span>
+<span class="nc" id="L175">            onUpgrades.run();</span>
+<span class="nc" id="L176">        });</span>
+
+<span class="nc" id="L178">        navRow.add(btnBack);</span>
+<span class="nc" id="L179">        navRow.add(btnContinue);</span>
+<span class="nc" id="L180">        navRow.add(btnStats);</span>
+
+<span class="nc" id="L182">        card.add(title);</span>
+<span class="nc" id="L183">        card.add(Box.createVerticalStrut(14));</span>
+<span class="nc" id="L184">        card.add(modeRow);</span>
+<span class="nc" id="L185">        card.add(Box.createVerticalStrut(14));</span>
+<span class="nc" id="L186">        card.add(playersRow);</span>
+<span class="nc" id="L187">        card.add(Box.createVerticalStrut(16));</span>
+<span class="nc" id="L188">        card.add(typeRow);</span>
+<span class="nc" id="L189">        card.add(Box.createVerticalStrut(20));</span>
+<span class="nc" id="L190">        card.add(navRow);</span>
+
+<span class="nc" id="L192">        add(card);</span>
+<span class="nc" id="L193">        refreshView();</span>
+<span class="nc" id="L194">    }</span>
+
+    /**
+     * Synchronizes button states and labels with the current configuration in {@link PhotoHeadSoccer}.
+     */
+    public final void refreshView() {
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        boolean vsMachine = setup.getModality() == Modality.PVC;</span>
+<span class="nc bnc" id="L201" title="All 2 branches missed.">        Theme.styleToggle(btnPvP, !vsMachine);</span>
+<span class="nc" id="L202">        Theme.styleToggle(btnPvM, vsMachine);</span>
+
+<span class="nc" id="L204">        lblProfileTitle.setVisible(vsMachine);</span>
+<span class="nc" id="L205">        btnNextProfile.setVisible(vsMachine);</span>
+<span class="nc" id="L206">        MachineProfile profile = setup.getMachineProfile();</span>
+<span class="nc" id="L207">        btnNextProfile.setText(profile.getDisplayName() + &quot; ↻&quot;);</span>
+<span class="nc" id="L208">        Theme.styleToggle(btnNextProfile, true);</span>
+
+<span class="nc" id="L210">        Country left = setup.getLeftCountry();</span>
+<span class="nc" id="L211">        Country right = setup.getRightCountry();</span>
+<span class="nc" id="L212">        lblP1Country.setText(&quot;País: &quot; + left.getDisplayName());</span>
+<span class="nc" id="L213">        lblP1Power.setText(&quot;Poder: &quot; + left.getPowerName());</span>
+
+<span class="nc bnc" id="L215" title="All 2 branches missed.">        lblP2Title.setText(vsMachine ? &quot;MÁQUINA (Derecha)&quot; : &quot;JUGADOR 2 (Derecha)&quot;);</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">        txtP2Name.setEnabled(!vsMachine);</span>
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        txtP2Name.setText(vsMachine ? (&quot;COM &quot; + profile.getDisplayName()) : setup.getRightPlayerName());</span>
+<span class="nc" id="L218">        lblP2Country.setText(&quot;País: &quot; + right.getDisplayName());</span>
+<span class="nc" id="L219">        lblP2Power.setText(&quot;Poder: &quot; + right.getPowerName());</span>
+
+<span class="nc" id="L221">        btnTypeTime.setText(&quot;Por Tiempo (&quot; + setup.getMatchDurationMinutes() + &quot; min) ↻&quot;);</span>
+<span class="nc" id="L222">        btnTypeGoals.setText(&quot;Por Goles (&quot; + setup.getTargetGoals() + &quot; goles) ↻&quot;);</span>
+<span class="nc bnc" id="L223" title="All 2 branches missed.">        Theme.styleToggle(btnTypeTime, setup.getMatchType() == MatchType.TIME);</span>
+<span class="nc bnc" id="L224" title="All 2 branches missed.">        Theme.styleToggle(btnTypeGoals, setup.getMatchType() == MatchType.GOALS);</span>
+<span class="nc" id="L225">    }</span>
+
+    /*
+     * Builds a styled vertical card container for player configuration fields.
+     */
+    private JPanel createPlayerCard(Color borderColor) {
+<span class="nc" id="L231">        JPanel panel = new JPanel();</span>
+<span class="nc" id="L232">        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L233">        panel.setBackground(new Color(40, 46, 62));</span>
+<span class="nc" id="L234">        panel.setBorder(BorderFactory.createCompoundBorder(</span>
+<span class="nc" id="L235">                BorderFactory.createLineBorder(borderColor, 2),</span>
+<span class="nc" id="L236">                BorderFactory.createEmptyBorder(14, 18, 14, 18)</span>
+        ));
+<span class="nc" id="L238">        return panel;</span>
+    }
+
+    /*
+     * Creates a styled text label with the given font size, weight, and color.
+     */
+    private JLabel createLabel(String text, int size, boolean bold, Color color) {
+<span class="nc" id="L245">        JLabel lbl = new JLabel(text);</span>
+<span class="nc bnc" id="L246" title="All 2 branches missed.">        lbl.setFont(new Font(&quot;Arial&quot;, bold ? Font.BOLD : Font.PLAIN, size));</span>
+<span class="nc" id="L247">        lbl.setForeground(color);</span>
+<span class="nc" id="L248">        return lbl;</span>
+    }
+
+    /*
+     * Creates a toggleable configuration option button.
+     */
+    private JButton createOptionButton(String text) {
+<span class="nc" id="L255">        JButton btn = new JButton(text);</span>
+<span class="nc" id="L256">        btn.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 13));</span>
+<span class="nc" id="L257">        btn.setFocusPainted(false);</span>
+<span class="nc" id="L258">        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));</span>
+<span class="nc" id="L259">        return btn;</span>
+    }
+
+    /*
+     * Creates a colored action button for navigation or screen transitions.
+     */
+    private JButton createActionButton(String text, Color bg, Color fg) {
+<span class="nc" id="L266">        JButton btn = new JButton(text);</span>
+<span class="nc" id="L267">        btn.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 14));</span>
+<span class="nc" id="L268">        btn.setBackground(bg);</span>
+<span class="nc" id="L269">        btn.setForeground(fg);</span>
+<span class="nc" id="L270">        btn.setFocusPainted(false);</span>
+<span class="nc" id="L271">        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));</span>
+<span class="nc" id="L272">        return btn;</span>
+    }
+
+    /*
+     * Copies non-blank player names from the text fields into the shared configuration holder.
+     */
+    private void savePlayerNames() {
+<span class="nc" id="L279">        String n1 = txtP1Name.getText().trim();</span>
+<span class="nc bnc" id="L280" title="All 2 branches missed.">        if (!n1.isEmpty()) setup.setLeftPlayerName(n1);</span>
+<span class="nc bnc" id="L281" title="All 2 branches missed.">        if (setup.getModality() == Modality.PVP) {</span>
+<span class="nc" id="L282">            String n2 = txtP2Name.getText().trim();</span>
+<span class="nc bnc" id="L283" title="All 2 branches missed.">            if (!n2.isEmpty()) setup.setRightPlayerName(n2);</span>
+        }
+<span class="nc" id="L285">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

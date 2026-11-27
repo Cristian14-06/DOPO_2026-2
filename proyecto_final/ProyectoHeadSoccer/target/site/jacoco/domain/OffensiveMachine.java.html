@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OffensiveMachine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">OffensiveMachine.java</span></div><h1>OffensiveMachine.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.EnumSet;
+import java.util.Set;
+
+/**
+ * Machine controller implementing the Ofensiva (offensive) profile prioritizing scoring.
+ * Pursues the ball across the pitch, positions behind it, jumps, kicks, and executes powers.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class OffensiveMachine extends MachineController {
+    private static final long serialVersionUID = 1L;
+    private static final double ATTACK_OFFSET = 16.0;
+    private static final double BACKTRACK_OFFSET = 26.0;
+    private static final double MOVE_TOLERANCE = 4.0;
+    private static final double JUMP_MAX_DX = 32.0;
+    private static final double JUMP_HEAD_MARGIN_Y = 15.0;
+    private static final double KICK_MAX_DX = 30.0;
+    private static final double KICK_MAX_HEIGHT = 70.0;
+    private static final double KICK_DIRECTION_MARGIN = -12.0;
+    private static final double POWER_BALL_DISTANCE = 50.0;
+    private static final double FULL_POWER = 100.0;
+    private static final double CROSSBAR_BACKOFF = 45.0;
+
+    /**
+     * Constructs an offensive machine controller for the given pitch side.
+     *
+     * @param side Pitch side controlled by this AI
+     */
+    public OffensiveMachine(Side side) {
+<span class="fc" id="L33">        super(side);</span>
+<span class="fc" id="L34">    }</span>
+
+    /**
+     * Attacks the opponent's goal:
+     * &lt;ul&gt;
+     *   &lt;li&gt;If the ball lies on top of a crossbar, steps back so the ball can roll off.&lt;/li&gt;
+     *   &lt;li&gt;Otherwise moves behind the ball relative to the opponent's goal
+     *       (a bit further back when the ball is already behind the player).&lt;/li&gt;
+     *   &lt;li&gt;Jumps for headers when the ball is at head height or above.&lt;/li&gt;
+     *   &lt;li&gt;Kicks when the ball is within reach and not behind the player.&lt;/li&gt;
+     *   &lt;li&gt;Activates the power when the bar is full and the ball is close and in front.&lt;/li&gt;
+     * &lt;/ul&gt;
+     *
+     * @param match Read-only match view
+     * @param me Read-only view of the controlled player
+     * @param ball Read-only ball view
+     * @param rival Read-only view of the opponent
+     * @return Actions to perform during this tick
+     */
+    @Override
+    protected Set&lt;PlayerAction&gt; chooseActions(MatchView match, PlayerView me, BallView ball, PlayerView rival) {
+<span class="fc" id="L55">        Set&lt;PlayerAction&gt; actions = EnumSet.noneOf(PlayerAction.class);</span>
+<span class="fc" id="L56">        double myX = me.getHeadShape().getX();</span>
+<span class="fc" id="L57">        double bx = ball.getX();</span>
+
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        boolean ballBehindMe = (bx - myX) * side.dir() &lt; 0;</span>
+
+<span class="fc bfc" id="L61" title="All 2 branches covered.">        double targetX = ballBehindMe</span>
+<span class="fc" id="L62">                ? bx - side.dir() * BACKTRACK_OFFSET</span>
+<span class="fc" id="L63">                : bx - side.dir() * ATTACK_OFFSET;</span>
+
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        if (isBallOnCrossBar(match, ball)) {</span>
+<span class="fc" id="L66">            moveToward(myX, bx - side.dir() * CROSSBAR_BACKOFF, MOVE_TOLERANCE, actions);</span>
+<span class="fc" id="L67">            return actions;</span>
+        }
+
+<span class="fc" id="L70">        moveToward(myX, targetX, MOVE_TOLERANCE, actions);</span>
+
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">        if (shouldJumpForBall(me, ball, JUMP_MAX_DX, JUMP_HEAD_MARGIN_Y)) {</span>
+<span class="nc" id="L73">            actions.add(PlayerAction.JUMP);</span>
+        }
+
+<span class="fc bfc" id="L76" title="All 2 branches covered.">        if (shouldKickBall(match, me, ball, KICK_MAX_DX, KICK_MAX_HEIGHT)</span>
+<span class="pc bpc" id="L77" title="1 of 2 branches missed.">                &amp;&amp; (bx - myX) * side.dir() &gt; KICK_DIRECTION_MARGIN) {</span>
+<span class="fc" id="L78">            actions.add(PlayerAction.KICK);</span>
+        }
+
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (me.getPowerProgress() &gt;= FULL_POWER) {</span>
+<span class="fc" id="L82">            double distBall = Math.hypot(myX - bx, me.getHeadShape().getY() - ball.getY());</span>
+<span class="pc bpc" id="L83" title="2 of 4 branches missed.">            if (distBall &lt;= POWER_BALL_DISTANCE &amp;&amp; (bx - myX) * side.dir() &gt;= 0) {</span>
+<span class="fc" id="L84">                actions.add(PlayerAction.POWER);</span>
+            }
+        }
+
+<span class="fc" id="L88">        return actions;</span>
+    }
+
+    /*
+     * Checks whether the ball is lying on top of either crossbar, where it cannot be kicked.
+     */
+    private boolean isBallOnCrossBar(MatchView match, BallView ball) {
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        for (Side s : Side.values()) {</span>
+<span class="fc" id="L96">            Rectangle bar = match.getCrossBar(s);</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">            boolean above = ball.getY() &lt; bar.getY();</span>
+<span class="fc bfc" id="L98" title="All 2 branches covered.">            boolean overBar = ball.getX() &gt;= bar.getX() - ball.getRadius()</span>
+<span class="fc bfc" id="L99" title="All 2 branches covered.">                    &amp;&amp; ball.getX() &lt;= bar.getX() + bar.getWidth() + ball.getRadius();</span>
+<span class="fc bfc" id="L100" title="All 4 branches covered.">            if (above &amp;&amp; overBar) return true;</span>
+        }
+<span class="fc" id="L102">        return false;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>IllusionPower.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">IllusionPower.java</span></div><h1>IllusionPower.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * United States signature power shot: Illusion.
+ * Splits the visual ball into eight identical balls (seven decoys) for 2.5 seconds,
+ * inflicting the Confused status effect and dealing 30 base power damage.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class IllusionPower extends Power {
+    private List&lt;Circle&gt; fakeBalls;
+    private int illusionTicksRemaining;
+
+    /**
+     * Constructs USA's Illusion power.
+     */
+    public IllusionPower() {
+<span class="fc" id="L22">        super(&quot;Ilusión&quot;, 2.5);</span>
+<span class="fc" id="L23">        this.fakeBalls = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L24">        this.illusionTicksRemaining = 0;</span>
+<span class="fc" id="L25">    }</span>
+
+    /**
+     * Launches the ball and spawns 7 illusionary decoy balls around it.
+     *
+     * @param ball Ball in play
+     * @param side Side of the shooting player
+     */
+    @Override
+    protected void shapeShot(Ball ball, Side side) {
+<span class="pc bpc" id="L35" title="1 of 2 branches missed.">        if (ball == null) return;</span>
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        double dir = (side == Side.LEFT) ? 1.0 : -1.0;</span>
+<span class="fc" id="L37">        ball.setHorizontalSpeed(18.0 * dir);</span>
+<span class="fc" id="L38">        ball.setVerticalSpeed(-5.0);</span>
+
+<span class="fc" id="L40">        fakeBalls.clear();</span>
+<span class="fc" id="L41">        illusionTicksRemaining = (int) (getEffectDurationSeconds() * Physics.FPS);</span>
+
+<span class="fc" id="L43">        double bx = ball.getCircle().getX();</span>
+<span class="fc" id="L44">        double by = ball.getCircle().getY();</span>
+<span class="fc" id="L45">        double r = ball.getCircle().getRadius();</span>
+
+<span class="fc bfc" id="L47" title="All 2 branches covered.">        for (int i = 0; i &lt; 7; i++) {</span>
+<span class="fc" id="L48">            double angle = i * (2 * Math.PI / 7);</span>
+<span class="fc" id="L49">            double fx = bx + Math.cos(angle) * (18 + i * 4);</span>
+<span class="fc" id="L50">            double fy = by + Math.sin(angle) * (15 + i * 3);</span>
+<span class="fc" id="L51">            fakeBalls.add(new Circle(fx, fy, r));</span>
+        }
+<span class="fc" id="L53">    }</span>
+
+    /**
+     * Updates illusion clones movement following the real ball with slight offsets.
+     * 
+     * @param realBall Main game ball
+     */
+    public void updateClones(Ball realBall) {
+<span class="pc bpc" id="L61" title="2 of 4 branches missed.">        if (illusionTicksRemaining &gt; 0 &amp;&amp; realBall != null) {</span>
+<span class="fc" id="L62">            illusionTicksRemaining--;</span>
+<span class="fc" id="L63">            double bx = realBall.getCircle().getX();</span>
+<span class="fc" id="L64">            double by = realBall.getCircle().getY();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">            for (int i = 0; i &lt; fakeBalls.size(); i++) {</span>
+<span class="fc" id="L66">                Circle c = fakeBalls.get(i);</span>
+<span class="fc" id="L67">                double offsetAngle = (i * 0.9) + (illusionTicksRemaining * 0.1);</span>
+<span class="fc" id="L68">                c.setX(bx + Math.cos(offsetAngle) * (20 + i % 3 * 8));</span>
+<span class="fc" id="L69">                c.setY(by + Math.sin(offsetAngle) * (14 + i % 2 * 6));</span>
+            }
+<span class="fc" id="L71">        } else {</span>
+<span class="nc" id="L72">            fakeBalls.clear();</span>
+        }
+<span class="fc" id="L74">    }</span>
+
+    /**
+     * Returns the list of active illusionary decoy circles.
+     *
+     * @return List of fake ball circles
+     */
+    public List&lt;Circle&gt; getFakeBalls() {
+<span class="fc" id="L82">        return getDecoyBalls();</span>
+    }
+
+    /**
+     * Returns copies of the active decoy balls, so callers cannot move the real ones.
+     *
+     * @return Copies of the decoy circles, or an empty list if the illusion is not active
+     */
+    @Override
+    public List&lt;Circle&gt; getDecoyBalls() {
+<span class="fc" id="L92">        List&lt;Circle&gt; copies = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L93" title="All 2 branches covered.">        if (hasActiveIllusion()) {</span>
+<span class="fc bfc" id="L94" title="All 2 branches covered.">            for (Circle ball : fakeBalls) {</span>
+<span class="fc" id="L95">                copies.add(new Circle(ball.getX(), ball.getY(), ball.getRadius()));</span>
+<span class="fc" id="L96">            }</span>
+        }
+<span class="fc" id="L98">        return copies;</span>
+    }
+
+    /**
+     * Clears all active illusion decoy balls when the power shot ends.
+     */
+    @Override
+    protected void onShotFinished() {
+<span class="fc" id="L106">        this.illusionTicksRemaining = 0;</span>
+<span class="fc" id="L107">        this.fakeBalls.clear();</span>
+<span class="fc" id="L108">    }</span>
+
+    /**
+     * Checks whether illusion decoy balls are currently active.
+     *
+     * @return True if illusion is active
+     */
+    public boolean hasActiveIllusion() {
+<span class="pc bpc" id="L116" title="1 of 4 branches missed.">        return illusionTicksRemaining &gt; 0 &amp;&amp; !fakeBalls.isEmpty();</span>
+    }
+
+    /**
+     * Returns the base power damage for Illusion.
+     *
+     * @return 30.0
+     */
+    @Override
+    public double getBaseDamage() {
+<span class="fc" id="L126">        return 30.0;</span>
+    }
+
+    /**
+     * Creates the CONFUSED effect applied on impact.
+     *
+     * @return ConfusedEffect instance
+     */
+    @Override
+    public Effect createEffect() {
+<span class="fc" id="L136">        return new ConfusedEffect();</span>
+    }
+
+    /**
+     * Updates decoy clone positions during each simulation tick.
+     *
+     * @param ball Real ball in play
+     */
+    @Override
+    protected void updateActiveShot(Ball ball){
+<span class="fc" id="L146">        updateClones(ball);</span>
+<span class="fc" id="L147">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

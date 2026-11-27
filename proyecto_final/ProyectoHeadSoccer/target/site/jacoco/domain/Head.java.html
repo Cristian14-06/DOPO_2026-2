@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Head.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Head.java</span></div><h1>Head.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+
+/**
+ * Represents the player's head entity for heading the ball and managing stun effects.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Head implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private Circle circle;
+
+	/**
+	 * Constructs a head aligned to the initial height and side of the player.
+	 *
+	 * @param playerX Player horizontal center position
+	 */
+<span class="fc" id="L20">	public Head(double playerX) {</span>
+<span class="fc" id="L21">		double radius = 14;</span>
+<span class="fc" id="L22">		double headY = Field.HEIGHT - 38;</span>
+<span class="fc" id="L23">		this.circle = new Circle(playerX, headY, radius);</span>
+<span class="fc" id="L24">	}</span>
+
+	/**
+	 * Gets the circle geometry defining the head for domain physics.
+	 *
+	 * @return Circle geometry
+	 */
+	Circle getCircle() {
+<span class="fc" id="L32">		return circle;</span>
+	}
+
+	/**
+	 * Sets the circle geometry of the head.
+	 *
+	 * @param circle New circle geometry
+	 */
+	public void setCircle(Circle circle) {
+<span class="nc" id="L41">		this.circle = circle;</span>
+<span class="nc" id="L42">	}</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,574 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Match.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Match.java</span></div><h1>Match.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+
+/**
+ * Represents a soccer match session managing participants, field elements, physics resolution, game loop,
+ * goal celebrations, timer, and win conditions according to DOPOSoccer.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Match implements MatchView, Serializable {
+    private static final long serialVersionUID = 1L;
+    private static final double CROSSBAR_ROLL_SPEED = 1.5;
+    private static final double PINCH_ESCAPE_SPEED = -10.0;
+    private static final double KICKOFF_BALL_HEIGHT = 40.0;
+    private static final int GOAL_CELEBRATION_TICKS = 85;
+    private static final int WINNER_POINTS = 100;
+    private static final int LOSER_POINTS = 25;
+
+    private Player player1;
+    private Player player2;
+    private Controller controller1;
+    private Controller controller2;
+    private Field field;
+    private Ball ball;
+    private ScoreBoard scoreBoard;
+    private GameStatus state;
+    private GameStatus stateBeforePause;
+    private MatchRule rule;
+<span class="fc" id="L37">    private transient List&lt;MatchListener&gt; listeners = new ArrayList&lt;&gt;();</span>
+    private final Modality modality;
+    private int goalCelebrationTicks;
+<span class="fc" id="L40">    private boolean pointsAwarded = false;</span>
+
+    /**
+     * Constructs a soccer match from a validated MatchConfig.
+     *
+     * @param config Validated match configuration
+     * @throws DOPOSoccerException if configuration or rule initialization fails
+     */
+    public Match(MatchConfig config) throws DOPOSoccerException{
+<span class="fc" id="L49">        this(config, null, null);</span>
+     
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Constructs a soccer match from a validated MatchConfig and preloaded player profiles.
+     *
+     * @param config Validated match configuration
+     * @param profile1 Preloaded left player profile, or null to create a new default one
+     * @param profile2 Preloaded right player profile, or null to create a new default one
+     * @throws DOPOSoccerException if configuration or rule initialization fails
+     */
+<span class="fc" id="L61">    public Match(MatchConfig config, PlayerProfile profile1, PlayerProfile profile2) throws DOPOSoccerException{</span>
+<span class="fc" id="L62">        this.ball = new Ball();</span>
+<span class="fc" id="L63">        this.field = new Field();</span>
+<span class="fc" id="L64">        this.scoreBoard = new ScoreBoard();</span>
+<span class="fc bfc" id="L65" title="All 2 branches covered.">        PlayerProfile p1 = (profile1 != null) ? profile1 : new PlayerProfile(config.getLeftPlayerName());</span>
+<span class="fc bfc" id="L66" title="All 2 branches covered.">        PlayerProfile p2 = (profile2 != null) ? profile2 : new PlayerProfile(config.getRightPlayerName());</span>
+<span class="fc" id="L67">        this.player1 = new Player(p1, config.getLeftCountry(), Side.LEFT);</span>
+<span class="fc" id="L68">        this.player2 = new Player(p2, config.getRightCountry(), Side.RIGHT);</span>
+<span class="fc" id="L69">        this.controller1 = new HumanController();</span>
+<span class="fc bfc" id="L70" title="All 2 branches covered.">        this.controller2 = (config.getModality() == Modality.PVC) ? config.getMachineProfile().create(Side.RIGHT) : new HumanController();</span>
+<span class="fc bfc" id="L71" title="All 2 branches covered.">        this.rule = (config.getMatchType() == MatchType.GOALS) ? new GoalRule(config.getTargetValue()) : new TimeRule(config.getTargetValue());</span>
+<span class="fc" id="L72">        this.state = GameStatus.PLAYING;</span>
+<span class="fc" id="L73">        this.stateBeforePause = GameStatus.NOT_STARTED;</span>
+<span class="fc" id="L74">        this.goalCelebrationTicks = 0;</span>
+<span class="fc" id="L75">        this.pointsAwarded = false;</span>
+<span class="fc" id="L76">        this.modality = config.getModality();</span>
+
+<span class="fc" id="L78">        resetPositions();</span>
+<span class="fc" id="L79">    }</span>
+
+
+    /*
+     * Resets player and ball positions back to kickoff spots, with the ball dropping from center.
+     */
+    private void resetPositions() {
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (ball != null) {</span>
+<span class="fc" id="L87">            ball.reset(Field.WIDTH / 2.0, KICKOFF_BALL_HEIGHT);</span>
+<span class="fc" id="L88">            ball.setPowerShot(false);</span>
+        }
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (player1 != null) {</span>
+<span class="fc" id="L91">            player1.resetPosition();</span>
+<span class="fc" id="L92">            player1.finishPowerShot();</span>
+        }
+<span class="pc bpc" id="L94" title="1 of 2 branches missed.">        if (player2 != null) {</span>
+<span class="fc" id="L95">            player2.resetPosition();</span>
+<span class="fc" id="L96">            player2.finishPowerShot();</span>
+        }
+<span class="fc" id="L98">    }</span>
+
+    /**
+     * Executes one frame tick of the match cycle.
+     */
+    public void tick() {
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (state == GameStatus.GOAL_SCORED) {</span>
+<span class="fc" id="L105">            goalCelebrationTicks--;</span>
+<span class="fc bfc" id="L106" title="All 2 branches covered.">            if (goalCelebrationTicks &lt;= 0) {</span>
+<span class="fc" id="L107">                resetPositions();</span>
+<span class="fc" id="L108">                state = GameStatus.PLAYING;</span>
+            }
+<span class="fc" id="L110">            return;</span>
+        }
+
+<span class="pc bpc" id="L113" title="3 of 4 branches missed.">        if (state != GameStatus.PLAYING &amp;&amp; state != GameStatus.SUDDEN_DEATH) return;</span>
+<span class="fc" id="L114">        rule.onTick(this);</span>
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        if (rule.isOver(this)) {</span>
+<span class="fc" id="L116">            finishMatch();</span>
+<span class="fc" id="L117">            return;</span>
+        }
+
+<span class="fc" id="L120">        boolean hadAura1 = player1.hasAura();</span>
+<span class="fc" id="L121">        boolean hadAura2 = player2.hasAura();</span>
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        if (controller1 != null) {</span>
+<span class="fc" id="L123">            Set&lt;PlayerAction&gt; a1 = controller1.decide(this);</span>
+<span class="fc" id="L124">            player1.applyInput(a1, ball, player2);</span>
+<span class="fc bfc" id="L125" title="All 4 branches covered.">            if(!hadAura1 &amp;&amp; player1.hasAura()) {</span>
+<span class="fc bfc" id="L126" title="All 2 branches covered.">                for(MatchListener listener : listeners) listener.onPowerActivated(player1.getSide());</span>
+            }
+            
+        }
+<span class="pc bpc" id="L130" title="1 of 2 branches missed.">        if (controller2 != null) {</span>
+<span class="fc" id="L131">            Set&lt;PlayerAction&gt; a2 = controller2.decide(this);</span>
+<span class="fc" id="L132">            player2.applyInput(a2, ball, player1);</span>
+<span class="fc bfc" id="L133" title="All 4 branches covered.">            if(!hadAura2 &amp;&amp; player2.hasAura()) {</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">                for(MatchListener listener : listeners) listener.onPowerActivated(player2.getSide());</span>
+            }
+            
+        }
+
+        
+<span class="fc" id="L140">        player1.tick();</span>
+<span class="fc" id="L141">        player2.tick();</span>
+<span class="fc" id="L142">        ball.tick();</span>
+        
+<span class="fc" id="L144">        player1.updatePowerShot(ball);</span>
+<span class="fc" id="L145">        player2.updatePowerShot(ball);</span>
+
+<span class="fc" id="L147">        boolean wasStunned1 = player1.isStunned();</span>
+<span class="fc" id="L148">        boolean wasStunned2 = player2.isStunned();</span>
+
+<span class="fc" id="L150">        resolveCollisions();</span>
+
+<span class="pc bpc" id="L152" title="2 of 4 branches missed.">        if (!wasStunned1 &amp;&amp; player1.isStunned()) {</span>
+<span class="nc bnc" id="L153" title="All 2 branches missed.">            for (MatchListener listener : listeners) listener.onStunned(Side.LEFT);</span>
+        }
+<span class="pc bpc" id="L155" title="2 of 4 branches missed.">        if (!wasStunned2 &amp;&amp; player2.isStunned()) {</span>
+<span class="nc bnc" id="L156" title="All 2 branches missed.">            for (MatchListener listener : listeners) listener.onStunned(Side.RIGHT);</span>
+        }
+
+<span class="fc bfc" id="L159" title="All 2 branches covered.">        if (field.getLeftGoal().detectGoal(ball)) {</span>
+<span class="fc" id="L160">            onGoal(Side.LEFT);</span>
+<span class="fc bfc" id="L161" title="All 2 branches covered.">        } else if (field.getRightGoal().detectGoal(ball)) {</span>
+<span class="fc" id="L162">            onGoal(Side.RIGHT);</span>
+        }
+<span class="fc" id="L164">    }</span>
+
+    /*
+     * Resolves all physical collisions between entities, pitch boundaries, and goals.
+     */
+    private void resolveCollisions() {
+<span class="fc" id="L170">        player1.clearSupport();</span>
+<span class="fc" id="L171">        player2.clearSupport();</span>
+
+<span class="fc" id="L173">        boolean hadAura1 = player1.hasAura();</span>
+<span class="fc" id="L174">        boolean hadAura2 = player2.hasAura();</span>
+
+
+
+<span class="fc" id="L178">        player1.collideWithEdges();</span>
+<span class="fc" id="L179">        player2.collideWithEdges();</span>
+
+<span class="fc" id="L181">        ball.collideWithEdges();</span>
+<span class="fc" id="L182">        ball.bounceOff(field.getLeftGoal().getCrossBar(), Physics.CROSSBAR_RESTITUTION, 0.0);</span>
+<span class="fc" id="L183">        ball.bounceOff(field.getRightGoal().getCrossBar(), Physics.CROSSBAR_RESTITUTION, 0.0);</span>
+<span class="fc" id="L184">        rollOffCrossBar(field.getLeftGoal().getCrossBar(), 1.0);</span>
+<span class="fc" id="L185">        rollOffCrossBar(field.getRightGoal().getCrossBar(), -1.0);</span>
+
+
+
+<span class="fc" id="L189">        player1.collideWithGoal(field.getLeftGoal());</span>
+<span class="fc" id="L190">        player1.collideWithGoal(field.getRightGoal());</span>
+<span class="fc" id="L191">        player2.collideWithGoal(field.getLeftGoal());</span>
+<span class="fc" id="L192">        player2.collideWithGoal(field.getRightGoal());</span>
+
+<span class="fc" id="L194">        player1.collideWithPlayer(player2);</span>
+<span class="fc" id="L195">        player2.collideWithPlayer(player1);</span>
+
+<span class="fc" id="L197">        applyPowerHit(player1, player2);</span>
+<span class="fc" id="L198">        applyPowerHit(player2, player1);</span>
+
+<span class="fc" id="L200">        boolean touched1 = player1.isHitByBall(ball);</span>
+        
+
+<span class="fc bfc" id="L203" title="All 2 branches covered.">        if(player1.collideWithBall(ball)){</span>
+<span class="fc bfc" id="L204" title="All 2 branches covered.">            for(MatchListener listener : listeners) listener.onBallKicked(player1.getSide());</span>
+        }
+
+<span class="fc" id="L207">        boolean touched2 = player2.isHitByBall(ball);</span>
+
+<span class="pc bpc" id="L209" title="1 of 2 branches missed.">        if(player2.collideWithBall(ball)){</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">            for(MatchListener listener : listeners) listener.onBallKicked(player2.getSide());</span>
+        }
+
+<span class="pc bpc" id="L213" title="1 of 6 branches missed.">        if(touched1 &amp;&amp; touched2 &amp;&amp; !ball.hasPowerShot()){</span>
+<span class="fc" id="L214">            escapeBallFromPinch();</span>
+        }
+
+<span class="fc bfc" id="L217" title="All 4 branches covered.">        if(hadAura1 &amp;&amp; !player1.hasAura()){</span>
+<span class="fc bfc" id="L218" title="All 2 branches covered.">            for(MatchListener listener : listeners){</span>
+<span class="fc" id="L219">                listener.onPowerShot(player1.getSide(), player1.getCountry());</span>
+<span class="fc" id="L220">            }</span>
+        }
+
+<span class="fc bfc" id="L223" title="All 4 branches covered.">        if(hadAura2 &amp;&amp; !player2.hasAura()){</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">            for(MatchListener listener : listeners){</span>
+<span class="fc" id="L225">                listener.onPowerShot(player2.getSide(), player2.getCountry());</span>
+<span class="fc" id="L226">            }</span>
+        }
+
+
+<span class="fc" id="L230">    }</span>
+
+    /*
+     * Applies the shooter's power shot to the victim if it hits, ends the shot and notifies listeners.
+     * A victim with an active aura is protected: it takes no damage or effect, so no hit is notified.
+     */
+    private void applyPowerHit(Player shooter, Player victim) {
+<span class="fc" id="L237">        PowerHit hit = shooter.powerHitOn(victim, ball);</span>
+<span class="fc bfc" id="L238" title="All 2 branches covered.">        if (hit == null) return;</span>
+<span class="fc" id="L239">        boolean protectedByAura = victim.hasAura();</span>
+<span class="fc" id="L240">        shooter.finishPowerShot();</span>
+<span class="fc" id="L241">        ball.setPowerShot(false);</span>
+<span class="fc" id="L242">        victim.receiveHit(hit);</span>
+<span class="fc bfc" id="L243" title="All 2 branches covered.">        if (protectedByAura) return;</span>
+<span class="fc bfc" id="L244" title="All 2 branches covered.">        for (MatchListener listener : listeners) {</span>
+<span class="fc" id="L245">            listener.onPowerHit(victim.getSide(), hit.getDamage());</span>
+<span class="fc" id="L246">        }</span>
+<span class="fc" id="L247">    }</span>
+
+    /*
+     * Lifts the ball out of both players when pinched between them and launches it upward.
+     */
+    private void escapeBallFromPinch() {
+<span class="pc bpc" id="L253" title="1 of 4 branches missed.">        while ((player1.isHitByBall(ball) || player2.isHitByBall(ball))</span>
+<span class="pc bpc" id="L254" title="1 of 2 branches missed.">                &amp;&amp; ball.getY() &gt; ball.getRadius()) {</span>
+<span class="fc" id="L255">            ball.getCircle().translate(0.0, -2.0);</span>
+        }
+<span class="fc" id="L257">        ball.setHorizontalSpeed(0.0);</span>
+<span class="fc" id="L258">        ball.setVerticalSpeed(PINCH_ESCAPE_SPEED);</span>
+<span class="fc" id="L259">        ball.collideWithEdges();</span>
+<span class="fc" id="L260">    }</span>
+
+    /*
+     * Gives a ball resting on top of a crossbar a small push toward the pitch so it never gets stuck.
+     */
+    private void rollOffCrossBar(Rectangle bar, double towardField) {
+<span class="fc" id="L266">        double bottom = ball.getY() + ball.getRadius();</span>
+<span class="fc bfc" id="L267" title="All 2 branches covered.">        boolean onTop = Math.abs(bottom - bar.getY()) &lt;= 1.0</span>
+<span class="pc bpc" id="L268" title="1 of 4 branches missed.">                &amp;&amp; ball.getX() &gt;= bar.getX() &amp;&amp; ball.getX() &lt;= bar.getX() + bar.getWidth();</span>
+<span class="pc bpc" id="L269" title="1 of 4 branches missed.">        if (onTop &amp;&amp; Math.abs(ball.getHorizontalSpeed()) &lt; CROSSBAR_ROLL_SPEED) {</span>
+<span class="fc" id="L270">            ball.setHorizontalSpeed(towardField * CROSSBAR_ROLL_SPEED);</span>
+        }
+<span class="fc" id="L272">    }</span>
+
+    /*
+     * Handles goal events by updating the scoreboard, power gauges, and match state.
+     */
+    private void onGoal(Side goalSide) {
+<span class="fc" id="L278">        scoreBoard.goalIn(goalSide);</span>
+
+<span class="fc bfc" id="L280" title="All 2 branches covered.">        if (goalSide == Side.LEFT) {</span>
+<span class="fc" id="L281">            player1.onGoalReceived();</span>
+<span class="pc bpc" id="L282" title="1 of 2 branches missed.">            for (MatchListener listener : listeners) listener.onGoal(goalSide.opposite());</span>
+        } else {
+<span class="fc" id="L284">            player2.onGoalReceived();</span>
+<span class="pc bpc" id="L285" title="1 of 2 branches missed.">            for (MatchListener listener : listeners) listener.onGoal(goalSide.opposite());</span>
+        }
+
+<span class="pc bpc" id="L288" title="1 of 2 branches missed.">        if (state == GameStatus.SUDDEN_DEATH) {</span>
+<span class="nc" id="L289">            finishMatch();</span>
+<span class="nc" id="L290">            return;</span>
+        }
+
+<span class="fc bfc" id="L293" title="All 2 branches covered.">        if (rule.isOver(this)) {</span>
+<span class="fc" id="L294">            finishMatch();</span>
+<span class="fc" id="L295">            return;</span>
+        }
+
+<span class="fc" id="L298">        this.state = GameStatus.GOAL_SCORED;</span>
+<span class="fc" id="L299">        this.goalCelebrationTicks = GOAL_CELEBRATION_TICKS;</span>
+<span class="fc" id="L300">    }</span>
+
+    /*
+     * Transitions the match to FINISHED, awards end-of-match points once, and notifies listeners.
+     */
+    private void finishMatch() {
+<span class="pc bpc" id="L306" title="1 of 2 branches missed.">        if (pointsAwarded) return;</span>
+<span class="fc" id="L307">        pointsAwarded = true;</span>
+        Side winSide;
+<span class="fc" id="L309">        this.state = GameStatus.FINISHED;</span>
+
+<span class="fc" id="L311">        Optional&lt;Side&gt; winner = scoreBoard.getLeader();</span>
+<span class="fc bfc" id="L312" title="All 2 branches covered.">        if (winner.isPresent()) {</span>
+<span class="fc" id="L313">            winSide = winner.get();</span>
+<span class="fc bfc" id="L314" title="All 2 branches covered.">            if (player1.getSide() == winSide) {</span>
+<span class="fc" id="L315">                player1.addPoints(WINNER_POINTS);</span>
+<span class="fc" id="L316">                player2.addPoints(LOSER_POINTS);</span>
+            } else {
+<span class="fc" id="L318">                player2.addPoints(WINNER_POINTS);</span>
+<span class="fc" id="L319">                player1.addPoints(LOSER_POINTS);</span>
+            }
+<span class="pc bpc" id="L321" title="1 of 2 branches missed.">            for (MatchListener listener : listeners) listener.onMatchFinished(winSide, WINNER_POINTS, LOSER_POINTS);</span>
+        } else {
+<span class="fc" id="L323">            player1.addPoints(LOSER_POINTS);</span>
+<span class="fc" id="L324">            player2.addPoints(LOSER_POINTS);</span>
+<span class="fc bfc" id="L325" title="All 2 branches covered.">            for (MatchListener listener : listeners) listener.onMatchFinished(null, LOSER_POINTS, LOSER_POINTS);</span>
+        }
+<span class="fc" id="L327">    }</span>
+
+    /**
+     * Pauses the match if it is currently active and remembers the prior state.
+     */
+    public void pause() {
+<span class="pc bpc" id="L333" title="2 of 6 branches missed.">        if (state != GameStatus.NOT_STARTED &amp;&amp;</span>
+                state != GameStatus.PAUSED &amp;&amp;
+                state != GameStatus.FINISHED) {
+<span class="fc" id="L336">            stateBeforePause = state;</span>
+<span class="fc" id="L337">            state = GameStatus.PAUSED;</span>
+        }
+<span class="fc" id="L339">    }</span>
+
+    /**
+     * Resumes the match from pause, restoring the state prior to pausing.
+     */
+    public void resume() {
+<span class="pc bpc" id="L345" title="1 of 2 branches missed.">        if (state == GameStatus.PAUSED) {</span>
+<span class="pc bpc" id="L346" title="1 of 2 branches missed.">            state = (stateBeforePause != null) ? stateBeforePause : GameStatus.PLAYING;</span>
+<span class="fc" id="L347">            stateBeforePause = null;</span>
+        }
+<span class="fc" id="L349">    }</span>
+
+    /**
+     * Immediately concludes the match and distributes end-of-match rewards.
+     */
+    public void finish() {
+<span class="fc" id="L355">        finishMatch();</span>
+<span class="fc" id="L356">    }</span>
+
+    /**
+     * Forwards the current input action set to the controller assigned to the given side.
+     *
+     * @param side Target player side
+     * @param actions Set of actions requested on the current frame
+     */
+    public void setIntention(Side side, Set&lt;PlayerAction&gt; actions) {
+<span class="pc bpc" id="L365" title="1 of 4 branches missed.">        if (side == Side.LEFT &amp;&amp; controller1 != null) {</span>
+<span class="fc" id="L366">            controller1.receive(actions);</span>
+<span class="pc bpc" id="L367" title="2 of 4 branches missed.">        } else if (side == Side.RIGHT &amp;&amp; controller2 != null) {</span>
+<span class="fc" id="L368">            controller2.receive(actions);</span>
+        }
+<span class="fc" id="L370">    }</span>
+
+    /**
+     * Registers a listener to receive match lifecycle and gameplay events.
+     *
+     * @param listener Listener to add
+     */
+    public void addListener(MatchListener listener) {
+<span class="pc bpc" id="L378" title="2 of 4 branches missed.">        if (listener != null &amp;&amp; !listeners.contains(listener)) {</span>
+<span class="fc" id="L379">            listeners.add(listener);</span>
+        }
+<span class="fc" id="L381">    }</span>
+
+    /**
+     * Unregisters a previously added match listener.
+     *
+     * @param listener Listener to remove
+     */
+    public void removeListener(MatchListener listener) {
+<span class="nc" id="L389">        listeners.remove(listener);</span>
+<span class="nc" id="L390">    }</span>
+
+    /*
+     * Restores transient listener collections after Java deserialization.
+     */
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+<span class="fc" id="L396">        in.defaultReadObject();</span>
+<span class="fc" id="L397">        listeners = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L398">    }</span>
+
+    /**
+     * Returns the current lifecycle status of the match.
+     *
+     * @return Active GameStatus
+     */
+    @Override
+    public GameStatus getStatus() {
+<span class="fc" id="L407">        return state;</span>
+    }
+
+    /**
+     * Returns the remaining regulation time in seconds, or -1 for goal-based matches.
+     *
+     * @return Remaining seconds or -1
+     */
+    @Override
+    public int getRemainingSeconds() {
+<span class="fc" id="L417">        return rule.remainingSeconds(this);</span>
+    }
+
+    /**
+     * Indicates whether the match is currently in sudden-death golden goal mode.
+     *
+     * @return True if sudden death is active
+     */
+    @Override
+    public boolean isSuddenDeath() {
+<span class="pc bpc" id="L427" title="1 of 2 branches missed.">        return state == GameStatus.SUDDEN_DEATH;</span>
+    }
+
+    /**
+     * Returns the number of goals scored by the specified side.
+     *
+     * @param side Target side
+     * @return Goal count
+     */
+    @Override
+    public int getGoals(Side side) {
+<span class="fc" id="L438">        return scoreBoard.getGoals(side);</span>
+    }
+
+    /**
+     * Returns a read-only view of the player on the specified side.
+     *
+     * @param side Target side
+     * @return PlayerView for the side
+     */
+    @Override
+    public PlayerView getPlayer(Side side) {
+<span class="fc bfc" id="L449" title="All 2 branches covered.">        return (side == Side.LEFT) ? player1 : player2;</span>
+    }
+
+    /**
+     * Returns a read-only view of the ball in play.
+     *
+     * @return BallView instance
+     */
+    @Override
+    public BallView getBall() {
+<span class="fc" id="L459">        return ball;</span>
+    }
+
+    /**
+     * Returns the winning side according to the active match rule, if decided.
+     *
+     * @return Optional containing the winning side, or empty if undecided
+     */
+    @Override
+    public Optional&lt;Side&gt; getWinner() {
+<span class="fc" id="L469">        return rule.winner(this);</span>
+    }
+
+    /**
+     * Returns the logical width of the playing field.
+     *
+     * @return Field width
+     */
+    @Override
+    public int getFieldWidth() {
+<span class="fc" id="L479">        return Field.WIDTH;</span>
+    }
+
+    /**
+     * Returns the logical height of the playing field.
+     *
+     * @return Field height
+     */
+    @Override
+    public int getFieldHeight() {
+<span class="nc" id="L489">        return Field.HEIGHT;</span>
+    }
+
+    /**
+     * Returns a defensive copy of the goal scoring area for the given side.
+     *
+     * @param side Goal side
+     * @return Goal area rectangle copy
+     */
+    @Override
+    public Rectangle getGoalArea(Side side) {
+<span class="fc" id="L500">        Rectangle area = field.getGoal(side).getGoalArea();</span>
+<span class="fc" id="L501">        return new Rectangle(area.getX(), area.getY(), area.getWidth(), area.getHeight());</span>
+    }
+
+    /**
+     * Returns a defensive copy of the goal crossbar hitbox for the given side.
+     *
+     * @param side Goal side
+     * @return Crossbar rectangle copy
+     */
+    @Override
+    public Rectangle getCrossBar(Side side) {
+<span class="fc" id="L512">        Rectangle bar = field.getGoal(side).getCrossBar();</span>
+<span class="fc" id="L513">        return new Rectangle(bar.getX(), bar.getY(), bar.getWidth(), bar.getHeight());</span>
+    }
+
+    /**
+     * Returns the scoreboard tracking both sides' goals for domain rules.
+     *
+     * @return Match ScoreBoard
+     */
+<span class="fc" id="L521">    ScoreBoard getScoreBoard() { return scoreBoard; }</span>
+
+    /**
+     * Updates the current lifecycle status of the match for domain rules.
+     *
+     * @param state New GameStatus
+     */
+<span class="fc" id="L528">    void setState(GameStatus state) { this.state = state; }</span>
+
+    /**
+     * Returns the remaining ticks of the active goal celebration freeze.
+     *
+     * @return Remaining celebration ticks
+     */
+<span class="fc" id="L535">    public int getGoalCelebrationTicks() { return goalCelebrationTicks; }</span>
+
+    /**
+     * Returns the underlying player profile for the given side for domain persistence coordination.
+     *
+     * @param side Player side
+     * @return Player profile for that side
+     */
+    PlayerProfile getProfile(Side side) {
+<span class="fc bfc" id="L544" title="All 2 branches covered.">        return (side == Side.LEFT) ? player1.getProfile() : player2.getProfile();</span>
+    }
+
+    /**
+     * Returns the configured game modality for this match.
+     *
+     * @return Active Modality
+     */
+    @Override
+    public Modality getModality() {
+<span class="fc" id="L554">        return modality;</span>
+    }
+
+    /**
+     * Returns defensive copies of all active illusion decoy balls on the field.
+     *
+     * @return List of decoy ball circles
+     */
+    @Override
+    public List&lt;Circle&gt; getFakeBalls() {
+<span class="nc" id="L564">        List&lt;Circle&gt; fakeBalls = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L565" title="All 2 branches missed.">        if (player1 != null) {</span>
+<span class="nc" id="L566">            fakeBalls.addAll(player1.getDecoyBalls());</span>
+        }
+<span class="nc bnc" id="L568" title="All 2 branches missed.">        if (player2 != null) {</span>
+<span class="nc" id="L569">            fakeBalls.addAll(player2.getDecoyBalls());</span>
+        }
+<span class="nc" id="L571">        return fakeBalls;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HeadSoccerGUI.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">HeadSoccerGUI.java</span></div><h1>HeadSoccerGUI.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.DOPOSoccer;
+import domain.GameStatus;
+import domain.MatchView;
+import domain.Physics;
+import domain.PlayerAction;
+import domain.Side;
+import persistence.Log;
+import persistence.SerializedMatchRepository;
+import persistence.SerializedProfileRepository;
+
+import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.CardLayout;
+import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Main application window and controller coordinating the Swing event loop,
+ * mouse interactions, keyboard navigation, and field resolution resizing.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class HeadSoccerGUI extends JFrame implements KeyListener, ActionListener {
+    private DOPOSoccer game;
+    private PhotoHeadSoccer photo;
+    private CardLayout cardLayout;
+    private JPanel cardsPanel;
+    private SelectPlayersPanel selectPlayersPanel;
+    private SelectCampPanel selectCampPanel;
+    private Timer gameLoop;
+    private Set&lt;Integer&gt; activeKeys;
+    private Screen currentScreen;
+    private UpgradesPanel upgradesPanel;
+<span class="nc" id="L46">    private Screen returnScreen = Screen.SELECT_PLAYERS;</span>
+
+<span class="nc" id="L48">    private static final Map&lt;Integer, PlayerAction&gt; P1_KEY_MAP = Map.of(</span>
+<span class="nc" id="L49">            KeyEvent.VK_A, PlayerAction.LEFT,</span>
+<span class="nc" id="L50">            KeyEvent.VK_D, PlayerAction.RIGHT,</span>
+<span class="nc" id="L51">            KeyEvent.VK_W, PlayerAction.JUMP,</span>
+<span class="nc" id="L52">            KeyEvent.VK_S, PlayerAction.KICK,</span>
+<span class="nc" id="L53">            KeyEvent.VK_Q, PlayerAction.POWER</span>
+    );
+
+<span class="nc" id="L56">    private static final Map&lt;Integer, PlayerAction&gt; P2_KEY_MAP = Map.of(</span>
+<span class="nc" id="L57">            KeyEvent.VK_LEFT, PlayerAction.LEFT,</span>
+<span class="nc" id="L58">            KeyEvent.VK_RIGHT, PlayerAction.RIGHT,</span>
+<span class="nc" id="L59">            KeyEvent.VK_UP, PlayerAction.JUMP,</span>
+<span class="nc" id="L60">            KeyEvent.VK_DOWN, PlayerAction.KICK,</span>
+<span class="nc" id="L61">            KeyEvent.VK_CONTROL, PlayerAction.POWER</span>
+    );
+
+    /**
+     * Constructs the main application window with Swing menu panels and match canvas.
+     */
+    public HeadSoccerGUI() {
+<span class="nc" id="L68">        super(&quot;DOPOSoccer 2026-2 - Head Soccer Arcade&quot;);</span>
+<span class="nc" id="L69">        this.game = new DOPOSoccer(new SerializedMatchRepository(), new SerializedProfileRepository());</span>
+<span class="nc" id="L70">        this.currentScreen = Screen.MENU;</span>
+<span class="nc" id="L71">        this.photo = new PhotoHeadSoccer(game, this);</span>
+<span class="nc" id="L72">        this.activeKeys = new HashSet&lt;&gt;();</span>
+
+<span class="nc" id="L74">        this.cardLayout = new CardLayout();</span>
+<span class="nc" id="L75">        this.cardsPanel = new JPanel(cardLayout);</span>
+<span class="nc" id="L76">        this.cardsPanel.setPreferredSize(photo.getPreferredSize());</span>
+
+<span class="nc" id="L78">        MenuPanel menuPanel = new MenuPanel(</span>
+<span class="nc" id="L79">                () -&gt; setCurrentScreen(Screen.SELECT_PLAYERS),</span>
+<span class="nc" id="L80">                () -&gt; photo.openSavedMatch()</span>
+        );
+<span class="nc" id="L82">        this.selectPlayersPanel = new SelectPlayersPanel(</span>
+<span class="nc" id="L83">                photo.getSetup(),</span>
+<span class="nc" id="L84">                () -&gt; setCurrentScreen(Screen.MENU),</span>
+<span class="nc" id="L85">                () -&gt; setCurrentScreen(Screen.SELECT_CAMP),</span>
+<span class="nc" id="L86">                () -&gt; setCurrentScreen(Screen.UPGRADES)</span>
+        );
+<span class="nc" id="L88">        this.selectCampPanel = new SelectCampPanel(</span>
+<span class="nc" id="L89">                photo.getSetup(),</span>
+                this::updateResolution,
+<span class="nc" id="L91">                () -&gt; setCurrentScreen(Screen.SELECT_PLAYERS),</span>
+<span class="nc" id="L92">                () -&gt; photo.startConfiguredMatch()</span>
+        );
+
+<span class="nc" id="L95">        this.upgradesPanel = new UpgradesPanel(game, photo.getSetup(), () -&gt; setCurrentScreen(returnScreen));</span>
+
+<span class="nc" id="L97">        this.cardsPanel.add(menuPanel, Screen.MENU.name());</span>
+<span class="nc" id="L98">        this.cardsPanel.add(selectPlayersPanel, Screen.SELECT_PLAYERS.name());</span>
+<span class="nc" id="L99">        this.cardsPanel.add(selectCampPanel, Screen.SELECT_CAMP.name());</span>
+<span class="nc" id="L100">        this.cardsPanel.add(photo, Screen.MATCH.name());</span>
+<span class="nc" id="L101">        this.cardsPanel.add(upgradesPanel, Screen.UPGRADES.name());</span>
+
+<span class="nc" id="L103">        this.setDefaultCloseOperation(EXIT_ON_CLOSE);</span>
+<span class="nc" id="L104">        this.setLayout(new BorderLayout());</span>
+<span class="nc" id="L105">        this.add(cardsPanel, BorderLayout.CENTER);</span>
+<span class="nc" id="L106">        this.pack();</span>
+<span class="nc" id="L107">        this.setLocationRelativeTo(null);</span>
+<span class="nc" id="L108">        this.setResizable(true);</span>
+
+<span class="nc" id="L110">        this.addKeyListener(this);</span>
+<span class="nc" id="L111">        this.setFocusable(true);</span>
+
+<span class="nc" id="L113">        this.photo.addMouseListener(new MouseAdapter() {</span>
+            @Override
+            public void mouseClicked(MouseEvent e) {
+<span class="nc" id="L116">                photo.handleMouseClick(e);</span>
+<span class="nc" id="L117">                HeadSoccerGUI.this.requestFocusInWindow();</span>
+<span class="nc" id="L118">            }</span>
+        });
+
+<span class="nc" id="L121">        setCurrentScreen(Screen.MENU);</span>
+<span class="nc" id="L122">        this.photo.startMusic();</span>
+
+<span class="nc" id="L124">        this.gameLoop = new Timer(Physics.TICK_MS, this);</span>
+<span class="nc" id="L125">        this.gameLoop.start();</span>
+<span class="nc" id="L126">    }</span>
+
+    /**
+     * Returns the currently displayed navigation screen.
+     *
+     * @return Active screen
+     */
+    public Screen getCurrentScreen() {
+<span class="nc" id="L134">        return currentScreen;</span>
+    }
+
+    /**
+     * Switches the visible Swing card to the requested navigation screen.
+     *
+     * @param screen Target screen
+     */
+    public void setCurrentScreen(Screen screen) {
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        if(screen == Screen.UPGRADES){</span>
+<span class="nc bnc" id="L144" title="All 2 branches missed.">            returnScreen = (this.currentScreen == Screen.MATCH) ? Screen.MENU : this.currentScreen;</span>
+        }
+<span class="nc" id="L146">        this.currentScreen = screen;</span>
+<span class="nc" id="L147">        this.activeKeys.clear();</span>
+<span class="nc bnc" id="L148" title="All 4 branches missed.">        if (screen == Screen.SELECT_PLAYERS &amp;&amp; selectPlayersPanel != null) {</span>
+<span class="nc" id="L149">            selectPlayersPanel.refreshView();</span>
+<span class="nc bnc" id="L150" title="All 4 branches missed.">        } else if (screen == Screen.SELECT_CAMP &amp;&amp; selectCampPanel != null) {</span>
+<span class="nc" id="L151">            selectCampPanel.refreshView();</span>
+<span class="nc bnc" id="L152" title="All 4 branches missed.">        } else if (screen == Screen.UPGRADES &amp;&amp; upgradesPanel != null) {</span>
+<span class="nc" id="L153">            upgradesPanel.refreshView();</span>
+        }
+
+
+<span class="nc" id="L157">        this.cardLayout.show(cardsPanel, screen.name());</span>
+<span class="nc bnc" id="L158" title="All 2 branches missed.">        if (screen == Screen.MATCH) {</span>
+<span class="nc" id="L159">            this.requestFocusInWindow();</span>
+        }
+<span class="nc" id="L161">    }</span>
+
+    /**
+     * Resizes the canvas and window when selecting a different resolution.
+     * 
+     * @param res Selected FieldResolution
+     */
+    public void updateResolution(FieldResolution res) {
+<span class="nc" id="L169">        Dimension size = new Dimension(res.getPixelWidth(), res.getPixelHeight());</span>
+<span class="nc" id="L170">        photo.setPreferredSize(size);</span>
+<span class="nc" id="L171">        cardsPanel.setPreferredSize(size);</span>
+<span class="nc" id="L172">        this.pack();</span>
+<span class="nc" id="L173">        this.setLocationRelativeTo(null);</span>
+<span class="nc" id="L174">    }</span>
+
+    /**
+     * Executes one frame of the Swing timer game loop, advancing domain physics and repainting.
+     *
+     * @param e Timer action event
+     */
+    @Override
+    public void actionPerformed(ActionEvent e) {
+<span class="nc bnc" id="L183" title="All 2 branches missed.">        if (currentScreen == Screen.MATCH) {</span>
+            try {
+<span class="nc" id="L185">                processContinuousKeys();</span>
+<span class="nc" id="L186">                game.tick();</span>
+<span class="nc" id="L187">            } catch (RuntimeException ex) {</span>
+<span class="nc" id="L188">                Log.record(ex);</span>
+<span class="nc" id="L189">                game.pause();</span>
+<span class="nc" id="L190">                JOptionPane.showMessageDialog(</span>
+                        this,
+<span class="nc" id="L192">                        &quot;Ocurrió un error inesperado: &quot; + ex.getMessage(),</span>
+                        &quot;Error&quot;,
+                        JOptionPane.ERROR_MESSAGE
+                );
+<span class="nc" id="L196">            }</span>
+        }
+<span class="nc" id="L198">        photo.repaint();</span>
+<span class="nc" id="L199">    }</span>
+
+    /*
+     * Translates currently held keyboard keys into player action sets for both sides.
+     */
+    private void processContinuousKeys() {
+<span class="nc" id="L205">        MatchView match = game.getMatch();</span>
+<span class="nc bnc" id="L206" title="All 2 branches missed.">        if (match == null) return;</span>
+<span class="nc" id="L207">        GameStatus status = match.getStatus();</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">        if (status != GameStatus.PLAYING &amp;&amp; status != GameStatus.SUDDEN_DEATH) return;</span>
+
+<span class="nc" id="L210">        game.setIntention(Side.LEFT, collectActions(P1_KEY_MAP));</span>
+<span class="nc" id="L211">        game.setIntention(Side.RIGHT, collectActions(P2_KEY_MAP));</span>
+<span class="nc" id="L212">    }</span>
+
+    /*
+     * Collects all mapped actions whose key codes are currently pressed.
+     */
+    private Set&lt;PlayerAction&gt; collectActions(Map&lt;Integer, PlayerAction&gt; actions) {
+<span class="nc" id="L218">        Set&lt;PlayerAction&gt; playerActions = EnumSet.noneOf(PlayerAction.class);</span>
+<span class="nc bnc" id="L219" title="All 2 branches missed.">        if (actions == null) return playerActions;</span>
+<span class="nc bnc" id="L220" title="All 2 branches missed.">        for (Map.Entry&lt;Integer, PlayerAction&gt; entry : actions.entrySet()) {</span>
+<span class="nc bnc" id="L221" title="All 2 branches missed.">            if (activeKeys.contains(entry.getKey())) {</span>
+<span class="nc" id="L222">                playerActions.add(entry.getValue());</span>
+            }
+<span class="nc" id="L224">        }</span>
+<span class="nc" id="L225">        return playerActions;</span>
+    }
+
+    /**
+     * Handles keyboard press events for navigation shortcuts, pause, restart, and continuous controls.
+     *
+     * @param e Keyboard press event
+     */
+    @Override
+    public void keyPressed(KeyEvent e) {
+<span class="nc" id="L235">        int code = e.getKeyCode();</span>
+<span class="nc" id="L236">        activeKeys.add(code);</span>
+
+<span class="nc bnc" id="L238" title="All 2 branches missed.">        if (code == KeyEvent.VK_N) {</span>
+<span class="nc" id="L239">            photo.toggleMute();</span>
+<span class="nc" id="L240">            return;</span>
+        }
+
+<span class="nc bnc" id="L243" title="All 2 branches missed.">        if (currentScreen == Screen.MENU) {</span>
+<span class="nc bnc" id="L244" title="All 4 branches missed.">            if (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_SPACE) {</span>
+<span class="nc" id="L245">                setCurrentScreen(Screen.SELECT_PLAYERS);</span>
+            }
+<span class="nc" id="L247">            return;</span>
+        }
+<span class="nc bnc" id="L249" title="All 2 branches missed.">        if (currentScreen == Screen.SELECT_PLAYERS) {</span>
+<span class="nc bnc" id="L250" title="All 2 branches missed.">            if (code == KeyEvent.VK_ENTER) {</span>
+<span class="nc" id="L251">                setCurrentScreen(Screen.SELECT_CAMP);</span>
+            }
+<span class="nc" id="L253">            return;</span>
+        }
+<span class="nc bnc" id="L255" title="All 2 branches missed.">        if (currentScreen == Screen.SELECT_CAMP) {</span>
+<span class="nc bnc" id="L256" title="All 2 branches missed.">            if (code == KeyEvent.VK_ENTER) {</span>
+<span class="nc" id="L257">                photo.startConfiguredMatch();</span>
+            }
+<span class="nc" id="L259">            return;</span>
+        }
+
+<span class="nc" id="L262">        MatchView match = game.getMatch();</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">        if (match == null) return;</span>
+<span class="nc" id="L264">        GameStatus status = match.getStatus();</span>
+
+<span class="nc bnc" id="L266" title="All 4 branches missed.">        if (status == GameStatus.PLAYING || status == GameStatus.SUDDEN_DEATH) {</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">            if (code == KeyEvent.VK_P) {</span>
+<span class="nc" id="L268">                game.togglePause();</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">            } else if (code == KeyEvent.VK_R) {</span>
+<span class="nc" id="L270">                photo.startConfiguredMatch();</span>
+<span class="nc bnc" id="L271" title="All 2 branches missed.">            } else if (code == KeyEvent.VK_M) {</span>
+<span class="nc" id="L272">                game.finish();</span>
+<span class="nc" id="L273">                setCurrentScreen(Screen.MENU);</span>
+            }
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        } else if (status == GameStatus.PAUSED) {</span>
+<span class="nc bnc" id="L276" title="All 2 branches missed.">            if (code == KeyEvent.VK_P) {</span>
+<span class="nc" id="L277">                game.togglePause();</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">            } else if (code == KeyEvent.VK_M) {</span>
+<span class="nc" id="L279">                game.finish();</span>
+<span class="nc" id="L280">                setCurrentScreen(Screen.MENU);</span>
+            }
+<span class="nc bnc" id="L282" title="All 8 branches missed.">        } else if (status == GameStatus.FINISHED</span>
+                &amp;&amp; (code == KeyEvent.VK_ENTER || code == KeyEvent.VK_M || code == KeyEvent.VK_SPACE)) {
+<span class="nc" id="L284">            setCurrentScreen(Screen.MENU);</span>
+        }
+<span class="nc" id="L286">    }</span>
+
+    /**
+     * Removes a released key from the active continuous-input set.
+     *
+     * @param e Keyboard release event
+     */
+    @Override
+    public void keyReleased(KeyEvent e) {
+<span class="nc" id="L295">        activeKeys.remove(e.getKeyCode());</span>
+<span class="nc" id="L296">    }</span>
+
+    /**
+     * Unused key-typed callback required by KeyListener.
+     *
+     * @param e Keyboard typed event
+     */
+    @Override
+    public void keyTyped(KeyEvent e) {
+<span class="nc" id="L305">    }</span>
+
+    /**
+     * Application entry point launching the DOPOSoccer Swing window on the EDT.
+     *
+     * @param args Command-line arguments (unused)
+     */
+    public static void main(String[] args) {
+<span class="nc" id="L313">        SwingUtilities.invokeLater(() -&gt; {</span>
+<span class="nc" id="L314">            HeadSoccerGUI ventana = new HeadSoccerGUI();</span>
+<span class="nc" id="L315">            ventana.setVisible(true);</span>
+<span class="nc" id="L316">        });</span>
+<span class="nc" id="L317">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

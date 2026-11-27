@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Circle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Circle.java</span></div><h1>Circle.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.Optional;
+
+/**
+ * Geometric circle figure defined by center coordinates and a radius.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Circle extends Figure {
+	private double radius;
+
+	/**
+	 * Constructs a circle at specified center coordinates with given radius.
+	 * 
+	 * @param x Center horizontal coordinate
+	 * @param y Center vertical coordinate
+	 * @param radius Radius of the circle
+	 */
+	public Circle(double x, double y, double radius) {
+<span class="fc" id="L22">		super(x, y);</span>
+<span class="fc" id="L23">		this.radius = radius;</span>
+<span class="fc" id="L24">	}</span>
+
+	/**
+	 * Gets the radius of the circle.
+	 * 
+	 * @return Circle radius
+	 */
+	public double getRadius() {
+<span class="fc" id="L32">		return radius;</span>
+	}
+
+	/**
+	 * Sets the radius of the circle.
+	 * 
+	 * @param radius New radius
+	 */
+	public void setRadius(double radius) {
+<span class="nc" id="L41">		this.radius = radius;</span>
+<span class="nc" id="L42">	}</span>
+
+	/**
+	 * Detects collision against another circle using Euclidean distance squared.
+	 * 
+	 * @param circle Target circle
+	 * @return True if circles intersect, false otherwise
+	 */
+	@Override
+	public boolean detectCollisionWithCircle(Circle circle) {
+<span class="fc" id="L52">		double dx = this.getX() - circle.getX();</span>
+<span class="fc" id="L53">		double dy = this.getY() - circle.getY();</span>
+<span class="fc" id="L54">		double radiusSum = this.radius + circle.radius;</span>
+<span class="fc bfc" id="L55" title="All 2 branches covered.">		return (dx * dx) + (dy * dy) &lt;= (radiusSum * radiusSum);</span>
+	}
+
+	/**
+	 * Detects collision against a rectangle by delegating to the rectangle's circle collision method.
+	 * 
+	 * @param rectangle Target rectangle
+	 * @return True if circle intersects rectangle, false otherwise
+	 */
+	@Override
+	public boolean detectCollisionWithRectangle(Rectangle rectangle) {
+<span class="fc" id="L66">		return rectangle.detectCollisionWithCircle(this);</span>
+	}
+
+	@Override 
+	public Optional&lt;Contact&gt; contactWith(Circle ball){
+<span class="pc bpc" id="L71" title="1 of 2 branches missed.">		if (ball == null) return Optional.empty();</span>
+<span class="fc" id="L72">		Vector2 delta = new Vector2(ball.getX() - this.getX(), ball.getY() - this.getY());</span>
+<span class="fc" id="L73">		double dist = delta.length();</span>
+<span class="fc" id="L74">		double sumRad = ball.getRadius() + this.getRadius();</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">		if (dist &gt;= sumRad) return Optional.empty();</span>
+<span class="pc bpc" id="L76" title="1 of 2 branches missed.">		if (dist == 0) {</span>
+<span class="nc" id="L77">			return Optional.of(new Contact(new Vector2(0, -1), sumRad));</span>
+		}
+<span class="fc" id="L79">		return Optional.of(new Contact(delta.normalized(), sumRad - dist));</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

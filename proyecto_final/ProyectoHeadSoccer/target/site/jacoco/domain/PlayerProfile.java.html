@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayerProfile.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">PlayerProfile.java</span></div><h1>PlayerProfile.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+
+/**
+ * Persistent player profile holding identity, upgradeable stats, and accumulated points.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class PlayerProfile implements Serializable, ProfileView {
+    private static final long serialVersionUID = 1L;
+    private final String name;
+    private final PlayerStats stats;
+    private int points;
+
+    /**
+     * Creates a player profile with explicit stats.
+     *
+     * @param name Player display name
+     * @param stats Player statistics (defaults to level 1 if null)
+     */
+<span class="fc" id="L23">    public PlayerProfile(String name, PlayerStats stats) {</span>
+<span class="pc bpc" id="L24" title="1 of 2 branches missed.">        this.name = (name != null) ? name : &quot;Player&quot;;</span>
+<span class="pc bpc" id="L25" title="1 of 2 branches missed.">        this.stats = (stats != null) ? stats : new PlayerStats();</span>
+<span class="fc" id="L26">        this.points = 0;</span>
+<span class="fc" id="L27">    }</span>
+
+    /**
+     * Returns the point cost required to upgrade the given statistic by one level,
+     * or 0 if null or already at maximum level.
+     *
+     * @param type Statistic type
+     * @return Upgrade cost in points
+     */
+    @Override 
+    public int upgradeCost(StatType type){
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">        if(type == null) return 0;</span>
+<span class="fc" id="L39">        int level = getStat(type);</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">        if(level &gt;= 10) return 0;</span>
+<span class="fc" id="L41">        return 500 * (1 &lt;&lt; (level - 1));</span>
+    }
+
+    /**
+     * Upgrades the specified statistic by one level, deducting the required points.
+     *
+     * @param type Statistic type to upgrade
+     * @throws DOPOSoccerException if type is null, max level is reached, or points are insufficient
+     */
+    public void upgrade(StatType type) throws DOPOSoccerException {
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">        if (type == null) {</span>
+<span class="nc" id="L52">            throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);</span>
+        }
+<span class="fc bfc" id="L54" title="All 2 branches covered.">        if (getStat(type) &gt;= 10) {</span>
+<span class="fc" id="L55">            throw new DOPOSoccerException(DOPOSoccerException.MAX_STAT_REACHED);</span>
+        }
+<span class="fc" id="L57">        int cost = upgradeCost(type);</span>
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        if (points &lt; cost) {</span>
+<span class="fc" id="L59">            throw new DOPOSoccerException(DOPOSoccerException.NOT_ENOUGH_POINTS);</span>
+        }
+<span class="fc" id="L61">        points -= cost;</span>
+<span class="fc" id="L62">        stats.increment(type);</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Creates a player profile with baseline statistics.
+     *
+     * @param name Player display name
+     */
+    public PlayerProfile(String name) {
+<span class="fc" id="L71">        this(name, new PlayerStats());</span>
+<span class="fc" id="L72">    }</span>
+
+    /** @return Player display name */
+    public String getName() {
+<span class="fc" id="L76">        return name;</span>
+    }
+
+    /** @return Player statistics */
+    public PlayerStats getStats() {
+<span class="fc" id="L81">        return stats;</span>
+    }
+
+    /**
+     * Returns the level of a specific statistic.
+     *
+     * @param type Statistic type
+     * @return Statistic level (1 to 10)
+     */
+    public int getStat(StatType type) {
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        if (type == null) return 1;</span>
+<span class="pc bpc" id="L92" title="1 of 5 branches missed.">        switch (type) {</span>
+<span class="fc" id="L93">            case SPEED: return stats.getSpeed();</span>
+<span class="fc" id="L94">            case JUMP: return stats.getJump();</span>
+<span class="fc" id="L95">            case KICK: return stats.getKick();</span>
+<span class="fc" id="L96">            case SURVIVAL: return stats.getSurvival();</span>
+<span class="nc" id="L97">            default: return 1;</span>
+        }
+    }
+
+    /** @return Accumulated reward points */
+    public int getPoints() {
+<span class="fc" id="L103">        return points;</span>
+    }
+
+    /**
+     * Adds reward points to this profile.
+     *
+     * @param amount Points to add
+     */
+    public void addPoints(int amount) {
+<span class="pc bpc" id="L112" title="1 of 2 branches missed.">        if (amount &gt; 0) {</span>
+<span class="fc" id="L113">            this.points += amount;</span>
+        }
+<span class="fc" id="L115">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

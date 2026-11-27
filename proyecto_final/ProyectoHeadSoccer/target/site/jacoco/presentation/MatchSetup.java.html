@@ -1,0 +1,240 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MatchSetup.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">MatchSetup.java</span></div><h1>MatchSetup.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.Country;
+import domain.DOPOSoccerException;
+import domain.MachineProfile;
+import domain.MatchConfig;
+import domain.MatchType;
+import domain.Modality;
+
+/**
+ * Holds the user-selected match configuration across setup screens
+ * (modality, countries, player names, match rule, target, machine profile, and resolution).
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+<span class="fc" id="L17">public class MatchSetup {</span>
+<span class="fc" id="L18">    private Modality modality = Modality.PVP;</span>
+<span class="fc" id="L19">    private Country leftCountry = Country.SOUTH_KOREA;</span>
+<span class="fc" id="L20">    private Country rightCountry = Country.CAMEROON;</span>
+<span class="fc" id="L21">    private String leftPlayerName = &quot;jugador 1&quot;;</span>
+<span class="fc" id="L22">    private String rightPlayerName = &quot;jugador 2&quot;;</span>
+<span class="fc" id="L23">    private MatchType matchType = MatchType.TIME;</span>
+<span class="fc" id="L24">    private int matchDurationMinutes = 2;</span>
+<span class="fc" id="L25">    private int targetGoals = 3;</span>
+<span class="fc" id="L26">    private FieldResolution resolution = FieldResolution.MEDIUM;</span>
+<span class="fc" id="L27">    private MachineProfile machineProfile = MachineProfile.EXPERTA;</span>
+
+    /**
+     * Returns the configured display name for the left player.
+     *
+     * @return Left player name
+     */
+    public String getLeftPlayerName() {
+<span class="fc" id="L35">        return leftPlayerName;</span>
+    }
+
+    /**
+     * Updates the configured display name for the left player.
+     *
+     * @param leftPlayerName Left player name
+     */
+    public void setLeftPlayerName(String leftPlayerName) {
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">        if (leftPlayerName != null &amp;&amp; !leftPlayerName.trim().isEmpty()) {</span>
+<span class="fc" id="L45">            this.leftPlayerName = leftPlayerName.trim();</span>
+        }
+<span class="fc" id="L47">    }</span>
+
+    /**
+     * Returns the configured display name for the right player.
+     *
+     * @return Right player name
+     */
+    public String getRightPlayerName() {
+<span class="fc" id="L55">        return rightPlayerName;</span>
+    }
+
+    /**
+     * Sets the right player display name for PVP matches.
+     *
+     * @param rightPlayerName Right player display name
+     */
+    public void setRightPlayerName(String rightPlayerName) {
+<span class="pc bpc" id="L64" title="2 of 4 branches missed.">        if (rightPlayerName != null &amp;&amp; !rightPlayerName.trim().isEmpty()) {</span>
+<span class="fc" id="L65">            this.rightPlayerName = rightPlayerName.trim();</span>
+        }
+<span class="fc" id="L67">    }</span>
+
+    /**
+     * Returns the currently selected match modality.
+     *
+     * @return Match modality
+     */
+    public Modality getModality() {
+<span class="nc" id="L75">        return modality;</span>
+    }
+
+    /**
+     * Sets the match modality.
+     *
+     * @param modality Target modality
+     */
+    public void setModality(Modality modality) {
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">        if (modality != null) {</span>
+<span class="fc" id="L85">            this.modality = modality;</span>
+        }
+<span class="fc" id="L87">    }</span>
+
+    /**
+     * Returns the selected country for the left player.
+     *
+     * @return Left country
+     */
+    public Country getLeftCountry() {
+<span class="fc" id="L95">        return leftCountry;</span>
+    }
+
+    /**
+     * Cycles the left player's country to the next available option.
+     */
+    public void cycleLeftCountry() {
+<span class="fc" id="L102">        Country[] countries = Country.values();</span>
+<span class="fc" id="L103">        leftCountry = countries[(leftCountry.ordinal() + 1) % countries.length];</span>
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Returns the selected country for the right player.
+     *
+     * @return Right country
+     */
+    public Country getRightCountry() {
+<span class="fc" id="L112">        return rightCountry;</span>
+    }
+
+    /**
+     * Cycles the right player's country to the next available option.
+     */
+    public void cycleRightCountry() {
+<span class="fc" id="L119">        Country[] countries = Country.values();</span>
+<span class="fc" id="L120">        rightCountry = countries[(rightCountry.ordinal() + 1) % countries.length];</span>
+<span class="fc" id="L121">    }</span>
+
+    /**
+     * Returns the selected machine AI profile.
+     *
+     * @return Machine profile
+     */
+    public MachineProfile getMachineProfile() {
+<span class="fc" id="L129">        return machineProfile;</span>
+    }
+
+    /**
+     * Cycles the machine AI profile to the next available option.
+     */
+    public void cycleMachineProfile() {
+<span class="fc" id="L136">        MachineProfile[] profiles = MachineProfile.values();</span>
+<span class="fc" id="L137">        machineProfile = profiles[(machineProfile.ordinal() + 1) % profiles.length];</span>
+<span class="fc" id="L138">    }</span>
+
+    /**
+     * Returns the selected match rule type.
+     *
+     * @return Match type
+     */
+    public MatchType getMatchType() {
+<span class="fc" id="L146">        return matchType;</span>
+    }
+
+    /**
+     * Returns the configured duration in minutes for time-based matches.
+     *
+     * @return Duration in minutes
+     */
+    public int getMatchDurationMinutes() {
+<span class="fc" id="L155">        return matchDurationMinutes;</span>
+    }
+
+    /**
+     * Returns the configured goal target for goal-based matches.
+     *
+     * @return Goal target
+     */
+    public int getTargetGoals() {
+<span class="fc" id="L164">        return targetGoals;</span>
+    }
+
+    /**
+     * Selects time-based mode and cycles the duration between 1, 2, and 3 minutes.
+     */
+    public void selectOrCycleTimeMatch() {
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        if (matchType == MatchType.TIME) {</span>
+<span class="fc" id="L172">            matchDurationMinutes = (matchDurationMinutes % 3) + 1;</span>
+        } else {
+<span class="fc" id="L174">            matchType = MatchType.TIME;</span>
+        }
+<span class="fc" id="L176">    }</span>
+
+    /**
+     * Selects goal-based mode and cycles the goal target between 3, 5, and 7 goals.
+     */
+    public void selectOrCycleGoalsMatch() {
+<span class="fc bfc" id="L182" title="All 2 branches covered.">        if (matchType == MatchType.GOALS) {</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">            if (targetGoals == 3) {</span>
+<span class="fc" id="L184">                targetGoals = 5;</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">            } else if (targetGoals == 5) {</span>
+<span class="fc" id="L186">                targetGoals = 7;</span>
+            } else {
+<span class="fc" id="L188">                targetGoals = 3;</span>
+            }
+        } else {
+<span class="fc" id="L191">            matchType = MatchType.GOALS;</span>
+        }
+<span class="fc" id="L193">    }</span>
+
+    /**
+     * Builds a validated MatchConfig from the current UI selection values.
+     *
+     * @return Immutable MatchConfig instance
+     * @throws DOPOSoccerException if any configuration field is invalid
+     */
+    public MatchConfig toConfig() throws DOPOSoccerException {
+<span class="fc bfc" id="L202" title="All 2 branches covered.">        int target = (matchType == MatchType.TIME) ? matchDurationMinutes : targetGoals;</span>
+        
+<span class="fc" id="L204">         MatchConfig.Builder builder = MatchConfig.builder()</span>
+<span class="fc" id="L205">                    .modality(this.modality)</span>
+<span class="fc" id="L206">                    .leftCountry(this.leftCountry)</span>
+<span class="fc" id="L207">                    .rightCountry(this.rightCountry)</span>
+<span class="fc" id="L208">                    .matchType(this.matchType)</span>
+<span class="fc" id="L209">                    .targetValue(target)</span>
+<span class="fc" id="L210">                    .machineProfile(this.machineProfile)</span>
+<span class="fc" id="L211">                    .leftPlayerName(this.leftPlayerName);</span>
+
+<span class="fc bfc" id="L213" title="All 2 branches covered.">        if (this.modality == Modality.PVP) {</span>
+<span class="fc" id="L214">                builder.rightPlayerName(this.rightPlayerName);</span>
+        }
+<span class="fc" id="L216">        return builder.build();</span>
+
+    }
+
+    /**
+     * Returns the selected window resolution.
+     *
+     * @return Field resolution
+     */
+    public FieldResolution getResolution() {
+<span class="fc" id="L226">        return resolution;</span>
+    }
+
+    /**
+     * Sets the window resolution preference.
+     *
+     * @param resolution Target field resolution
+     */
+    public void setResolution(FieldResolution resolution) {
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">        if (resolution != null) {</span>
+<span class="fc" id="L236">            this.resolution = resolution;</span>
+        }
+<span class="fc" id="L238">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

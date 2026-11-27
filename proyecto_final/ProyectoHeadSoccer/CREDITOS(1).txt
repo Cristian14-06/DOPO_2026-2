@@ -1,0 +1,48 @@
+DOPOSoccer 2026-2 - Créditos
+Juan David Espitia y Cristian Salamanca
+Desarrollo Orientado por Objetos (DOPO)
+Escuela Colombiana de Ingeniería Julio Garavito
+
+
+IMÁGENES
+
+Ubicación: src/presentation/resources/
+
+Archivo                 Uso en el juego              Fuente
+flag_south_korea.png    Bandera de Corea del Sur     https://flagpedia.net
+flag_cameroon.png       Bandera de Camerún           https://flagpedia.net
+flag_nigeria.png        Bandera de Nigeria           https://flagpedia.net
+flag_usa.png            Bandera de Estados Unidos    https://flagpedia.net
+Ball.png                Balón                        -
+
+
+SONIDOS Y MÚSICA
+
+Ubicación: src/presentation/resources/sounds/
+
+Los efectos de sonido y la música de fondo fueron generados por síntesis de
+audio, al estilo de los juegos arcade (sfxr / chiptune). Formato: WAV PCM,
+16 bits, 44.1 kHz, mono.
+
+Licencia: dominio público (CC0 1.0 Universal).
+
+Archivo           Duración   Uso en el juego
+kick.wav          0.22 s     Patada al balón
+goal.wav          2.20 s     Gol
+stunned.wav       1.20 s     Jugador aturdido (vida en cero)
+finish.wav        2.00 s     Fin del partido
+power_aura.wav    0.85 s     Activación del aura
+power_shot.wav    0.60 s     Tiro de poder
+power_hit.wav     0.75 s     El tiro de poder golpea al rival
+soundtrack.wav    14.22 s    Música de fondo (se repite en bucle)
+
+
+REFERENCIAS DE DISEÑO
+
+Para el diseño de los sonidos se tomaron como referencia estas herramientas y
+bibliotecas de recursos libres:
+
+- sfxr / jsfxr: https://sfxr.me/
+- Kenney Game Assets: https://kenney.nl/assets/category/Audio
+- Freesound: https://freesound.org
+- OpenGameArt: https://opengameart.org

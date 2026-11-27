@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Life.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Life.java</span></div><h1>Life.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.Serializable;
+
+/**
+ * Manages player health, zero-health stun state, and 3-second recovery.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Life implements Serializable {
+    private static final long serialVersionUID = 1L;
+    private final double MAX_LIFE;
+    private double life;
+    private boolean stunned;
+    private int stunTicksRemaining;
+
+    /**
+     * Creates a life component initialized at full health.
+     *
+     * @param maxLife Maximum health points
+     */
+<span class="fc" id="L23">    public Life(double maxLife){</span>
+<span class="fc" id="L24">        this.MAX_LIFE = maxLife;</span>
+<span class="fc" id="L25">        this.life = maxLife;</span>
+<span class="fc" id="L26">        this.stunned = false;</span>
+<span class="fc" id="L27">        this.stunTicksRemaining = 0;</span>
+<span class="fc" id="L28">    }</span>
+
+    /**
+     * Deducts damage and triggers a 3-second stun if health reaches zero.
+     *
+     * @param damage Damage amount to apply
+     */
+    public void takeDamage(double damage){
+<span class="pc bpc" id="L36" title="1 of 2 branches missed.">        if(stunned) return;</span>
+<span class="fc" id="L37">        this.life = Math.max(0.0, this.life - damage);</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        if(this.life &lt;= 0.0){</span>
+<span class="fc" id="L39">            stunTicksRemaining = Physics.seconds(3.0);</span>
+<span class="fc" id="L40">            stunned = true;</span>
+        }
+<span class="fc" id="L42">    }</span>
+
+    /**
+     * Advances stun timer and restores full health when stun expires.
+     */
+    public void tick(){
+<span class="fc bfc" id="L48" title="All 2 branches covered.">        if(stunned){</span>
+<span class="fc" id="L49">            stunTicksRemaining--;</span>
+<span class="fc bfc" id="L50" title="All 2 branches covered.">            if(stunTicksRemaining &lt;= 0){</span>
+<span class="fc" id="L51">                stunTicksRemaining = 0;</span>
+<span class="fc" id="L52">                stunned = false;</span>
+<span class="fc" id="L53">                life = MAX_LIFE;</span>
+            }
+        }
+<span class="fc" id="L56">    }</span>
+
+    /**
+     * Restores full health and clears any active stun state.
+     */
+    public void reset(){
+<span class="nc" id="L62">        this.life = MAX_LIFE;</span>
+<span class="nc" id="L63">        this.stunned = false;</span>
+<span class="nc" id="L64">        this.stunTicksRemaining = 0;</span>
+<span class="nc" id="L65">    }</span>
+
+    /** @return Current health points */
+    public double getCurrent() {
+<span class="fc" id="L69">        return life;</span>
+    }
+
+    /** @return Maximum health points */
+    public double getMax() {
+<span class="fc" id="L74">        return MAX_LIFE;</span>
+    }
+
+    /** @return True if stunned due to zero health */
+    public boolean isStunned() {
+<span class="fc" id="L79">        return stunned;</span>
+    }
+
+    /** @return Remaining stun ticks */
+    public int getStunTicksRemaining() {
+<span class="nc" id="L84">        return stunTicksRemaining;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

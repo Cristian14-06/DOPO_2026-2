@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>DOPOSoccer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">DOPOSoccer.java</span></div><h1>DOPOSoccer.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Main Facade for the DOPOSoccer domain layer.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class DOPOSoccer {
+    private Match currentMatch;
+<span class="fc" id="L16">    private final List&lt;MatchListener&gt; listeners = new ArrayList&lt;&gt;();</span>
+    private final MatchRepository matchRepository;
+    private final ProfileRepository profileRepository;
+
+    /**
+     * Creates a facade instance with the given match and profile persistence repositories.
+     *
+     * @param matchRepository Repository used to save and open matches
+     * @param profileRepository Repository used to load and persist player profiles
+     */
+<span class="fc" id="L26">    public DOPOSoccer(MatchRepository matchRepository, ProfileRepository profileRepository) {</span>
+<span class="fc" id="L27">        this.matchRepository = matchRepository;</span>
+<span class="fc" id="L28">        this.profileRepository = profileRepository;</span>
+<span class="fc" id="L29">    }</span>
+
+    /**
+     * Creates a facade instance without a configured match repository.
+     */
+    public DOPOSoccer() {
+<span class="fc" id="L35">        this(null, null);</span>
+<span class="fc" id="L36">    }</span>
+
+    /**
+     * Creates a facade instance with the given match persistence repository.
+     *
+     * @param matchRepository Repository used to save and open matches
+     */
+    public DOPOSoccer(MatchRepository matchRepository) {
+<span class="fc" id="L44">        this(matchRepository, null);</span>
+<span class="fc" id="L45">    }</span>
+
+    /**
+     * Starts a new match from the given configuration and attaches registered listeners.
+     *
+     * @param config Validated match configuration
+     * @throws DOPOSoccerException if config is null or invalid
+     */
+    public void newMatch(MatchConfig config) throws DOPOSoccerException {
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        if (config == null) {</span>
+<span class="nc" id="L55">            throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);</span>
+        }
+
+<span class="fc bfc" id="L58" title="All 2 branches covered.">        PlayerProfile leftProfile = (profileRepository != null) ? profileRepository.load(config.getLeftPlayerName()) : null;</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        PlayerProfile rightProfile = (profileRepository != null) ? profileRepository.load(config.getRightPlayerName()) : null;</span>
+
+<span class="fc" id="L61">        this.currentMatch = new Match(config, leftProfile, rightProfile);</span>
+<span class="fc" id="L62">        attachListeners();</span>
+<span class="fc" id="L63">    }</span>
+
+    /**
+     * Advances the active match simulation by one tick.
+     */
+    public void tick() {
+<span class="pc bpc" id="L69" title="1 of 2 branches missed.">        if (currentMatch != null) {</span>
+<span class="fc" id="L70">            currentMatch.tick();</span>
+        }
+<span class="fc" id="L72">    }</span>
+
+    /**
+     * Records player input intentions for the given side.
+     *
+     * @param side Player side
+     * @param actions Set of actions pressed on the current frame
+     */
+    public void setIntention(Side side, Set&lt;PlayerAction&gt; actions) {
+<span class="pc bpc" id="L81" title="2 of 4 branches missed.">        if (currentMatch != null &amp;&amp; side != null) {</span>
+<span class="fc" id="L82">            currentMatch.setIntention(side, actions);</span>
+        }
+<span class="fc" id="L84">    }</span>
+
+    /**
+     * Pauses the active match.
+     */
+    public void pause() {
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (currentMatch != null) {</span>
+<span class="fc" id="L91">            currentMatch.pause();</span>
+        }
+<span class="fc" id="L93">    }</span>
+
+    /**
+     * Resumes the active match from pause.
+     */
+    public void resume() {
+<span class="pc bpc" id="L99" title="1 of 2 branches missed.">        if (currentMatch != null) {</span>
+<span class="fc" id="L100">            currentMatch.resume();</span>
+        }
+<span class="fc" id="L102">    }</span>
+
+    /**
+     * Toggles the active match between paused and playing states.
+     */
+    public void togglePause() {
+<span class="pc bpc" id="L108" title="1 of 2 branches missed.">        if (currentMatch == null) {</span>
+<span class="nc" id="L109">            return;</span>
+        }
+<span class="fc bfc" id="L111" title="All 2 branches covered.">        if (currentMatch.getStatus() == GameStatus.PAUSED) {</span>
+<span class="fc" id="L112">            currentMatch.resume();</span>
+        } else {
+<span class="fc" id="L114">            currentMatch.pause();</span>
+        }
+<span class="fc" id="L116">    }</span>
+
+    /**
+     * Finishes the active match immediately.
+     */
+    public void finish() {
+<span class="pc bpc" id="L122" title="1 of 2 branches missed.">        if (currentMatch != null) {</span>
+<span class="fc" id="L123">            currentMatch.finish();</span>
+        }
+<span class="fc" id="L125">    }</span>
+
+    /**
+     * Returns a read-only view of the active match, or null if none exists.
+     *
+     * @return MatchView of the active match
+     */
+    public MatchView getMatch() {
+<span class="fc" id="L133">        return currentMatch;</span>
+    }
+
+    /**
+     * Registers a match lifecycle listener.
+     *
+     * @param listener Listener to register
+     */
+    public void addListener(MatchListener listener) {
+<span class="pc bpc" id="L142" title="2 of 4 branches missed.">        if (listener != null &amp;&amp; !listeners.contains(listener)) {</span>
+<span class="fc" id="L143">            listeners.add(listener);</span>
+<span class="pc bpc" id="L144" title="1 of 2 branches missed.">            if (currentMatch != null) {</span>
+<span class="nc" id="L145">                currentMatch.addListener(listener);</span>
+            }
+        }
+<span class="fc" id="L148">    }</span>
+
+    /**
+     * Unregisters a match lifecycle listener.
+     *
+     * @param listener Listener to remove
+     */
+    public void removeListener(MatchListener listener) {
+<span class="nc" id="L156">        listeners.remove(listener);</span>
+<span class="nc bnc" id="L157" title="All 2 branches missed.">        if (currentMatch != null) {</span>
+<span class="nc" id="L158">            currentMatch.removeListener(listener);</span>
+        }
+<span class="nc" id="L160">    }</span>
+
+    /*
+     * Attaches all registered listeners and the profile persistence callback to the active match.
+     */
+    private void attachListeners() {
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">        if (currentMatch == null) return;</span>
+<span class="fc bfc" id="L167" title="All 2 branches covered.">        for (MatchListener listener : listeners) {</span>
+<span class="fc" id="L168">            currentMatch.addListener(listener);</span>
+<span class="fc" id="L169">        }</span>
+
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        if (profileRepository != null) {</span>
+<span class="fc" id="L172">            this.currentMatch.addListener(new MatchListener() {</span>
+                @Override
+                public void onMatchFinished(Side winner, int winnerPoints, int loserPoints) {
+<span class="fc" id="L175">                    saveProfileOnFinish(winner, winnerPoints, loserPoints);</span>
+<span class="fc" id="L176">                }</span>
+            });
+        }
+<span class="fc" id="L179">    }</span>
+
+    /*
+     * Reloads fresh player profiles, credits earned match points, and persists both profiles.
+     */
+    private void saveProfileOnFinish(Side winner, int winnerPoints, int loserPoints) {
+<span class="pc bpc" id="L185" title="2 of 4 branches missed.">        if (currentMatch == null || profileRepository == null) return;</span>
+<span class="pc bpc" id="L186" title="3 of 4 branches missed.">        int leftEarned = (winner == null || winner == Side.LEFT) ? winnerPoints : loserPoints;</span>
+<span class="pc bpc" id="L187" title="3 of 4 branches missed.">        int rightEarned = (winner == null || winner == Side.RIGHT) ? winnerPoints : loserPoints;</span>
+        try {
+<span class="fc" id="L189">            PlayerProfile freshLeft = profileRepository.load(currentMatch.getProfile(Side.LEFT).getName());</span>
+<span class="fc" id="L190">            PlayerProfile freshRight = profileRepository.load(currentMatch.getProfile(Side.RIGHT).getName());</span>
+<span class="fc" id="L191">            freshLeft.addPoints(leftEarned);</span>
+<span class="fc" id="L192">            freshRight.addPoints(rightEarned);</span>
+<span class="fc" id="L193">            profileRepository.save(freshLeft);</span>
+<span class="fc" id="L194">            profileRepository.save(freshRight);</span>
+<span class="fc" id="L195">        } catch (DOPOSoccerException doex) {</span>
+<span class="fc bfc" id="L196" title="All 2 branches covered.">            for (MatchListener listener : listeners) {</span>
+<span class="fc" id="L197">                listener.onProfileSaveFailed(doex.getMessage());</span>
+<span class="fc" id="L198">            }</span>
+<span class="fc" id="L199">        }</span>
+<span class="fc" id="L200">    }</span>
+
+    /**
+     * Saves the active match to the specified file.
+     *
+     * @param file Destination file
+     * @throws DOPOSoccerException if there is no active match, repository is missing, or saving fails
+     */
+    public void save(File file) throws DOPOSoccerException {
+<span class="fc bfc" id="L209" title="All 2 branches covered.">        if (currentMatch == null) throw new DOPOSoccerException(DOPOSoccerException.NO_ACTIVE_MATCH);</span>
+<span class="pc bpc" id="L210" title="1 of 2 branches missed.">        if (matchRepository == null) throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);</span>
+<span class="fc" id="L211">        currentMatch.pause();</span>
+<span class="fc" id="L212">        matchRepository.save(currentMatch, file);</span>
+<span class="fc" id="L213">    }</span>
+
+    /**
+     * Returns a read-only view of the stored profile for the given player name.
+     *
+     * @param playerName Player display name
+     * @return Read-only ProfileView
+     * @throws DOPOSoccerException if profile repository is missing or loading fails
+     */
+    public ProfileView getProfile(String playerName) throws DOPOSoccerException {
+<span class="pc bpc" id="L223" title="1 of 2 branches missed.">        if (profileRepository == null) {</span>
+<span class="nc" id="L224">            throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);</span>
+        }
+<span class="fc" id="L226">        return profileRepository.load(playerName);</span>
+    }
+
+    /**
+     * Upgrades the given statistic for the named player and persists the updated profile.
+     *
+     * @param playerName Player display name
+     * @param type Statistic type to upgrade
+     * @throws DOPOSoccerException if repository is missing, upgrade rules fail, or saving fails
+     */
+    public void upgrade(String playerName, StatType type) throws DOPOSoccerException {
+<span class="pc bpc" id="L237" title="1 of 2 branches missed.">        if (profileRepository == null) {</span>
+<span class="nc" id="L238">            throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);</span>
+        }
+<span class="fc" id="L240">        PlayerProfile profile = profileRepository.load(playerName);</span>
+<span class="fc" id="L241">        profile.upgrade(type);</span>
+<span class="fc" id="L242">        profileRepository.save(profile);</span>
+<span class="fc" id="L243">    }</span>
+
+    /**
+     * Opens a saved match from the specified file and reattaches registered listeners.
+     *
+     * @param file Source file
+     * @throws DOPOSoccerException if repository is missing or loading fails
+     */
+    public void open(File file) throws DOPOSoccerException {
+<span class="pc bpc" id="L252" title="1 of 2 branches missed.">        if (matchRepository == null) throw new DOPOSoccerException(DOPOSoccerException.NULL_ARGUMENT);</span>
+<span class="fc" id="L253">        currentMatch = matchRepository.open(file);</span>
+
+<span class="pc bpc" id="L255" title="1 of 2 branches missed.">        if (currentMatch != null) {</span>
+<span class="fc" id="L256">            attachListeners();</span>
+        }
+<span class="fc" id="L258">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

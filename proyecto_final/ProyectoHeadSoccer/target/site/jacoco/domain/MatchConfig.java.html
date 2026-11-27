@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MatchConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">MatchConfig.java</span></div><h1>MatchConfig.java</h1><pre class="source lang-java linenums">package domain;
+
+/**
+ * Immutable match configuration created via Builder with centralized validation.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public final class MatchConfig {
+    private final Modality modality;
+    private final Country leftCountry;
+    private final Country rightCountry;
+    private final MatchType matchType;
+    private final int targetValue;
+    private final MachineProfile machineProfile;
+    private final String leftPlayerName;
+    private final String rightPlayerName;
+
+    /*
+     * Constructs an immutable MatchConfig from a validated Builder instance.
+     */
+<span class="fc" id="L22">    private MatchConfig(Builder builder) {</span>
+<span class="fc" id="L23">        this.modality = builder.modality;</span>
+<span class="fc" id="L24">        this.leftCountry = builder.leftCountry;</span>
+<span class="fc" id="L25">        this.rightCountry = builder.rightCountry;</span>
+<span class="fc" id="L26">        this.matchType = builder.matchType;</span>
+<span class="fc" id="L27">        this.targetValue = builder.targetValue;</span>
+<span class="fc" id="L28">        this.machineProfile = builder.machineProfile;</span>
+<span class="fc" id="L29">        this.leftPlayerName = builder.leftPlayerName;</span>
+<span class="fc" id="L30">        this.rightPlayerName = builder.rightPlayerName;</span>
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * Returns the configured match modality.
+     *
+     * @return Match modality
+     */
+    public Modality getModality() {
+<span class="fc" id="L39">        return modality;</span>
+    }
+
+    /**
+     * Returns the country selected for the left player.
+     *
+     * @return Left player country
+     */
+    public Country getLeftCountry() {
+<span class="fc" id="L48">        return leftCountry;</span>
+    }
+
+    /**
+     * Returns the country selected for the right player.
+     *
+     * @return Right player country
+     */
+    public Country getRightCountry() {
+<span class="fc" id="L57">        return rightCountry;</span>
+    }
+
+    /**
+     * Returns the match termination rule type.
+     *
+     * @return Match type
+     */
+    public MatchType getMatchType() {
+<span class="fc" id="L66">        return matchType;</span>
+    }
+
+    /**
+     * Returns the target minutes or goals depending on the match type.
+     *
+     * @return Target value
+     */
+    public int getTargetValue() {
+<span class="fc" id="L75">        return targetValue;</span>
+    }
+
+    /**
+     * Returns the configured machine AI profile for PVC matches.
+     *
+     * @return Machine profile
+     */
+    public MachineProfile getMachineProfile() {
+<span class="fc" id="L84">        return machineProfile;</span>
+    }
+
+    /**
+     * Returns the left player name.
+     *
+     * @return Left player name
+     */
+    public String getLeftPlayerName() {
+<span class="fc" id="L93">        return leftPlayerName;</span>
+    }
+
+    /**
+     * Returns the right player name.
+     *
+     * @return Right player name
+     */
+    public String getRightPlayerName() {
+<span class="fc" id="L102">        return rightPlayerName;</span>
+    }
+
+    /**
+     * Creates a new builder for MatchConfig.
+     *
+     * @return MatchConfig builder
+     */
+    public static Builder builder() {
+<span class="fc" id="L111">        return new Builder();</span>
+    }
+
+    /**
+     * Fluent builder for constructing validated MatchConfig instances.
+     *
+     * @author Juan Espitia
+     * @author Cristian Salamanca
+     */
+<span class="fc" id="L120">    public static final class Builder {</span>
+<span class="fc" id="L121">        private Modality modality = Modality.PVP;</span>
+<span class="fc" id="L122">        private Country leftCountry = Country.SOUTH_KOREA;</span>
+<span class="fc" id="L123">        private Country rightCountry = Country.CAMEROON;</span>
+<span class="fc" id="L124">        private MatchType matchType = MatchType.TIME;</span>
+<span class="fc" id="L125">        private int targetValue = 2;</span>
+<span class="fc" id="L126">        private MachineProfile machineProfile = MachineProfile.EXPERTA;</span>
+<span class="fc" id="L127">        private String leftPlayerName = &quot;jugador 1&quot;;</span>
+<span class="fc" id="L128">        private String rightPlayerName = &quot;jugador 2&quot;;</span>
+
+        /**
+         * Sets the match modality.
+         *
+         * @param m Modality
+         * @return This builder
+         */
+        public Builder modality(Modality m) {
+<span class="fc" id="L137">            this.modality = m;</span>
+<span class="fc" id="L138">            return this;</span>
+        }
+
+        /**
+         * Sets the left player country.
+         *
+         * @param c Country
+         * @return This builder
+         */
+        public Builder leftCountry(Country c) {
+<span class="fc" id="L148">            this.leftCountry = c;</span>
+<span class="fc" id="L149">            return this;</span>
+        }
+
+        /**
+         * Sets the right player country.
+         *
+         * @param c Country
+         * @return This builder
+         */
+        public Builder rightCountry(Country c) {
+<span class="fc" id="L159">            this.rightCountry = c;</span>
+<span class="fc" id="L160">            return this;</span>
+        }
+
+        /**
+         * Sets the match rule type.
+         *
+         * @param mt Match type
+         * @return This builder
+         */
+        public Builder matchType(MatchType mt) {
+<span class="fc" id="L170">            this.matchType = mt;</span>
+<span class="fc" id="L171">            return this;</span>
+        }
+
+        /**
+         * Sets the target minutes or goals.
+         *
+         * @param tv Positive target value
+         * @return This builder
+         */
+        public Builder targetValue(int tv) {
+<span class="fc" id="L181">            this.targetValue = tv;</span>
+<span class="fc" id="L182">            return this;</span>
+        }
+
+        /**
+         * Sets the machine AI profile for PVC matches.
+         *
+         * @param mp Machine profile
+         * @return This builder
+         */
+        public Builder machineProfile(MachineProfile mp) {
+<span class="fc" id="L192">            this.machineProfile = mp;</span>
+<span class="fc" id="L193">            return this;</span>
+        }
+
+        /**
+         * Sets the left player name.
+         *
+         * @param n Left player name
+         * @return This builder
+         */
+        public Builder leftPlayerName(String n) {
+<span class="fc" id="L203">            this.leftPlayerName = n;</span>
+<span class="fc" id="L204">            return this;</span>
+        }
+
+        /**
+         * Sets the right player name.
+         *
+         * @param n Right player name
+         * @return This builder
+         */
+        public Builder rightPlayerName(String n) {
+<span class="fc" id="L214">            this.rightPlayerName = n;</span>
+<span class="fc" id="L215">            return this;</span>
+        }
+
+        /**
+         * Validates fields and builds an immutable MatchConfig.
+         *
+         * @return Validated MatchConfig instance
+         * @throws DOPOSoccerException if any configuration value is invalid or unsupported
+         */
+        public MatchConfig build() throws DOPOSoccerException {
+<span class="pc bpc" id="L225" title="4 of 8 branches missed.">            if (modality == null || leftCountry == null || rightCountry == null || matchType == null) {</span>
+<span class="nc" id="L226">                throw new DOPOSoccerException(DOPOSoccerException.INVALID_MATCH_CONFIG);</span>
+            }
+<span class="pc bpc" id="L228" title="1 of 4 branches missed.">            if (modality == Modality.PVC &amp;&amp; machineProfile == null) {</span>
+<span class="nc" id="L229">                throw new DOPOSoccerException(DOPOSoccerException.INVALID_MATCH_CONFIG);</span>
+            }
+<span class="pc bpc" id="L231" title="1 of 2 branches missed.">            if (targetValue &lt;= 0) {</span>
+<span class="nc" id="L232">                throw new DOPOSoccerException(DOPOSoccerException.INVALID_MATCH_CONFIG);</span>
+            }
+<span class="pc bpc" id="L234" title="3 of 6 branches missed.">            if (leftPlayerName == null || leftPlayerName.trim().isEmpty()</span>
+<span class="pc bpc" id="L235" title="1 of 2 branches missed.">                    || rightPlayerName == null || rightPlayerName.trim().isEmpty()) {</span>
+<span class="nc" id="L236">                throw new DOPOSoccerException(DOPOSoccerException.INVALID_MATCH_CONFIG);</span>
+            }
+<span class="pc bpc" id="L238" title="1 of 4 branches missed.">            if (modality == Modality.PVC &amp;&amp; this.rightPlayerName.equals(&quot;jugador 2&quot;)) {</span>
+<span class="fc" id="L239">                this.rightPlayerName = &quot;COM &quot; + machineProfile.getDisplayName();</span>
+            }
+<span class="fc bfc" id="L241" title="All 2 branches covered.">            if (leftPlayerName.trim().equalsIgnoreCase(rightPlayerName.trim())) {</span>
+<span class="fc" id="L242">                throw new DOPOSoccerException(DOPOSoccerException.INVALID_MATCH_CONFIG);</span>
+            }
+<span class="fc" id="L244">            return new MatchConfig(this);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>TimeRule.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">TimeRule.java</span></div><h1>TimeRule.java</h1><pre class="source lang-java linenums">package domain;
+
+/**
+ * Time-based match rule with sudden-death golden goal activation on ties.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class TimeRule implements MatchRule{
+    private int timeRemaining;
+    private int tickCount;
+
+    /**
+     * Creates a default 1-minute time rule.
+     */
+<span class="nc" id="L16">    public TimeRule(){</span>
+<span class="nc" id="L17">        this.timeRemaining = 60;</span>
+<span class="nc" id="L18">        this.tickCount = 0;</span>
+<span class="nc" id="L19">    }</span>
+
+    /**
+     * Creates a time rule for the given duration in minutes.
+     *
+     * @param minutes Match duration in minutes (must be positive)
+     * @throws DOPOSoccerException if minutes is not positive
+     */
+<span class="fc" id="L27">    public TimeRule(int minutes) throws DOPOSoccerException{</span>
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if(minutes &lt;= 0) throw new DOPOSoccerException(DOPOSoccerException.INVALID_MATCH_CONFIG);</span>
+<span class="fc" id="L29">        this.timeRemaining = minutes* 60;</span>
+<span class="fc" id="L30">        this.tickCount = 0;</span>
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * Advances the match countdown clock and triggers sudden death if time expires on a tie.
+     *
+     * @param match Active match instance
+     */
+    @Override
+    public void onTick(Match match) {
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">        if (match.getStatus() == GameStatus.PLAYING) {</span>
+<span class="fc bfc" id="L41" title="All 2 branches covered.">            if (timeRemaining &gt; 0) {</span>
+<span class="fc" id="L42">                tickCount++;</span>
+<span class="fc bfc" id="L43" title="All 2 branches covered.">                if (tickCount &gt;= Physics.FPS) {</span>
+<span class="fc" id="L44">                    timeRemaining--;</span>
+<span class="fc" id="L45">                    tickCount = 0;</span>
+                }
+<span class="pc bpc" id="L47" title="1 of 2 branches missed.">            } else if (match.getScoreBoard().isTie()) {</span>
+<span class="fc" id="L48">                match.setState(GameStatus.SUDDEN_DEATH);</span>
+            }
+        }
+<span class="fc" id="L51">    }</span>
+
+    /**
+     * Checks whether regulation time has expired with a non-tied score.
+     *
+     * @param match Active match instance
+     * @return True if time is up and the score is not tied
+     */
+    @Override
+    public boolean isOver(Match match) {
+<span class="fc bfc" id="L61" title="All 4 branches covered.">        return timeRemaining &lt;= 0 &amp;&amp; !match.getScoreBoard().isTie();</span>
+    }
+
+    /**
+     * Returns the remaining match duration in seconds.
+     *
+     * @param match Active match instance
+     * @return Remaining seconds
+     */
+    @Override
+    public int remainingSeconds(Match match) {
+<span class="fc" id="L72">        return timeRemaining;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

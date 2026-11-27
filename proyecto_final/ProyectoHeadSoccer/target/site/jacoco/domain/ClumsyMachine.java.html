@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ClumsyMachine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">ClumsyMachine.java</span></div><h1>ClumsyMachine.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.EnumSet;
+import java.util.Random;
+import java.util.Set;
+
+/**
+ * Machine controller implementing the Torpe (clumsy) profile with randomized,
+ * erratic movements and delayed reactions.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class ClumsyMachine extends MachineController {
+    private static final long serialVersionUID = 1L;
+    private static final int MIN_ACTION_TICKS = 12;
+    private static final int EXTRA_RANDOM_TICKS = 18;
+    private static final double POWER_CHANCE = 0.10;
+    private static final double FULL_POWER = 100.0;
+    private static final int CHOICES = 6;
+
+    private final Random random;
+<span class="fc" id="L23">    private int actionTimer = 0;</span>
+<span class="fc" id="L24">    private final Set&lt;PlayerAction&gt; bufferedActions = EnumSet.noneOf(PlayerAction.class);</span>
+
+    /**
+     * Constructs a clumsy machine controller with a default random generator.
+     *
+     * @param side Pitch side controlled by this AI
+     */
+    public ClumsyMachine(Side side) {
+<span class="fc" id="L32">        this(side, new Random());</span>
+<span class="fc" id="L33">    }</span>
+
+    /**
+     * Constructs a clumsy machine controller with an injectable random generator for testing.
+     *
+     * @param side Pitch side controlled by this AI
+     * @param random Random generator instance
+     */
+    public ClumsyMachine(Side side, Random random) {
+<span class="fc" id="L42">        super(side);</span>
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        this.random = (random != null) ? random : new Random();</span>
+<span class="fc" id="L44">    }</span>
+
+    /**
+     * Picks a random action and keeps it for 12 to 29 ticks, so the machine looks clumsy instead of shaking.
+     * The possible choices are: move left, move right, jump, kick, move roughly toward the ball
+     * (sometimes the wrong way) with an occasional kick, or stay idle for a moment.
+     * When the power bar is full it activates the power with a 10% chance per decision.
+     *
+     * @param match Read-only match view
+     * @param me Read-only view of the controlled player
+     * @param ball Read-only ball view
+     * @param rival Read-only view of the opponent
+     * @return Actions to perform during this tick
+     */
+    @Override
+    protected Set&lt;PlayerAction&gt; chooseActions(MatchView match, PlayerView me, BallView ball, PlayerView rival) {
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (actionTimer &gt; 0) {</span>
+<span class="fc" id="L61">            actionTimer--;</span>
+<span class="fc" id="L62">            return EnumSet.copyOf(bufferedActions);</span>
+        }
+
+<span class="fc" id="L65">        bufferedActions.clear();</span>
+<span class="fc" id="L66">        actionTimer = MIN_ACTION_TICKS + random.nextInt(EXTRA_RANDOM_TICKS);</span>
+
+<span class="fc" id="L68">        int choice = random.nextInt(CHOICES);</span>
+<span class="fc bfc" id="L69" title="All 6 branches covered.">        switch (choice) {</span>
+            case 0:
+<span class="fc" id="L71">                bufferedActions.add(PlayerAction.LEFT);</span>
+<span class="fc" id="L72">                break;</span>
+            case 1:
+<span class="fc" id="L74">                bufferedActions.add(PlayerAction.RIGHT);</span>
+<span class="fc" id="L75">                break;</span>
+            case 2:
+<span class="fc" id="L77">                bufferedActions.add(PlayerAction.JUMP);</span>
+<span class="fc" id="L78">                break;</span>
+            case 3:
+<span class="fc" id="L80">                bufferedActions.add(PlayerAction.KICK);</span>
+<span class="fc" id="L81">                break;</span>
+            case 4:
+<span class="pc bpc" id="L83" title="1 of 2 branches missed.">                if (ball.getX() &gt; me.getHeadShape().getX()) {</span>
+<span class="nc bnc" id="L84" title="All 2 branches missed.">                    bufferedActions.add(random.nextBoolean() ? PlayerAction.RIGHT : PlayerAction.LEFT);</span>
+                } else {
+<span class="fc bfc" id="L86" title="All 2 branches covered.">                    bufferedActions.add(random.nextBoolean() ? PlayerAction.LEFT : PlayerAction.RIGHT);</span>
+                }
+<span class="fc bfc" id="L88" title="All 2 branches covered.">                if (random.nextBoolean()) {</span>
+<span class="fc" id="L89">                    bufferedActions.add(PlayerAction.KICK);</span>
+                }
+                break;
+            case 5:
+            default:
+                break;
+        }
+
+<span class="fc bfc" id="L97" title="All 4 branches covered.">        if (me.getPowerProgress() &gt;= FULL_POWER &amp;&amp; random.nextDouble() &lt; POWER_CHANCE) {</span>
+<span class="fc" id="L98">            bufferedActions.add(PlayerAction.POWER);</span>
+        }
+
+<span class="fc" id="L101">        return EnumSet.copyOf(bufferedActions);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

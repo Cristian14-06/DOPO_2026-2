@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Contact.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Contact.java</span></div><h1>Contact.java</h1><pre class="source lang-java linenums">package domain;
+
+/**
+ * Immutable collision contact describing the outward normal from the obstacle
+ * toward the ball and the overlap penetration depth.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Contact {
+    private final Vector2 normal;
+    private final double penetration;
+
+    /**
+     * Constructs a collision contact with a normal vector and penetration depth.
+     *
+     * @param normal Outward unit normal vector from the obstacle toward the ball
+     * @param penetration Overlap distance in pixels
+     */
+<span class="fc" id="L20">    public Contact(Vector2 normal, double penetration) {</span>
+<span class="fc" id="L21">        this.normal = normal;</span>
+<span class="fc" id="L22">        this.penetration = penetration;</span>
+<span class="fc" id="L23">    }</span>
+
+    /**
+     * Returns the outward normal vector of this contact.
+     *
+     * @return Normal vector
+     */
+    public Vector2 getNormal() {
+<span class="fc" id="L31">        return normal;</span>
+    }
+
+    /**
+     * Returns the overlap penetration depth in pixels.
+     *
+     * @return Penetration depth
+     */
+    public double getPenetration() {
+<span class="fc" id="L40">        return penetration;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

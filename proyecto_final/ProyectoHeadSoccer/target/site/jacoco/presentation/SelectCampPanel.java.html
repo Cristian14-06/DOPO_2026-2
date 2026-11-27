@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SelectCampPanel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">SelectCampPanel.java</span></div><h1>SelectCampPanel.java</h1><pre class="source lang-java linenums">package presentation;
+
+import javax.swing.*;
+import java.awt.*;
+
+/**
+ * Field resolution selection screen built with standard Swing buttons.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class SelectCampPanel extends JPanel {
+    private final MatchSetup setup;
+    private final JButton btnSmall;
+    private final JButton btnMedium;
+    private final JButton btnLarge;
+
+    /**
+     * Constructs the resolution selection screen.
+     *
+     * @param photo Match panel holding the selected resolution
+     * @param onResolutionChanged Callback invoked when a resolution button is clicked
+     * @param onBack Action invoked to return to player selection
+     * @param onStart Action invoked to launch the configured match
+     */
+    public SelectCampPanel(
+            MatchSetup setup,
+            java.util.function.Consumer&lt;FieldResolution&gt; onResolutionChanged,
+            Runnable onBack,
+            Runnable onStart
+<span class="nc" id="L31">    ) {</span>
+<span class="nc" id="L32">        this.setup = setup;</span>
+<span class="nc" id="L33">        setLayout(new GridBagLayout());</span>
+<span class="nc" id="L34">        setBackground(new Color(22, 34, 52));</span>
+
+<span class="nc" id="L36">        JPanel card = new JPanel();</span>
+<span class="nc" id="L37">        card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));</span>
+<span class="nc" id="L38">        card.setBackground(new Color(25, 30, 42, 235));</span>
+<span class="nc" id="L39">        card.setBorder(BorderFactory.createCompoundBorder(</span>
+<span class="nc" id="L40">                BorderFactory.createLineBorder(new Color(255, 200, 50), 2),</span>
+<span class="nc" id="L41">                BorderFactory.createEmptyBorder(24, 34, 24, 34)</span>
+        ));
+
+<span class="nc" id="L44">        JLabel title = new JLabel(&quot;SELECT THE CAMP&quot;);</span>
+<span class="nc" id="L45">        title.setFont(new Font(&quot;Impact&quot;, Font.BOLD, 38));</span>
+<span class="nc" id="L46">        title.setForeground(Color.YELLOW);</span>
+<span class="nc" id="L47">        title.setAlignmentX(CENTER_ALIGNMENT);</span>
+
+<span class="nc" id="L49">        JLabel subtitle = new JLabel(&quot;Tamaño de ventana / resolución:&quot;);</span>
+<span class="nc" id="L50">        subtitle.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 16));</span>
+<span class="nc" id="L51">        subtitle.setForeground(Color.WHITE);</span>
+<span class="nc" id="L52">        subtitle.setAlignmentX(CENTER_ALIGNMENT);</span>
+
+<span class="nc" id="L54">        JPanel resRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 14, 6));</span>
+<span class="nc" id="L55">        resRow.setOpaque(false);</span>
+
+<span class="nc" id="L57">        btnSmall = createResButton(&quot;Pequeño (700×400)&quot;);</span>
+<span class="nc" id="L58">        btnMedium = createResButton(&quot;Mediano (1050×600)&quot;);</span>
+<span class="nc" id="L59">        btnLarge = createResButton(&quot;Grande (1400×800)&quot;);</span>
+
+<span class="nc" id="L61">        btnSmall.addActionListener(e -&gt; {</span>
+<span class="nc" id="L62">            setup.setResolution(FieldResolution.SMALL);</span>
+<span class="nc" id="L63">            onResolutionChanged.accept(FieldResolution.SMALL);</span>
+<span class="nc" id="L64">            refreshView();</span>
+<span class="nc" id="L65">        });</span>
+<span class="nc" id="L66">        btnMedium.addActionListener(e -&gt; {</span>
+<span class="nc" id="L67">            setup.setResolution(FieldResolution.MEDIUM);</span>
+<span class="nc" id="L68">            onResolutionChanged.accept(FieldResolution.MEDIUM);</span>
+<span class="nc" id="L69">            refreshView();</span>
+<span class="nc" id="L70">        });</span>
+<span class="nc" id="L71">        btnLarge.addActionListener(e -&gt; {</span>
+<span class="nc" id="L72">            setup.setResolution(FieldResolution.LARGE);</span>
+<span class="nc" id="L73">            onResolutionChanged.accept(FieldResolution.LARGE);</span>
+<span class="nc" id="L74">            refreshView();</span>
+<span class="nc" id="L75">        });</span>
+
+<span class="nc" id="L77">        resRow.add(btnSmall);</span>
+<span class="nc" id="L78">        resRow.add(btnMedium);</span>
+<span class="nc" id="L79">        resRow.add(btnLarge);</span>
+
+<span class="nc" id="L81">        JPanel navRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 18, 0));</span>
+<span class="nc" id="L82">        navRow.setOpaque(false);</span>
+
+<span class="nc" id="L84">        JButton btnBack = new JButton(&quot;← VOLVER&quot;);</span>
+<span class="nc" id="L85">        btnBack.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 15));</span>
+<span class="nc" id="L86">        btnBack.setBackground(new Color(80, 90, 105));</span>
+<span class="nc" id="L87">        btnBack.setForeground(Color.WHITE);</span>
+<span class="nc" id="L88">        btnBack.setFocusPainted(false);</span>
+<span class="nc" id="L89">        btnBack.setPreferredSize(new Dimension(150, 48));</span>
+<span class="nc" id="L90">        btnBack.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));</span>
+<span class="nc" id="L91">        btnBack.addActionListener(e -&gt; onBack.run());</span>
+
+<span class="nc" id="L93">        JButton btnStart = new JButton(&quot;⚽ START ⚽&quot;);</span>
+<span class="nc" id="L94">        btnStart.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 20));</span>
+<span class="nc" id="L95">        btnStart.setBackground(new Color(40, 180, 40));</span>
+<span class="nc" id="L96">        btnStart.setForeground(Color.WHITE);</span>
+<span class="nc" id="L97">        btnStart.setFocusPainted(false);</span>
+<span class="nc" id="L98">        btnStart.setPreferredSize(new Dimension(220, 48));</span>
+<span class="nc" id="L99">        btnStart.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));</span>
+<span class="nc" id="L100">        btnStart.addActionListener(e -&gt; onStart.run());</span>
+
+<span class="nc" id="L102">        navRow.add(btnBack);</span>
+<span class="nc" id="L103">        navRow.add(btnStart);</span>
+
+<span class="nc" id="L105">        card.add(title);</span>
+<span class="nc" id="L106">        card.add(Box.createVerticalStrut(18));</span>
+<span class="nc" id="L107">        card.add(subtitle);</span>
+<span class="nc" id="L108">        card.add(Box.createVerticalStrut(12));</span>
+<span class="nc" id="L109">        card.add(resRow);</span>
+<span class="nc" id="L110">        card.add(Box.createVerticalStrut(26));</span>
+<span class="nc" id="L111">        card.add(navRow);</span>
+
+<span class="nc" id="L113">        add(card);</span>
+<span class="nc" id="L114">        refreshView();</span>
+<span class="nc" id="L115">    }</span>
+
+    /**
+     * Highlights the currently selected field resolution button.
+     */
+    public final void refreshView() {
+<span class="nc" id="L121">        FieldResolution res = setup.getResolution();</span>
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        Theme.styleToggle(btnSmall, res == FieldResolution.SMALL);</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">        Theme.styleToggle(btnMedium, res == FieldResolution.MEDIUM);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        Theme.styleToggle(btnLarge, res == FieldResolution.LARGE);</span>
+<span class="nc" id="L125">    }</span>
+
+    /*
+     * Creates a resolution toggle button with uniform typography and hand cursor.
+     */
+    private JButton createResButton(String text) {
+<span class="nc" id="L131">        JButton btn = new JButton(text);</span>
+<span class="nc" id="L132">        btn.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 14));</span>
+<span class="nc" id="L133">        btn.setFocusPainted(false);</span>
+<span class="nc" id="L134">        btn.setPreferredSize(new Dimension(175, 42));</span>
+<span class="nc" id="L135">        btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));</span>
+<span class="nc" id="L136">        return btn;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

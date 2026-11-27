@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ImageAssets.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">ImageAssets.java</span></div><h1>ImageAssets.java</h1><pre class="source lang-java linenums">package presentation;
+
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.URL;
+import java.util.EnumMap;
+import java.util.Map;
+
+import javax.imageio.ImageIO;
+
+import domain.Country;
+import persistence.Log;
+
+/**
+ * Loads and caches PNG sprites for country flags and the ball once at startup.
+ * Missing assets are logged and return null so the renderer falls back to vector shapes.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class ImageAssets {
+    private static final int FLAG_WIDTH = 40;
+    private static final int FLAG_HEIGHT = 26;
+    private static final int BALL_SIZE = 48;
+
+<span class="fc" id="L28">    private final Map&lt;Country, BufferedImage&gt; flags = new EnumMap&lt;&gt;(Country.class);</span>
+    private final BufferedImage ballImage;
+
+    /**
+     * Loads and pre-scales all country flag and ball sprites from classpath resources.
+     */
+<span class="fc" id="L34">    public ImageAssets() {</span>
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        for (Country c : Country.values()) {</span>
+<span class="fc" id="L36">            String key = c.name().toLowerCase();</span>
+<span class="fc" id="L37">            BufferedImage flag = load(&quot;/presentation/resources/flag_&quot; + key + &quot;.png&quot;, FLAG_WIDTH, FLAG_HEIGHT);</span>
+<span class="pc bpc" id="L38" title="1 of 2 branches missed.">            if (flag != null) flags.put(c, flag);</span>
+        }
+<span class="fc" id="L40">        this.ballImage = load(&quot;/presentation/resources/Ball.png&quot;, BALL_SIZE, BALL_SIZE);</span>
+<span class="fc" id="L41">    }</span>
+
+    /*
+     * Loads a PNG sprite from the classpath and pre-scales it to the target dimensions.
+     */
+    private BufferedImage load(String resourcePath, int targetW, int targetH) {
+<span class="fc" id="L47">        URL url = getClass().getResource(resourcePath);</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        if (url == null) {</span>
+<span class="nc" id="L49">            Log.record(new IOException(&quot;Imagen no encontrada: &quot; + resourcePath));</span>
+<span class="nc" id="L50">            return null;</span>
+        }
+
+        try {
+<span class="fc" id="L54">            BufferedImage raw = ImageIO.read(url);</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">            return (raw != null) ? scale(raw, targetW, targetH) : null;</span>
+<span class="nc" id="L56">        } catch (IOException io) {</span>
+<span class="nc" id="L57">            Log.record(io);</span>
+<span class="nc" id="L58">            return null;</span>
+        }
+    }
+
+    /*
+     * Creates a bilinear-scaled ARGB copy of the source sprite for fast per-frame rendering.
+     */
+    private BufferedImage scale(BufferedImage src, int width, int height) {
+<span class="fc" id="L66">        BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);</span>
+<span class="fc" id="L67">        Graphics2D g2d = scaled.createGraphics();</span>
+<span class="fc" id="L68">        g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);</span>
+<span class="fc" id="L69">        g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);</span>
+<span class="fc" id="L70">        g2d.drawImage(src, 0, 0, width, height, null);</span>
+<span class="fc" id="L71">        g2d.dispose();</span>
+<span class="fc" id="L72">        return scaled;</span>
+    }
+
+    /**
+     * Returns the cached flag sprite for the given country, or null if unavailable.
+     *
+     * @param country Playable country
+     * @return Flag sprite or null
+     */
+    public BufferedImage getFlag(Country country) {
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        return (country != null) ? flags.get(country) : null;</span>
+    }
+
+    /**
+     * Returns the cached ball sprite, or null if unavailable.
+     *
+     * @return Ball sprite or null
+     */
+    public BufferedImage getBall() {
+<span class="fc" id="L91">        return ballImage;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

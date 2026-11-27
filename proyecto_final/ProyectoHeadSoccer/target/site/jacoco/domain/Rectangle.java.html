@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Rectangle.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">domain</a> &gt; <span class="el_source">Rectangle.java</span></div><h1>Rectangle.java</h1><pre class="source lang-java linenums">package domain;
+
+import java.util.Optional;
+
+/**
+ * Axis-aligned rectangular geometric shape supporting bounding box collision and containment tests.
+ * 
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class Rectangle extends Figure {
+	private double width;
+	private double height;
+
+	/**
+	 * Default constructor initializing rectangle at origin with zero dimensions.
+	 */
+	public Rectangle() {
+<span class="nc" id="L19">		super();</span>
+<span class="nc" id="L20">	}</span>
+
+	/**
+	 * Constructs a rectangle with specified top-left coordinates and dimensions.
+	 * 
+	 * @param x Top-left horizontal coordinate
+	 * @param y Top-left vertical coordinate
+	 * @param width Horizontal dimension
+	 * @param height Vertical dimension
+	 */
+	public Rectangle(double x, double y, double width, double height) {
+<span class="fc" id="L31">		super(x, y);</span>
+<span class="fc" id="L32">		this.width = width;</span>
+<span class="fc" id="L33">		this.height = height;</span>
+<span class="fc" id="L34">	}</span>
+
+	/**
+	 * Returns the width dimension.
+	 * 
+	 * @return Rectangle width
+	 */
+	public double getWidth() {
+<span class="fc" id="L42">		return width;</span>
+	}
+
+	/**
+	 * Sets the width dimension.
+	 * 
+	 * @param width Rectangle width to set
+	 */
+	public void setWidth(double width) {
+<span class="nc" id="L51">		this.width = width;</span>
+<span class="nc" id="L52">	}</span>
+
+	/**
+	 * Returns the height dimension.
+	 * 
+	 * @return Rectangle height
+	 */
+	public double getHeight() {
+<span class="fc" id="L60">		return height;</span>
+	}
+
+	/**
+	 * Sets the height dimension.
+	 * 
+	 * @param height Rectangle height to set
+	 */
+	public void setHeight(double height) {
+<span class="nc" id="L69">		this.height = height;</span>
+<span class="nc" id="L70">	}</span>
+
+	/**
+	 * Returns the leftmost X boundary coordinate.
+	 * 
+	 * @return Left X coordinate
+	 */
+	public double left() {
+<span class="fc" id="L78">		return getX();</span>
+	}
+
+	/**
+	 * Returns the rightmost X boundary coordinate.
+	 * 
+	 * @return Right X coordinate
+	 */
+	public double right() {
+<span class="fc" id="L87">		return getX() + width;</span>
+	}
+
+	/**
+	 * Returns the topmost Y boundary coordinate.
+	 * 
+	 * @return Top Y coordinate
+	 */
+	public double top() {
+<span class="fc" id="L96">		return getY();</span>
+	}
+
+	/**
+	 * Returns the bottommost Y boundary coordinate.
+	 * 
+	 * @return Bottom Y coordinate
+	 */
+	public double bottom() {
+<span class="fc" id="L105">		return getY() + height;</span>
+	}
+
+	/**
+	 * Detects collision between this rectangle and a given circle.
+	 * 
+	 * @param circle Target circle to test
+	 * @return True if intersecting, false otherwise
+	 */
+	@Override
+	public boolean detectCollisionWithCircle(Circle circle) {
+<span class="fc" id="L116">		double closestX = Math.max(left(), Math.min(circle.getX(), right()));</span>
+<span class="fc" id="L117">		double closestY = Math.max(top(), Math.min(circle.getY(), bottom()));</span>
+<span class="fc" id="L118">		double dx = circle.getX() - closestX;</span>
+<span class="fc" id="L119">		double dy = circle.getY() - closestY;</span>
+<span class="pc bpc" id="L120" title="1 of 2 branches missed.">		return (dx * dx) + (dy * dy) &lt;= (circle.getRadius() * circle.getRadius());</span>
+	}
+
+	/**
+	 * Detects collision between this rectangle and another rectangle (AABB overlap).
+	 * 
+	 * @param rectangle Target rectangle to test
+	 * @return True if overlapping, false otherwise
+	 */
+	@Override
+	public boolean detectCollisionWithRectangle(Rectangle rectangle) {
+<span class="fc bfc" id="L131" title="All 2 branches covered.">		return rectangle.right() &gt;= this.left()</span>
+<span class="pc bpc" id="L132" title="1 of 2 branches missed.">				&amp;&amp; rectangle.left() &lt;= this.right()</span>
+<span class="nc bnc" id="L133" title="All 2 branches missed.">				&amp;&amp; rectangle.bottom() &gt;= this.top()</span>
+<span class="pc bnc" id="L134" title="All 2 branches missed.">				&amp;&amp; rectangle.top() &lt;= this.bottom();</span>
+	}
+
+	/**
+	 * Checks whether a given circle is completely enclosed inside this rectangle.
+	 * 
+	 * @param circle Target circle to test
+	 * @return True if fully contained, false otherwise
+	 */
+	public boolean containsCircle(Circle circle) {
+<span class="fc bfc" id="L144" title="All 2 branches covered.">		return circle.getX() - circle.getRadius() &gt;= left()</span>
+<span class="fc bfc" id="L145" title="All 2 branches covered.">				&amp;&amp; circle.getX() + circle.getRadius() &lt;= right()</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">				&amp;&amp; circle.getY() - circle.getRadius() &gt;= top()</span>
+<span class="pc bpc" id="L147" title="1 of 2 branches missed.">				&amp;&amp; circle.getY() + circle.getRadius() &lt;= bottom();</span>
+	}
+
+	@Override
+	public Optional&lt;Contact&gt; contactWith(Circle ball) {
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">		if (ball == null) return Optional.empty();</span>
+<span class="fc" id="L153">		double closestX = Math.max(left(), Math.min(ball.getX(), right()));</span>
+<span class="fc" id="L154">		double closestY = Math.max(top(), Math.min(ball.getY(), bottom()));</span>
+<span class="fc" id="L155">		Vector2 delta = new Vector2(ball.getX() - closestX, ball.getY() - closestY);</span>
+<span class="fc" id="L156">		double dist = delta.length();</span>
+<span class="fc" id="L157">		double radius = ball.getRadius();</span>
+
+<span class="fc bfc" id="L159" title="All 2 branches covered.">		if (dist &gt;= radius) return Optional.empty();</span>
+<span class="fc bfc" id="L160" title="All 2 branches covered.">		if (dist &gt; 0) {</span>
+<span class="fc" id="L161">			return Optional.of(new Contact(delta.normalized(), radius - dist));</span>
+		}
+
+<span class="fc" id="L164">		double dLeft = Math.abs(ball.getX() - left());</span>
+<span class="fc" id="L165">		double dRight = Math.abs(right() - ball.getX());</span>
+<span class="fc" id="L166">		double dTop = Math.abs(ball.getY() - top());</span>
+<span class="fc" id="L167">		double dBottom = Math.abs(bottom() - ball.getY());</span>
+<span class="fc" id="L168">		double min = Math.min(Math.min(dLeft, dRight), Math.min(dTop, dBottom));</span>
+
+		Vector2 normal;
+<span class="pc bpc" id="L171" title="1 of 2 branches missed.">		if (min == dTop) normal = new Vector2(0, -1);</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">		else if (min == dBottom) normal = new Vector2(0, 1);</span>
+<span class="fc bfc" id="L173" title="All 2 branches covered.">		else if (min == dLeft) normal = new Vector2(-1, 0);</span>
+<span class="fc" id="L174">		else normal = new Vector2(1, 0);</span>
+
+<span class="fc" id="L176">		return Optional.of(new Contact(normal, min + radius));</span>
+	}
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

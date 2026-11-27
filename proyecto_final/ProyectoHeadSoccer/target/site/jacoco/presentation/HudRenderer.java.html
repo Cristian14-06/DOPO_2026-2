@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>HudRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">HudRenderer.java</span></div><h1>HudRenderer.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.MatchView;
+import domain.Modality;
+import domain.PlayerView;
+import domain.Side;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+
+/**
+ * Renders the top HUD including scoreboard, timer or goal target, and player bars.
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class HudRenderer {
+    private final ImageAssets assets;
+
+    /**
+     * Constructs a HUD renderer using shared image assets for country flags.
+     *
+     * @param assets Loaded image assets
+     */
+<span class="nc" id="L29">    public HudRenderer(ImageAssets assets) {</span>
+<span class="nc" id="L30">        this.assets = assets;</span>
+<span class="nc" id="L31">    }</span>
+
+    /**
+     * Draws the scoreboard, match mode/timer, and both player HUD panels.
+     *
+     * @param g2d Screen-space graphics context
+     * @param match Read-only match view
+     * @param setup Match configuration holding goal target and machine profile
+     * @param panelWidth Current width of the match canvas in pixels
+     */
+    public void draw(Graphics2D g2d, MatchView match, MatchSetup setup, int panelWidth) {
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        if (match == null) return;</span>
+
+<span class="nc" id="L44">        g2d.setColor(new Color(15, 20, 25, 230));</span>
+<span class="nc" id="L45">        g2d.fillRoundRect(panelWidth / 2 - 160, 10, 320, 74, 14, 14);</span>
+<span class="nc" id="L46">        g2d.setColor(new Color(245, 195, 35));</span>
+<span class="nc" id="L47">        g2d.setStroke(new BasicStroke(1.5f));</span>
+<span class="nc" id="L48">        g2d.drawRoundRect(panelWidth / 2 - 160, 10, 320, 74, 14, 14);</span>
+
+<span class="nc" id="L50">        g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 11));</span>
+<span class="nc" id="L51">        g2d.setColor(new Color(180, 220, 255));</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        String modeTag = (match.getModality() == Modality.PVC)</span>
+<span class="nc" id="L53">                ? &quot;PvM • &quot; + setup.getMachineProfile().getDisplayName()</span>
+<span class="nc" id="L54">                : &quot;PvP&quot;;</span>
+<span class="nc" id="L55">        g2d.drawString(modeTag, panelWidth / 2 - g2d.getFontMetrics().stringWidth(modeTag) / 2, 23);</span>
+
+<span class="nc" id="L57">        int leftGoals = match.getGoals(Side.LEFT);</span>
+<span class="nc" id="L58">        int rightGoals = match.getGoals(Side.RIGHT);</span>
+<span class="nc" id="L59">        g2d.setFont(new Font(&quot;Impact&quot;, Font.PLAIN, 36));</span>
+<span class="nc" id="L60">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L61">        String scoreText = leftGoals + &quot;  -  &quot; + rightGoals;</span>
+<span class="nc" id="L62">        FontMetrics fm = g2d.getFontMetrics();</span>
+<span class="nc" id="L63">        g2d.drawString(scoreText, panelWidth / 2 - fm.stringWidth(scoreText) / 2, 48);</span>
+
+<span class="nc" id="L65">        g2d.setFont(new Font(&quot;Monospaced&quot;, Font.BOLD, 14));</span>
+<span class="nc" id="L66">        g2d.setColor(Color.GREEN);</span>
+        String centerInfo;
+<span class="nc bnc" id="L68" title="All 2 branches missed.">        if (match.isSuddenDeath()) {</span>
+<span class="nc" id="L69">            centerInfo = &quot;GOL DE ORO&quot;;</span>
+<span class="nc" id="L70">            g2d.setColor(Color.YELLOW);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        } else if (match.getRemainingSeconds() &lt; 0) {</span>
+<span class="nc" id="L72">            centerInfo = &quot;META: &quot; + setup.getTargetGoals() + &quot; GOLES&quot;;</span>
+        } else {
+<span class="nc" id="L74">            int sec = match.getRemainingSeconds();</span>
+<span class="nc" id="L75">            centerInfo = String.format(&quot;%02d:%02d&quot;, sec / 60, sec % 60);</span>
+        }
+<span class="nc" id="L77">        g2d.drawString(centerInfo, panelWidth / 2 - g2d.getFontMetrics().stringWidth(centerInfo) / 2, 68);</span>
+
+<span class="nc" id="L79">        PlayerView p1 = match.getPlayer(Side.LEFT);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (p1 != null) {</span>
+<span class="nc" id="L81">            drawPlayerHUD(g2d, p1, 25, 14, 220);</span>
+        }
+
+<span class="nc" id="L84">        PlayerView p2 = match.getPlayer(Side.RIGHT);</span>
+<span class="nc bnc" id="L85" title="All 2 branches missed.">        if (p2 != null) {</span>
+<span class="nc" id="L86">            drawPlayerHUD(g2d, p2, panelWidth - 245, 14, 220);</span>
+        }
+<span class="nc" id="L88">    }</span>
+
+    /*
+     * Renders a single player's name, country flag, health bar, and power gauge in the HUD.
+     */
+    private void drawPlayerHUD(Graphics2D g2d, PlayerView p, int x, int y, int barW) {
+<span class="nc" id="L94">        int textX = x;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        BufferedImage flagImg = (assets != null) ? assets.getFlag(p.getCountry()) : null;</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (flagImg != null) {</span>
+<span class="nc" id="L97">            g2d.drawImage(flagImg, x, y + 1, 20, 13, null);</span>
+<span class="nc" id="L98">            textX = x + 25;</span>
+        }
+<span class="nc" id="L100">        g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 13));</span>
+<span class="nc" id="L101">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L102">        String name = p.getName() + &quot; (&quot; + p.getCountry().getDisplayName() + &quot;)&quot;;</span>
+<span class="nc" id="L103">        g2d.drawString(name, textX, y + 12);</span>
+
+<span class="nc" id="L105">        int hpY = y + 18;</span>
+<span class="nc" id="L106">        g2d.setColor(Color.BLACK);</span>
+<span class="nc" id="L107">        g2d.fillRect(x, hpY, barW, 14);</span>
+
+<span class="nc" id="L109">        double hpRatio = Math.max(0.0, Math.min(1.0, p.getLife() / p.getMaxLife()));</span>
+<span class="nc" id="L110">        g2d.setColor(healthColor(hpRatio));</span>
+<span class="nc" id="L111">        g2d.fillRect(x + 1, hpY + 1, (int) ((barW - 2) * hpRatio), 12);</span>
+<span class="nc" id="L112">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L113">        g2d.drawRect(x, hpY, barW, 14);</span>
+
+<span class="nc" id="L115">        g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 10));</span>
+<span class="nc" id="L116">        String hpText = (int) p.getLife() + &quot;/&quot; + (int) p.getMaxLife() + &quot; HP&quot;;</span>
+<span class="nc" id="L117">        g2d.drawString(hpText, x + barW / 2 - g2d.getFontMetrics().stringWidth(hpText) / 2, hpY + 11);</span>
+
+<span class="nc" id="L119">        int powY = hpY + 16;</span>
+<span class="nc" id="L120">        g2d.setColor(Color.BLACK);</span>
+<span class="nc" id="L121">        g2d.fillRect(x, powY, barW, 10);</span>
+
+<span class="nc" id="L123">        double powRatio = Math.max(0.0, Math.min(1.0, p.getPowerProgress() / 100.0));</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        g2d.setColor(powRatio &gt;= 1.0 ? Color.YELLOW : new Color(240, 140, 0));</span>
+<span class="nc" id="L125">        g2d.fillRect(x + 1, powY + 1, (int) ((barW - 2) * powRatio), 8);</span>
+<span class="nc" id="L126">        g2d.setColor(Color.GRAY);</span>
+<span class="nc" id="L127">        g2d.drawRect(x, powY, barW, 10);</span>
+
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (p.hasAura()) {</span>
+<span class="nc" id="L130">            g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 9));</span>
+<span class="nc" id="L131">            g2d.setColor(Color.YELLOW);</span>
+<span class="nc" id="L132">            g2d.drawString(&quot;⚡ AURA ACTIVA ⚡&quot;, x + barW / 2 - 40, powY + 9);</span>
+        }
+<span class="nc" id="L134">    }</span>
+
+    /*
+     * Chooses the health bar color: green above half life, orange above a quarter, red below.
+     */
+    private Color healthColor(double hpRatio) {
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (hpRatio &gt; 0.5) {</span>
+<span class="nc" id="L141">            return new Color(40, 200, 40);</span>
+        }
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        if (hpRatio &gt; 0.25) {</span>
+<span class="nc" id="L144">            return Color.ORANGE;</span>
+        }
+<span class="nc" id="L146">        return Color.RED;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

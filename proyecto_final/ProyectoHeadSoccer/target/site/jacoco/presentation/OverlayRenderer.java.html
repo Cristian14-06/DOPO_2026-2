@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OverlayRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">doposoccer</a> &gt; <a href="index.source.html" class="el_package">presentation</a> &gt; <span class="el_source">OverlayRenderer.java</span></div><h1>OverlayRenderer.java</h1><pre class="source lang-java linenums">package presentation;
+
+import domain.GameStatus;
+import domain.MatchView;
+import domain.PlayerView;
+import domain.Side;
+
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+
+/**
+ * Renders match state overlays (pause, goal celebration, sudden death, and match finished).
+ *
+ * @author Juan Espitia
+ * @author Cristian Salamanca
+ */
+public class OverlayRenderer {
+    private final Rectangle btnSaveGame;
+    private final Rectangle btnMenu;
+    private final Rectangle btnUpgrades;
+
+    /**
+     * Constructs an overlay renderer sharing clickable button bounds with the match panel.
+     *
+     * @param btnSaveGame Bounds rectangle for the Save Match button on pause
+     * @param btnMenu Bounds rectangle for the Return to Menu button on match end
+     * @param btnUpgrades Bounds rectangle for the Upgrade Stats button on match end
+     */
+<span class="nc" id="L33">    public OverlayRenderer(Rectangle btnSaveGame, Rectangle btnMenu, Rectangle btnUpgrades) {</span>
+<span class="nc" id="L34">        this.btnSaveGame = btnSaveGame;</span>
+<span class="nc" id="L35">        this.btnMenu = btnMenu;</span>
+<span class="nc" id="L36">        this.btnUpgrades = btnUpgrades;</span>
+<span class="nc" id="L37">    }</span>
+
+    /**
+     * Draws the overlay corresponding to the current match status, if applicable.
+     *
+     * @param g2d Screen-space graphics context
+     * @param match Read-only match view
+     * @param width Current panel width in pixels
+     * @param height Current panel height in pixels
+     * @param lastScorerText Banner text for goal celebration
+     * @param winnerNotification Banner text for match end
+     */
+    public void draw(Graphics2D g2d, MatchView match, int width, int height,
+                     String lastScorerText, String winnerNotification) {
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (match == null) return;</span>
+<span class="nc" id="L52">        GameStatus status = match.getStatus();</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        if (status == GameStatus.PAUSED) {</span>
+<span class="nc" id="L54">            drawPauseOverlay(g2d, width, height);</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        } else if (status == GameStatus.GOAL_SCORED) {</span>
+<span class="nc" id="L56">            drawGoalOverlay(g2d, width, height, lastScorerText);</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        } else if (status == GameStatus.SUDDEN_DEATH) {</span>
+<span class="nc" id="L58">            drawDrawOverlay(g2d, width, height);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        } else if (status == GameStatus.FINISHED) {</span>
+<span class="nc" id="L60">            drawFinishedOverlay(g2d, match, width, height, winnerNotification);</span>
+        }
+<span class="nc" id="L62">    }</span>
+
+    /*
+     * Renders the pause overlay with resume, menu, and save match controls.
+     */
+    private void drawPauseOverlay(Graphics2D g2d, int w, int h) {
+<span class="nc" id="L68">        g2d.setColor(new Color(0, 0, 0, 160));</span>
+<span class="nc" id="L69">        g2d.fillRect(0, 0, w, h);</span>
+
+<span class="nc" id="L71">        g2d.setColor(Color.YELLOW);</span>
+<span class="nc" id="L72">        g2d.setFont(new Font(&quot;Impact&quot;, Font.BOLD, 54));</span>
+<span class="nc" id="L73">        String text = &quot;PAUSE&quot;;</span>
+<span class="nc" id="L74">        g2d.drawString(text, w / 2 - g2d.getFontMetrics().stringWidth(text) / 2, h / 2 - 30);</span>
+
+<span class="nc" id="L76">        g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 18));</span>
+<span class="nc" id="L77">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L78">        String s1 = &quot;Presiona 'P' para continuar jugando&quot;;</span>
+<span class="nc" id="L79">        String s2 = &quot;Presiona 'M' para salir al Menú Principal&quot;;</span>
+<span class="nc" id="L80">        g2d.drawString(s1, w / 2 - g2d.getFontMetrics().stringWidth(s1) / 2, h / 2 + 15);</span>
+<span class="nc" id="L81">        g2d.drawString(s2, w / 2 - g2d.getFontMetrics().stringWidth(s2) / 2, h / 2 + 45);</span>
+
+<span class="nc" id="L83">        btnSaveGame.setBounds(w / 2 - 130, h / 2 + 75, 260, 48);</span>
+<span class="nc" id="L84">        drawGlossyButton(g2d, btnSaveGame, &quot;GUARDAR PARTIDA&quot;, new Color(40, 170, 80), Color.WHITE, 18);</span>
+<span class="nc" id="L85">    }</span>
+
+    /*
+     * Renders the goal celebration banner overlay.
+     */
+    private void drawGoalOverlay(Graphics2D g2d, int w, int h, String lastScorerText) {
+<span class="nc" id="L91">        g2d.setColor(new Color(20, 140, 20, 180));</span>
+<span class="nc" id="L92">        g2d.fillRect(0, h / 2 - 90, w, 180);</span>
+
+<span class="nc" id="L94">        g2d.setColor(Color.YELLOW);</span>
+<span class="nc" id="L95">        g2d.setFont(new Font(&quot;Impact&quot;, Font.BOLD, 68));</span>
+<span class="nc" id="L96">        String goal = &quot;¡¡¡ GOOOOOL !!!&quot;;</span>
+<span class="nc" id="L97">        g2d.drawString(goal, w / 2 - g2d.getFontMetrics().stringWidth(goal) / 2, h / 2 - 10);</span>
+
+<span class="nc" id="L99">        g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 22));</span>
+<span class="nc" id="L100">        g2d.setColor(Color.WHITE);</span>
+<span class="nc bnc" id="L101" title="All 4 branches missed.">        String desc = (lastScorerText != null &amp;&amp; !lastScorerText.isEmpty()) ? lastScorerText : &quot;¡Anotación!&quot;;</span>
+<span class="nc" id="L102">        g2d.drawString(desc, w / 2 - g2d.getFontMetrics().stringWidth(desc) / 2, h / 2 + 40);</span>
+<span class="nc" id="L103">    }</span>
+
+    /*
+     * Renders the sudden-death golden goal banner overlay.
+     */
+    private void drawDrawOverlay(Graphics2D g2d, int w, int h) {
+<span class="nc" id="L109">        g2d.setColor(new Color(200, 120, 20, 190));</span>
+<span class="nc" id="L110">        g2d.fillRect(0, h / 2 - 80, w, 160);</span>
+
+<span class="nc" id="L112">        g2d.setColor(Color.YELLOW);</span>
+<span class="nc" id="L113">        g2d.setFont(new Font(&quot;Impact&quot;, Font.BOLD, 54));</span>
+<span class="nc" id="L114">        String title = &quot;¡EMPATE! - GOL DE ORO&quot;;</span>
+<span class="nc" id="L115">        g2d.drawString(title, w / 2 - g2d.getFontMetrics().stringWidth(title) / 2, h / 2);</span>
+
+<span class="nc" id="L117">        g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 20));</span>
+<span class="nc" id="L118">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L119">        String sub = &quot;Muerte súbita: El primer jugador que marque gana el partido&quot;;</span>
+<span class="nc" id="L120">        g2d.drawString(sub, w / 2 - g2d.getFontMetrics().stringWidth(sub) / 2, h / 2 + 45);</span>
+<span class="nc" id="L121">    }</span>
+
+    /*
+     * Renders the match-finished overlay with winner announcement, total points, and action buttons.
+     */
+    private void drawFinishedOverlay(Graphics2D g2d, MatchView match, int w, int h, String winnerNotification) {
+<span class="nc" id="L127">        g2d.setColor(new Color(0, 0, 0, 210));</span>
+<span class="nc" id="L128">        g2d.fillRect(0, 0, w, h);</span>
+
+<span class="nc" id="L130">        g2d.setColor(Color.YELLOW);</span>
+<span class="nc" id="L131">        g2d.setFont(new Font(&quot;Impact&quot;, Font.BOLD, 52));</span>
+<span class="nc" id="L132">        String title = &quot;PARTIDO FINALIZADO&quot;;</span>
+<span class="nc" id="L133">        g2d.drawString(title, w / 2 - g2d.getFontMetrics().stringWidth(title) / 2, h / 2 - 60);</span>
+
+<span class="nc" id="L135">        g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 24));</span>
+<span class="nc" id="L136">        g2d.setColor(new Color(100, 255, 100));</span>
+<span class="nc bnc" id="L137" title="All 4 branches missed.">        String winner = (winnerNotification != null &amp;&amp; !winnerNotification.isEmpty()) ? winnerNotification : &quot;Fin del juego&quot;;</span>
+<span class="nc" id="L138">        g2d.drawString(winner, w / 2 - g2d.getFontMetrics().stringWidth(winner) / 2, h / 2 - 10);</span>
+
+<span class="nc" id="L140">        g2d.setFont(new Font(&quot;Arial&quot;, Font.PLAIN, 16));</span>
+<span class="nc" id="L141">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L142">        String pts = &quot;Recompensa: Ganador +100 puntos | Perdedor +25 puntos&quot;;</span>
+<span class="nc" id="L143">        g2d.drawString(pts, w / 2 - g2d.getFontMetrics().stringWidth(pts) / 2, h / 2 + 25);</span>
+
+<span class="nc bnc" id="L145" title="All 4 branches missed.">        if (match.getPlayer(Side.LEFT) != null &amp;&amp; match.getPlayer(Side.RIGHT) != null) {</span>
+<span class="nc" id="L146">            PlayerView p1 = match.getPlayer(Side.LEFT);</span>
+<span class="nc" id="L147">            PlayerView p2 = match.getPlayer(Side.RIGHT);</span>
+<span class="nc" id="L148">            String totals = p1.getName() + &quot;: &quot; + p1.getPoints() + &quot; pts totales  |  &quot;</span>
+<span class="nc" id="L149">                    + p2.getName() + &quot;: &quot; + p2.getPoints() + &quot; pts totales&quot;;</span>
+<span class="nc" id="L150">            g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, 15));</span>
+<span class="nc" id="L151">            g2d.setColor(new Color(255, 225, 120));</span>
+<span class="nc" id="L152">            g2d.drawString(totals, w / 2 - g2d.getFontMetrics().stringWidth(totals) / 2, h / 2 + 52);</span>
+        }
+
+<span class="nc" id="L155">        btnUpgrades.setBounds(w / 2 - 235, h / 2 + 78, 220, 48);</span>
+<span class="nc" id="L156">        drawGlossyButton(g2d, btnUpgrades, &quot;MEJORAR STATS&quot;, new Color(70, 150, 220), Color.WHITE, 17);</span>
+
+<span class="nc" id="L158">        btnMenu.setBounds(w / 2 + 15, h / 2 + 78, 220, 48);</span>
+<span class="nc" id="L159">        drawGlossyButton(g2d, btnMenu, &quot;VOLVER AL MENÚ&quot;, new Color(245, 175, 25), Color.BLACK, 17);</span>
+<span class="nc" id="L160">    }</span>
+
+    /*
+     * Renders a rounded action button with centered label text.
+     */
+    private void drawGlossyButton(Graphics2D g2d, Rectangle r, String text, Color bg, Color fg, int fontSize) {
+<span class="nc" id="L166">        g2d.setColor(bg);</span>
+<span class="nc" id="L167">        g2d.fillRoundRect(r.x, r.y, r.width, r.height, 16, 16);</span>
+<span class="nc" id="L168">        g2d.setColor(Color.WHITE);</span>
+<span class="nc" id="L169">        g2d.setStroke(new BasicStroke(2));</span>
+<span class="nc" id="L170">        g2d.drawRoundRect(r.x, r.y, r.width, r.height, 16, 16);</span>
+
+<span class="nc" id="L172">        g2d.setFont(new Font(&quot;Arial&quot;, Font.BOLD, fontSize));</span>
+<span class="nc" id="L173">        g2d.setColor(fg);</span>
+<span class="nc" id="L174">        FontMetrics fm = g2d.getFontMetrics();</span>
+<span class="nc" id="L175">        int tx = r.x + (r.width - fm.stringWidth(text)) / 2;</span>
+<span class="nc" id="L176">        int ty = r.y + ((r.height - fm.getHeight()) / 2) + fm.getAscent();</span>
+<span class="nc" id="L177">        g2d.drawString(text, tx, ty);</span>
+<span class="nc" id="L178">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
